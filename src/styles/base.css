@@ -1,0 +1,80 @@
+/* Base Styles & CSS Reset */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    color: white;
+    min-height: 100vh;
+    overflow-x: auto;
+    overflow-y: auto;
+}
+
+/* Force landscape orientation for mobile devices */
+@media screen and (orientation: portrait) and (max-width: 768px) {
+    body {
+        transform: rotate(90deg);
+        transform-origin: left top;
+        width: 100vh;
+        height: 100vw;
+        overflow-x: hidden;
+        position: absolute;
+        top: 100%;
+        left: 0;
+    }
+}
+
+/* CSS Custom Properties */
+:root {
+    /* Colors */
+    --gold: #ffd700;
+    --gold-dark: #ffcc00;
+    --gold-light: #ffed4e;
+    --orange: #ff8c00;
+    --blue-dark: #0f3460;
+    --blue-mid: #16537e;
+    --blue-light: #1a1a2e;
+    --red: #ff6b6b;
+    --green: #00ff00;
+    --purple: #8000ff;
+    --brown: #8B4513;
+    --gray-dark: #333;
+    --gray-mid: #666;
+    --gray-light: #888;
+
+    /* Dimensions */
+    --arena-height: 648px;
+    --chat-width: 360px;
+    --border-radius: 10px;
+    --border-width: 3px;
+
+    /* Shadows */
+    --shadow-gold: 0 0 15px rgba(255, 215, 0, 0.3);
+    --shadow-default: 0 4px 15px rgba(0, 0, 0, 0.3);
+    --shadow-heavy: 0 10px 30px rgba(0, 0, 0, 0.5);
+
+    /* Transitions */
+    --transition-fast: 0.2s ease;
+    --transition-normal: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* Typography */
+.text-gold {
+    color: var(--gold);
+}
+
+.text-shadow {
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.8);
+}
+
+.text-glow-gold {
+    text-shadow:
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 0 30px rgba(255, 215, 0, 0.4);
+}

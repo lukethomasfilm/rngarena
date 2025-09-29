@@ -1,0 +1,139 @@
+/* Responsive Design */
+
+/* Mobile Responsive Design */
+@media screen and (max-width: 768px) {
+    .container {
+        display: grid;
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .battlefield-section {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .middle-section {
+        grid-column: 1;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .battle-info {
+        height: 150px;
+        grid-column: 1;
+    }
+
+    .loot-container {
+        height: 150px;
+        width: 100%;
+        grid-column: 2;
+    }
+
+    .chat-container {
+        grid-column: 1;
+        grid-row: 3;
+        width: 100%;
+        height: 300px;
+        margin-top: 10px;
+    }
+
+    .bottom-section {
+        grid-column: 1;
+        grid-row: 4;
+        display: block;
+        margin-top: 10px;
+    }
+
+    .bracket-container {
+        width: 100%;
+    }
+
+    .arena-viewport {
+        height: 400px;
+    }
+
+    .top-section {
+        grid-template-columns: 1fr;
+        gap: 10px;
+        padding: 10px;
+        text-align: center;
+    }
+
+    .center-info {
+        order: -1;
+    }
+
+    .fighter-card {
+        min-height: 30px;
+        padding: 6px;
+    }
+
+    .fighter-left, .fighter-right {
+        bottom: 80px;
+    }
+
+    .vs-display {
+        font-size: 2.5rem;
+        letter-spacing: 4px;
+    }
+
+    .battle-btn {
+        font-size: 1.4rem;
+        padding: 15px 30px;
+    }
+}
+
+/* Tablet and small desktop adjustments */
+@media screen and (min-width: 769px) and (max-width: 1200px) {
+    .container {
+        padding: 15px;
+    }
+
+    .arena-viewport {
+        min-height: 500px;
+    }
+
+    .chat-container {
+        width: 300px;
+        height: 500px;
+    }
+
+    .battle-info {
+        height: 250px;
+    }
+
+    .loot-container {
+        height: 250px;
+        width: 300px;
+    }
+}
+
+/* Large desktop optimizations */
+@media screen and (min-width: 1400px) {
+    .container {
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+
+    .arena-viewport {
+        min-height: 700px;
+    }
+
+    .chat-container {
+        height: 700px;
+    }
+
+    .battle-info {
+        height: 350px;
+    }
+
+    .loot-container {
+        height: 350px;
+    }
+}

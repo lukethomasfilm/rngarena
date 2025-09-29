@@ -1,0 +1,63 @@
+/* Tournament Progress Bar Styles */
+
+.progress-bar {
+    width: 280px;
+    height: 35px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 2px solid var(--gold);
+    border-radius: 15px;
+    padding: 4px;
+    box-shadow: var(--shadow-gold);
+}
+
+.progress-segments {
+    display: flex;
+    gap: 2px;
+    height: 100%;
+}
+
+.progress-segment {
+    flex: 1;
+    background: var(--gray-mid);
+    border-radius: 3px;
+    transition: all var(--transition-slow);
+    position: relative;
+    overflow: hidden;
+}
+
+.progress-segment.completed {
+    background: var(--gold);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.progress-segment.current {
+    background: var(--gold);
+    animation: goldShimmer 2s ease-in-out infinite;
+}
+
+.progress-segment.tier-gray { background: #808080; }
+.progress-segment.tier-white { background: #ffffff; }
+.progress-segment.tier-green { background: #00ff00; }
+.progress-segment.tier-blue { background: #0080ff; }
+.progress-segment.tier-purple { background: #8000ff; }
+.progress-segment.tier-orange { background: #ff8000; }
+.progress-segment.tier-gold { background: #ffd700; }
+
+/* Tournament Round Indicators */
+.round-indicator {
+    position: absolute;
+    top: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.6rem;
+    color: var(--gold);
+    font-weight: bold;
+    text-align: center;
+    opacity: 0.8;
+}
+
+.round-indicator.active {
+    opacity: 1;
+    color: var(--gold);
+    text-shadow: 0 0 5px rgba(255, 215, 0, 0.8);
+}

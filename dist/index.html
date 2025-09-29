@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, orientation=landscape">
+    <title>RNG Arena</title>
+    <meta name="description" content="Epic medieval tournament battles with turn-based combat and RNG mechanics">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <script type="module" crossorigin src="/assets/index-rHpL94ms.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-CZh372E6.css">
+  <script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script>
+  <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
+</head>
+<body>
+    <div class="dev-frame">
+        <div class="container">
+            <!-- Left Side: Loot Container -->
+            <div class="left-section">
+                <div class="loot-container">
+                    <div class="loot-header">LOOT TIER</div>
+                    <div class="loot-description">Gray → White → Green → Blue → Purple → Orange → Gold</div>
+                    <div class="loot-content">
+                        <div id="loot-box" class="treasure-chest">
+                            <img src="/images/Loot/chest_01.png" alt="Treasure Chest" class="chest-image">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center: Battlefield Section -->
+            <div class="battlefield-section">
+                <div class="arena-viewport castle">
+                    <!-- Top Tournament Progress -->
+                    <div class="top-progress">
+                        <div class="progress-container">
+                            <div class="progress-label">Tournament Progress</div>
+                            <div class="progress-bar">
+                                <div class="progress-segments" id="progress-segments"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Top Odds Display -->
+                    <div class="top-odds">
+                        <div class="odds-display">
+                            <span class="odds-label">Odds:</span>
+                            <span class="crown-odds">1 in 16,384</span>
+                        </div>
+                    </div>
+                    <button id="start-battle" class="battle-btn">START TOURNAMENT</button>
+                    <div class="battle-status"></div>
+                    <div class="fighter-left">
+                        <div class="fighter-sprite left-sprite">
+                        </div>
+                    </div>
+
+                    <div class="fighter-right">
+                        <div class="fighter-sprite right-sprite">
+                        </div>
+                    </div>
+
+                    <!-- Corner to Center Nameplates with VS -->
+                    <div class="nameplate-vs-container">
+                        <div class="nameplate left-nameplate">
+                            <div class="nameplate-name" id="left-nameplate-name">Daring Hero</div>
+                            <div class="nameplate-titles" id="left-nameplate-titles">The Brave • Destined for Glory</div>
+                        </div>
+
+                        <div class="vs-display">VS</div>
+
+                        <div class="nameplate right-nameplate">
+                            <div class="nameplate-name" id="right-nameplate-name">Opponent</div>
+                            <div class="nameplate-titles" id="right-nameplate-titles">The Unknown • Mystery Fighter</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Battle Emojis -->
+            <div class="right-section">
+                <div class="emoji-panel">
+                    <div class="emoji-header">BATTLE EMOJIS</div>
+                    <div class="emoji-grid">
+                        <button class="emoji-btn" data-emoji="⚔️">⚔️</button>
+                        <button class="emoji-btn" data-emoji="🛡️">🛡️</button>
+                        <button class="emoji-btn" data-emoji="💥">💥</button>
+                        <button class="emoji-btn" data-emoji="🔥">🔥</button>
+                        <button class="emoji-btn" data-emoji="⚡">⚡</button>
+                        <button class="emoji-btn" data-emoji="💀">💀</button>
+                        <button class="emoji-btn" data-emoji="👑">👑</button>
+                        <button class="emoji-btn" data-emoji="🏆">🏆</button>
+                        <button class="emoji-btn" data-emoji="💪">💪</button>
+                        <button class="emoji-btn" data-emoji="🎯">🎯</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Left: Exit Button -->
+            <div class="bottom-left-section">
+                <div class="exit-container">
+                    <button id="exit-game" class="exit-btn">EXIT</button>
+                </div>
+            </div>
+
+            <!-- Bottom Center: Chat -->
+            <div class="bottom-section">
+                <div class="chat-container">
+                    <div class="chat-content" id="chat-content">
+                        <div class="chat-messages" id="chat-messages">
+                            <div class="chat-message system">Welcome to RNG Arena!</div>
+                            <div class="chat-message system">Start the tournament to begin...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Right: Chat Mode Button -->
+            <div class="bottom-right-section">
+                <div class="chat-mode-container">
+                    <button id="chat-mode" class="chat-mode-btn">VIEW<br>LIVE CHAT<br>MODE</button>
+                    <button id="bracket-mode" class="chat-mode-btn">VIEW<br>TOURNAMENT<br>BRACKET</button>
+                </div>
+            </div>
+    </div>
+        <!-- Tournament Bracket Overlay -->
+        <div id="bracket-overlay" class="bracket-overlay hidden">
+            <div class="bracket-overlay-background"></div>
+            <div class="bracket-overlay-content">
+                <div class="bracket-container">
+                    <div class="bracket-header">
+                        <span>TOURNAMENT BRACKET</span>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <div class="bracket-zoom-controls">
+                                <button id="overlay-zoom-out" class="zoom-btn">-</button>
+                                <span id="overlay-zoom-level">100%</span>
+                                <button id="overlay-zoom-in" class="zoom-btn">+</button>
+                            </div>
+                            <button id="close-bracket" class="close-bracket-btn">✕</button>
+                        </div>
+                    </div>
+                    <div class="bracket-content">
+                        <div class="bracket-viewport">
+                            <div id="overlay-bracket-display" class="bracket-display"></div>
+                        </div>
+                        <div class="bracket-slider-container">
+                            <input type="range" id="overlay-bracket-slider" class="bracket-slider" min="0" max="100" value="0">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bracket Development Frame -->
+    <div class="bracket-dev-frame">
+        <div class="bracket-container-dev">
+            <div class="bracket-container">
+                <div class="bracket-header" id="bracket-toggle">
+                    <span>TOURNAMENT BRACKET</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="bracket-zoom-controls">
+                            <button id="zoom-out" class="zoom-btn">-</button>
+                            <span id="zoom-level">100%</span>
+                            <button id="zoom-in" class="zoom-btn">+</button>
+                        </div>
+                        <span class="accordion-toggle">▼</span>
+                    </div>
+                </div>
+                <div class="bracket-content" id="bracket-content">
+                    <div class="bracket-viewport">
+                        <div id="bracket-display" class="bracket-display"></div>
+                    </div>
+                    <div class="bracket-slider-container">
+                        <input type="range" id="bracket-slider" class="bracket-slider" min="0" max="100" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+  <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
+  <script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/polyfills-legacy-l5Wayqe5.js"></script>
+  <script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/index-legacy-Bf6qj7OC.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
+</body>
+</html>

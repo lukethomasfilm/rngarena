@@ -1,0 +1,97 @@
+/* Animations & Keyframes */
+
+@keyframes goldShimmer {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+@keyframes fadeInMessage {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes victory-glow {
+    0%, 100% { filter: drop-shadow(0 0 20px white) drop-shadow(0 0 40px white); }
+    50% { filter: drop-shadow(0 0 30px white) drop-shadow(0 0 60px white); }
+}
+
+@keyframes attack {
+    0% { transform: translateX(0); }
+    50% { transform: translateX(20px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes damageFloat {
+    0% { opacity: 1; transform: translate(-50%, -50%); }
+    100% { opacity: 0; transform: translate(-50%, -150%); }
+}
+
+@keyframes moveToCenter {
+    0% {
+        left: var(--start-position);
+        transform: translateX(var(--start-transform));
+    }
+    100% {
+        left: 50%;
+        transform: translateX(-50%);
+    }
+}
+
+@keyframes crownDescend {
+    0% {
+        top: -200px;
+        opacity: 0;
+        transform: translateX(-50%) rotate(-180deg);
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        top: -80px;
+        opacity: 1;
+        transform: translateX(-50%) rotate(0deg);
+    }
+}
+
+@keyframes oddsUpdate {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+/* Victory Animation Styles */
+.victory-center {
+    position: absolute !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: 20% !important;
+    transform: translateX(-50%) !important;
+    z-index: 100 !important;
+    animation: moveToCenter 2s ease-in-out forwards !important;
+}
+
+.victory-crown {
+    position: absolute;
+    top: -80px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    color: var(--gold);
+    text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    opacity: 0;
+    animation: crownDescend 3s ease-out forwards;
+    animation-delay: 1s;
+}
+
+/* Progress Gem Animations */
+.progress-gem {
+    transition: fill var(--transition-slow), stroke var(--transition-slow);
+}
+
+.progress-gem.tier-gray { fill: #808080; stroke: #666; }
+.progress-gem.tier-white { fill: #ffffff; stroke: #ddd; }
+.progress-gem.tier-green { fill: #00ff00; stroke: #00cc00; }
+.progress-gem.tier-blue { fill: #0080ff; stroke: #0066cc; }
+.progress-gem.tier-purple { fill: #8000ff; stroke: #6600cc; }
+.progress-gem.tier-orange { fill: #ff8000; stroke: #cc6600; }
+.progress-gem.tier-gold { fill: #ffd700; stroke: #ffcc00; }

@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, orientation=landscape">
+    <title>RNG Arena</title>
+    <meta name="description" content="Epic medieval tournament battles with turn-based combat and RNG mechanics">
+    <meta name="theme-color" content="#1a1a2e">
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+</head>
+<body>
+    <div class="container">
+        <div class="battlefield-section">
+            <div class="arena-viewport">
+                <div class="top-section">
+                    <div class="fighter-card left-fighter-card">
+                        <div class="fighter-card-bg"></div>
+                        <div class="fighter-titles" id="left-fighter-titles">The Brave • Destined for Glory</div>
+                        <div class="fighter-name-display" id="left-fighter-name">Daring Hero</div>
+                        <div class="fighter-title">HERO</div>
+                    </div>
+
+                    <div class="center-info">
+                        <div class="progress-container">
+                            <div class="progress-label">Tournament Progress</div>
+                            <div class="progress-bar">
+                                <div class="progress-segments" id="progress-segments"></div>
+                            </div>
+                        </div>
+                        <div class="vs-display">VS</div>
+                        <div class="odds-overhang">
+                            <div class="odds-display">
+                                <div class="odds-label">Odds</div>
+                                <div class="crown-odds">1 in 16,384</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="fighter-card right-fighter-card">
+                        <div class="fighter-card-bg"></div>
+                        <div class="fighter-titles" id="right-fighter-titles">The Unknown • Mystery Fighter</div>
+                        <div class="fighter-name-display" id="right-fighter-name">Opponent</div>
+                        <div class="fighter-title">CHALLENGER</div>
+                    </div>
+                </div>
+                <button id="start-battle" class="battle-btn">START TOURNAMENT</button>
+                <div class="fighter-left">
+                    <div class="fighter-sprite left-sprite">
+                        <img src="/images/Characters/Daring_hero.png" alt="Daring Hero" class="character-image">
+                    </div>
+                </div>
+
+                <div class="fighter-right">
+                    <div class="fighter-sprite right-sprite">
+                        <img src="/images/Characters/knight_01.png" alt="Enemy Knight" class="character-image" style="transform: scaleX(-1);">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="middle-section">
+            <div class="chat-container">
+                <div class="chat-header">LIVE CHAT</div>
+                <div class="chat-content" id="chat-content">
+                    <div class="chat-messages" id="chat-messages">
+                        <div class="chat-message system">Welcome to RNG Arena!</div>
+                        <div class="chat-message system">Start the tournament to begin...</div>
+                    </div>
+                </div>
+                <div class="chat-input-container">
+                    <input type="text" id="chat-input" class="chat-input" placeholder="Type a message..." maxlength="100">
+                    <button id="send-chat" class="send-chat-btn">Send</button>
+                </div>
+            </div>
+
+            <div class="loot-container">
+                <div class="loot-header">LOOT TIER</div>
+                <div class="loot-content">
+                    <div id="loot-box" class="treasure-chest">
+                        <!-- Unknown loot box (first round) -->
+                        <svg width="140" height="120" viewBox="0 0 120 100" class="loot-svg" id="unknown-loot">
+                            <!-- Mystery box base -->
+                            <rect x="25" y="50" width="70" height="35" fill="#404040" stroke="#303030" stroke-width="2" rx="3"/>
+                            <!-- Mystery box lid -->
+                            <path d="M25 50 Q25 35 60 35 Q95 35 95 50 L95 45 Q95 30 60 30 Q25 30 25 45 Z" fill="#606060" stroke="#404040" stroke-width="2"/>
+                            <!-- Question mark -->
+                            <text x="60" y="72" font-family="Arial, sans-serif" font-size="18" font-weight="bold" fill="#FFD700" text-anchor="middle">?</text>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bottom-section">
+            <div class="bracket-container">
+                <div class="bracket-header" id="bracket-toggle">
+                    <span>TOURNAMENT BRACKET</span>
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div class="bracket-zoom-controls">
+                            <button id="zoom-out" class="zoom-btn">-</button>
+                            <span id="zoom-level">100%</span>
+                            <button id="zoom-in" class="zoom-btn">+</button>
+                        </div>
+                        <span class="accordion-toggle">▼</span>
+                    </div>
+                </div>
+                <div class="bracket-content" id="bracket-content">
+                    <div class="bracket-viewport">
+                        <div id="bracket-display" class="bracket-display"></div>
+                    </div>
+                    <div class="bracket-slider-container">
+                        <input type="range" id="bracket-slider" class="bracket-slider" min="0" max="100" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script type="module" src="./main.js"></script>
+</body>
+</html>

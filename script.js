@@ -84,7 +84,7 @@ class RNGArena {
         this.zoomLevel = document.getElementById('zoom-level');
 
         // Zoom and scroll state
-        this.currentZoom = 1.0;
+        this.currentZoom = 1.0; // Default to 100% zoom (90% of previous scale)
         this.currentScrollX = 0;
         this.currentScrollY = 0;
 
@@ -314,6 +314,10 @@ class RNGArena {
             // Initialize bracket overlay functionality
             this.initBracketOverlay();
             console.log('Bracket overlay initialized');
+
+            // Initialize bracket controls (zoom and scroll)
+            this.initBracketControls();
+            console.log('Bracket controls initialized');
 
             console.log('Init completed with essential functionality');
         } catch (error) {
@@ -1663,20 +1667,25 @@ class RNGArena {
             htmlParts.push(`</div></div>`);
         }
 
-        // Add winner display if tournament is complete
-        if (this.tournament.isComplete()) {
-            const winner = this.tournament.getWinner();
-            htmlParts.push(`<div class="bracket-round">`);
-            htmlParts.push(`<div class="bracket-round-title">CHAMPION</div>`);
+        // Always show the winner/champion round
+        const winner = this.tournament.bracket[this.tournament.bracket.length - 1][0];
+        htmlParts.push(`<div class="bracket-round" style="display: flex; flex-direction: column; justify-content: center;">`);
+        htmlParts.push(`<div class="bracket-round-title">CHAMPION</div>`);
+        if (winner) {
             htmlParts.push(`<div class="bracket-winner-display">🏆 ${winner} 🏆</div>`);
-            htmlParts.push(`</div>`);
+        } else {
+            htmlParts.push(`<div class="bracket-winner-display awaiting">Awaiting Winner...</div>`);
         }
+        htmlParts.push(`</div>`);
 
         htmlParts.push('</div>');
         this.bracketDisplay.innerHTML = htmlParts.join('');
 
-        // Update slider range after bracket content changes
-        this.updateSliderRange();
+        // Update transform after content renders to establish scrollable dimensions
+        setTimeout(() => {
+            this.updateBracketTransform();
+            this.updateSliderRange();
+        }, 50);
 
         // Auto-scroll to current match (delayed to ensure DOM is updated)
         setTimeout(() => {
@@ -1769,15 +1778,16 @@ class RNGArena {
     }
 
     getRoundName(roundNumber) {
-        // For 128 participants = 7 rounds total
+        // For 128 participants bracket = 8 rounds (last is winner slot)
         const roundNames = {
-            1: 'Round of 128',
-            2: 'Round of 64',
-            3: 'Round of 32',
-            4: 'Round of 16',
-            5: 'Quarterfinals',
-            6: 'Semifinals',
-            7: 'Final'
+            1: 'Round 1',
+            2: 'Round 2',
+            3: 'Round 3',
+            4: 'Round 4',
+            5: 'Round 5',
+            6: 'Quarterfinals',
+            7: 'Semifinals',
+            8: 'Final'
         };
         return roundNames[roundNumber] || `Round ${roundNumber}`;
     }
@@ -1936,13 +1946,57 @@ class RNGArena {
 
     // Bracket viewport control methods
     initBracketControls() {
+        console.log('initBracketControls called');
+        console.log('bracketViewport:', this.bracketViewport);
+        console.log('bracketSlider:', this.bracketSlider);
+        console.log('zoomInBtn:', this.zoomInBtn);
+        console.log('zoomOutBtn:', this.zoomOutBtn);
+
         if (!this.bracketViewport || !this.bracketSlider || !this.zoomInBtn || !this.zoomOutBtn) {
+            console.warn('Missing bracket control elements, skipping initialization');
             return;
         }
 
+        // Apply initial zoom level (100% = 48% actual)
+        this.updateBracketTransform();
+        this.updateZoomDisplay();
+
+        // Debug scroll dimensions
+        setTimeout(() => {
+            console.log('=== BRACKET VIEWPORT DEBUG ===');
+            console.log('Viewport clientWidth:', this.bracketViewport.clientWidth);
+            console.log('Viewport clientHeight:', this.bracketViewport.clientHeight);
+            console.log('Viewport scrollWidth:', this.bracketViewport.scrollWidth);
+            console.log('Viewport scrollHeight:', this.bracketViewport.scrollHeight);
+            console.log('Display offsetWidth:', this.bracketDisplay?.offsetWidth);
+            console.log('Display offsetHeight:', this.bracketDisplay?.offsetHeight);
+            console.log('Display scrollWidth:', this.bracketDisplay?.scrollWidth);
+            console.log('Display scrollHeight:', this.bracketDisplay?.scrollHeight);
+            console.log('Display computed width:', getComputedStyle(this.bracketDisplay).width);
+            console.log('Display computed height:', getComputedStyle(this.bracketDisplay).height);
+            console.log('Display zoom:', getComputedStyle(this.bracketDisplay).zoom);
+            console.log('Viewport overflow-x:', getComputedStyle(this.bracketViewport).overflowX);
+            console.log('Viewport overflow-y:', getComputedStyle(this.bracketViewport).overflowY);
+            console.log('Can scroll horizontally:', this.bracketViewport.scrollWidth > this.bracketViewport.clientWidth);
+            console.log('Can scroll vertically:', this.bracketViewport.scrollHeight > this.bracketViewport.clientHeight);
+
+            // Check first bracket round dimensions
+            const firstRound = this.bracketDisplay?.querySelector('.bracket-round');
+            if (firstRound) {
+                console.log('First round offsetHeight:', firstRound.offsetHeight);
+                console.log('First round scrollHeight:', firstRound.scrollHeight);
+            }
+        }, 500);
+
         // Zoom controls
-        this.zoomInBtn.addEventListener('click', () => this.zoomIn());
-        this.zoomOutBtn.addEventListener('click', () => this.zoomOut());
+        this.zoomInBtn.addEventListener('click', () => {
+            console.log('Zoom in clicked');
+            this.zoomIn();
+        });
+        this.zoomOutBtn.addEventListener('click', () => {
+            console.log('Zoom out clicked');
+            this.zoomOut();
+        });
 
         // Slider for vertical scrolling
         this.bracketSlider.addEventListener('input', (e) => {
@@ -1972,7 +2026,7 @@ class RNGArena {
 
     zoomIn() {
         if (this.currentZoom < 3.0) {
-            this.currentZoom = Math.min(3.0, this.currentZoom + 0.2);
+            this.currentZoom = Math.min(3.0, this.currentZoom + 0.1);
             this.updateBracketTransform();
             this.updateZoomDisplay();
             this.updateSliderRange();
@@ -1980,8 +2034,8 @@ class RNGArena {
     }
 
     zoomOut() {
-        if (this.currentZoom > 0.5) {
-            this.currentZoom = Math.max(0.5, this.currentZoom - 0.2);
+        if (this.currentZoom > 0.1) {
+            this.currentZoom = Math.max(0.1, this.currentZoom - 0.1);
             this.updateBracketTransform();
             this.updateZoomDisplay();
             this.updateSliderRange();
@@ -1989,9 +2043,21 @@ class RNGArena {
     }
 
     updateBracketTransform() {
-        if (!this.bracketDisplay) return;
+        if (!this.bracketDisplay || !this.bracketViewport) return;
 
-        this.bracketDisplay.style.transform = `scale(${this.currentZoom})`;
+        // Scale: 1.0 = 90% of 48% = 43.2% of original
+        const actualScale = this.currentZoom * 0.432;
+
+        // Clear any previous constraints
+        this.bracketDisplay.style.width = '';
+        this.bracketDisplay.style.height = '';
+
+        // Apply zoom CSS property - this properly handles scrolling
+        this.bracketDisplay.style.zoom = actualScale;
+        this.bracketDisplay.style.transform = '';
+        this.bracketDisplay.style.transformOrigin = '';
+
+        console.log('Applied zoom:', actualScale);
     }
 
     updateZoomDisplay() {
@@ -2003,16 +2069,23 @@ class RNGArena {
     updateVerticalScroll(sliderValue) {
         if (!this.bracketViewport) return;
 
-        const maxScrollTop = this.bracketViewport.scrollHeight - this.bracketViewport.clientHeight;
-        this.bracketViewport.scrollTop = maxScrollTop * (sliderValue / 100);
+        // Use horizontal scroll for bracket rounds
+        const maxScrollLeft = this.bracketViewport.scrollWidth - this.bracketViewport.clientWidth;
+        console.log('Slider moved to:', sliderValue);
+        console.log('scrollWidth:', this.bracketViewport.scrollWidth);
+        console.log('clientWidth:', this.bracketViewport.clientWidth);
+        console.log('maxScrollLeft:', maxScrollLeft);
+        console.log('Setting scrollLeft to:', maxScrollLeft * (sliderValue / 100));
+        this.bracketViewport.scrollLeft = maxScrollLeft * (sliderValue / 100);
     }
 
     syncSliderWithScroll() {
         if (!this.bracketSlider || !this.bracketViewport) return;
 
-        const maxScrollTop = this.bracketViewport.scrollHeight - this.bracketViewport.clientHeight;
-        if (maxScrollTop > 0) {
-            const scrollPercent = (this.bracketViewport.scrollTop / maxScrollTop) * 100;
+        // Sync with horizontal scroll
+        const maxScrollLeft = this.bracketViewport.scrollWidth - this.bracketViewport.clientWidth;
+        if (maxScrollLeft > 0) {
+            const scrollPercent = (this.bracketViewport.scrollLeft / maxScrollLeft) * 100;
             this.bracketSlider.value = scrollPercent;
         }
     }
@@ -2020,16 +2093,16 @@ class RNGArena {
     updateSliderRange() {
         if (!this.bracketSlider || !this.bracketViewport) return;
 
-        // Update slider range based on content height
+        // Update slider range based on content width (horizontal scroll)
         setTimeout(() => {
-            const maxScrollTop = this.bracketViewport.scrollHeight - this.bracketViewport.clientHeight;
+            const maxScrollLeft = this.bracketViewport.scrollWidth - this.bracketViewport.clientWidth;
 
-            if (maxScrollTop <= 0) {
+            if (maxScrollLeft <= 0) {
                 // Content fits in viewport, disable slider
                 this.bracketSlider.style.opacity = '0.3';
                 this.bracketSlider.disabled = true;
             } else {
-                // Content is larger than viewport, enable slider
+                // Content is wider than viewport, enable slider
                 this.bracketSlider.style.opacity = '1';
                 this.bracketSlider.disabled = false;
             }
@@ -2149,6 +2222,17 @@ class RNGArena {
         const closeBracketBtn = document.getElementById('close-bracket');
         const overlayBackground = document.querySelector('.bracket-overlay-background');
 
+        // Overlay zoom state
+        this.overlayZoom = 1.0; // Start at 100% zoom (90% of previous scale)
+
+        // Get overlay control elements
+        this.overlayBracketDisplay = document.getElementById('overlay-bracket-display');
+        this.overlayViewport = document.querySelector('#bracket-overlay .bracket-viewport');
+        this.overlayZoomIn = document.getElementById('overlay-zoom-in');
+        this.overlayZoomOut = document.getElementById('overlay-zoom-out');
+        this.overlayZoomLevel = document.getElementById('overlay-zoom-level');
+        this.overlaySlider = document.getElementById('overlay-bracket-slider');
+
         if (bracketModeBtn) {
             bracketModeBtn.addEventListener('click', () => {
                 this.showBracketOverlay();
@@ -2166,19 +2250,115 @@ class RNGArena {
                 this.hideBracketOverlay();
             });
         }
+
+        // Setup overlay zoom controls
+        if (this.overlayZoomIn) {
+            this.overlayZoomIn.addEventListener('click', () => {
+                if (this.overlayZoom < 3.0) {
+                    this.overlayZoom = Math.min(3.0, this.overlayZoom + 0.1);
+                    this.updateOverlayTransform();
+                }
+            });
+        }
+
+        if (this.overlayZoomOut) {
+            this.overlayZoomOut.addEventListener('click', () => {
+                if (this.overlayZoom > 0.1) {
+                    this.overlayZoom = Math.max(0.1, this.overlayZoom - 0.1);
+                    this.updateOverlayTransform();
+                }
+            });
+        }
+
+        // Setup overlay slider
+        if (this.overlaySlider && this.overlayViewport) {
+            this.overlaySlider.addEventListener('input', (e) => {
+                const maxScrollLeft = this.overlayViewport.scrollWidth - this.overlayViewport.clientWidth;
+                this.overlayViewport.scrollLeft = maxScrollLeft * (e.target.value / 100);
+            });
+
+            // Sync slider with viewport scroll
+            this.overlayViewport.addEventListener('scroll', () => {
+                const maxScrollLeft = this.overlayViewport.scrollWidth - this.overlayViewport.clientWidth;
+                if (maxScrollLeft > 0) {
+                    const scrollPercent = (this.overlayViewport.scrollLeft / maxScrollLeft) * 100;
+                    this.overlaySlider.value = scrollPercent;
+                }
+            });
+        }
+
+        // Mouse wheel zoom in overlay viewport
+        if (this.overlayViewport) {
+            this.overlayViewport.addEventListener('wheel', (e) => {
+                if (e.ctrlKey) {
+                    e.preventDefault();
+                    if (e.deltaY < 0) {
+                        if (this.overlayZoom < 3.0) {
+                            this.overlayZoom = Math.min(3.0, this.overlayZoom + 0.1);
+                            this.updateOverlayTransform();
+                        }
+                    } else {
+                        if (this.overlayZoom > 0.1) {
+                            this.overlayZoom = Math.max(0.1, this.overlayZoom - 0.1);
+                            this.updateOverlayTransform();
+                        }
+                    }
+                }
+            });
+        }
+    }
+
+    updateOverlayTransform() {
+        if (this.overlayBracketDisplay && this.overlayViewport) {
+            // Scale: 1.0 = 90% of 48% = 43.2% of original
+            const actualScale = this.overlayZoom * 0.432;
+
+            // Clear any previous constraints
+            this.overlayBracketDisplay.style.width = '';
+            this.overlayBracketDisplay.style.height = '';
+
+            // Apply zoom CSS property
+            this.overlayBracketDisplay.style.zoom = actualScale;
+            this.overlayBracketDisplay.style.transform = '';
+            this.overlayBracketDisplay.style.transformOrigin = '';
+        }
+
+        if (this.overlayZoomLevel) {
+            this.overlayZoomLevel.textContent = `${Math.round(this.overlayZoom * 100)}%`;
+        }
     }
 
     showBracketOverlay() {
         const bracketOverlay = document.getElementById('bracket-overlay');
-        const overlayBracketDisplay = document.getElementById('overlay-bracket-display');
 
         if (bracketOverlay) {
             bracketOverlay.classList.remove('hidden');
 
             // Copy the bracket content to the overlay
-            if (overlayBracketDisplay && this.bracketDisplay) {
-                overlayBracketDisplay.innerHTML = this.bracketDisplay.innerHTML;
+            if (this.overlayBracketDisplay && this.bracketDisplay) {
+                this.overlayBracketDisplay.innerHTML = this.bracketDisplay.innerHTML;
             }
+
+            // Apply initial zoom
+            this.updateOverlayTransform();
+
+            // Debug scroll dimensions after overlay opens
+            setTimeout(() => {
+                console.log('=== OVERLAY VIEWPORT DEBUG ===');
+                console.log('Overlay viewport:', this.overlayViewport);
+                console.log('Viewport clientWidth:', this.overlayViewport?.clientWidth);
+                console.log('Viewport clientHeight:', this.overlayViewport?.clientHeight);
+                console.log('Viewport scrollWidth:', this.overlayViewport?.scrollWidth);
+                console.log('Viewport scrollHeight:', this.overlayViewport?.scrollHeight);
+                console.log('Display offsetWidth:', this.overlayBracketDisplay?.offsetWidth);
+                console.log('Display offsetHeight:', this.overlayBracketDisplay?.offsetHeight);
+                if (this.overlayViewport) {
+                    console.log('Viewport overflow-x:', getComputedStyle(this.overlayViewport).overflowX);
+                    console.log('Viewport overflow-y:', getComputedStyle(this.overlayViewport).overflowY);
+                    console.log('Can scroll horizontally:', this.overlayViewport.scrollWidth > this.overlayViewport.clientWidth);
+                    console.log('Can scroll vertically:', this.overlayViewport.scrollHeight > this.overlayViewport.clientHeight);
+                }
+            }, 300);
         }
     }
 

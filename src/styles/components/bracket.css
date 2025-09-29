@@ -51,6 +51,9 @@
     flex: 1;
     transition: all var(--transition-normal);
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
 }
 
 .bracket-content.collapsed {
@@ -64,43 +67,43 @@
 .bracket-viewport {
     flex: 1;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
     background: rgba(0, 0, 0, 0.2);
-    min-height: 125px;
+    min-height: 0;
 }
 
 .bracket-display {
-    padding: 20px;
-    min-width: 100%;
+    padding: 8px;
     display: flex;
-    gap: 30px;
+    gap: 4px;
     align-items: flex-start;
 }
 
 .bracket-round {
     display: flex;
     flex-direction: column;
-    min-width: 180px;
-    gap: 10px;
+    min-width: 110px;
+    gap: 4px;
+    flex-shrink: 0;
 }
 
 .bracket-round-title {
     font-weight: bold;
     text-align: center;
     color: var(--gold);
-    font-size: 0.9rem;
-    margin-bottom: 15px;
+    font-size: 0.75rem;
+    margin-bottom: 8px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .bracket-match {
     background: rgba(0, 0, 0, 0.5);
     border: 2px solid var(--gray-dark);
-    border-radius: 8px;
-    padding: 8px;
-    margin-bottom: 15px;
+    border-radius: 6px;
+    padding: 6px;
+    margin-bottom: 10px;
     position: relative;
     transition: all var(--transition-normal);
 }
@@ -121,12 +124,15 @@
 }
 
 .bracket-participant {
-    padding: 6px 8px;
-    margin: 2px 0;
-    border-radius: 4px;
-    font-size: 0.75rem;
+    padding: 4px 6px;
+    margin: 1px 0;
+    border-radius: 3px;
+    font-size: 0.65rem;
     transition: all var(--transition-fast);
     background: rgba(255, 255, 255, 0.05);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .bracket-participant.winner {
@@ -149,9 +155,9 @@
 
 .vs-separator {
     text-align: center;
-    font-size: 0.6rem;
+    font-size: 0.5rem;
     color: var(--gray-light);
-    margin: 2px 0;
+    margin: 1px 0;
     font-weight: bold;
 }
 
@@ -170,9 +176,9 @@
 
 .bracket-connector {
     position: absolute;
-    right: -15px;
+    right: -8px;
     top: 50%;
-    width: 15px;
+    width: 8px;
     height: 2px;
     background: var(--gray-dark);
     transform: translateY(-50%);
@@ -188,10 +194,27 @@
     font-weight: bold;
     color: var(--gold);
     padding: 20px;
-    background: rgba(255, 215, 0, 0.2);
+    background: rgba(255, 215, 0, 0.15);
     border: 2px solid var(--gold);
     border-radius: 10px;
     margin: 10px 0;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+    animation: champion-glow 2s ease-in-out infinite;
+}
+
+@keyframes champion-glow {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(255, 215, 0, 0.6), 0 0 40px rgba(255, 215, 0, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.8), 0 0 60px rgba(255, 215, 0, 0.6);
+    }
+}
+
+.bracket-winner-display.awaiting {
+    opacity: 0.3;
+    animation: none;
+    box-shadow: none;
 }
 
 .bracket-zoom-controls {

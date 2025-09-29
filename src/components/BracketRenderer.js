@@ -73,10 +73,15 @@ export class BracketRenderer {
         const roundInfo = this.tournament.getRoundInfo()
         const currentMatch = this.tournament.getCurrentMatch()
 
+        console.log('=== BRACKET RENDER START ===')
+        console.log('Bracket array length:', this.tournament.bracket.length)
+        console.log('Current round:', roundInfo.current, 'of', roundInfo.total)
+        console.log('Will render rounds 0 to', this.tournament.bracket.length - 2, '(excluding winner slot at index', this.tournament.bracket.length - 1, ')')
+
         const htmlParts = []
 
-        // Render each round (including the final round)
-        for (let roundIndex = 0; roundIndex < this.tournament.bracket.length; roundIndex++) {
+        // Render each round (excluding the winner slot)
+        for (let roundIndex = 0; roundIndex < this.tournament.bracket.length - 1; roundIndex++) {
             const round = this.tournament.bracket[roundIndex]
             const roundNumber = roundIndex + 1
             const roundName = this.getRoundName(roundNumber)
@@ -92,16 +97,15 @@ export class BracketRenderer {
 
                 // Check if this match has been completed
                 const nextRound = this.tournament.bracket[roundIndex + 1]
-                const isFinalRound = roundIndex === this.tournament.bracket.length - 1
-                const isCompleted = isFinalRound ? this.tournament.isComplete() : (nextRound && nextRound[matchIndex])
+                const isCompleted = nextRound && nextRound[matchIndex]
                 const isCurrent = currentMatch &&
                     roundIndex + 1 === roundInfo.current &&
                     ((participant1 === currentMatch.participant1 && participant2 === currentMatch.participant2) ||
                      (participant1 === currentMatch.participant2 && participant2 === currentMatch.participant1))
 
                 const isOnFollowingPath = this.isMatchOnFollowingPath(participant1, participant2, roundIndex + 1)
-                const winner = isFinalRound ? this.tournament.getWinner() : (nextRound ? nextRound[matchIndex] : null)
-                const showConnector = !isFinalRound
+                const winner = nextRound ? nextRound[matchIndex] : null
+                const showConnector = true
 
                 htmlParts.push(this.renderMatch(participant1, participant2, isCompleted, isCurrent, winner, isOnFollowingPath, showConnector))
             }
@@ -109,14 +113,18 @@ export class BracketRenderer {
             htmlParts.push(`</div>`)
         }
 
-        // Add champion display if tournament is complete (after the final round)
-        if (this.tournament.isComplete()) {
-            const winner = this.tournament.getWinner()
-            htmlParts.push(`<div class="bracket-round">`)
-            htmlParts.push(`<div class="bracket-round-title">CHAMPION</div>`)
+        // Always show the winner/champion round
+        const winner = this.tournament.bracket[this.tournament.bracket.length - 1][0]
+        console.log('Rendering champion round. Winner:', winner)
+        htmlParts.push(`<div class="bracket-round" style="display: flex; flex-direction: column; justify-content: center;">`)
+        htmlParts.push(`<div class="bracket-round-title">CHAMPION</div>`)
+        if (winner) {
             htmlParts.push(`<div class="bracket-winner-display">🏆 ${winner} 🏆</div>`)
-            htmlParts.push(`</div>`)
+        } else {
+            htmlParts.push(`<div class="bracket-winner-display awaiting">Awaiting Winner...</div>`)
         }
+        htmlParts.push(`</div>`)
+        console.log('Total rounds rendered:', this.tournament.bracket.length, 'HTML parts:', htmlParts.length)
 
         this.bracketDisplay.innerHTML = htmlParts.join('')
 
@@ -218,7 +226,7 @@ export class BracketRenderer {
      * Get round name for display
      */
     getRoundName(roundNumber) {
-        const roundNames = ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Quarterfinals', 'Semifinals', 'Final']
+        const roundNames = ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Quarterfinals', 'Semifinals', 'Final']
         return roundNames[roundNumber - 1] || `Round ${roundNumber}`
     }
 
@@ -329,7 +337,7 @@ export class BracketRenderer {
      */
     handleSlider(event) {
         const value = parseInt(event.target.value)
-        const viewport = document.querySelector('.bracket-viewport')
+        const viewport = this.bracketDisplay?.parentElement
 
         if (viewport && this.bracketDisplay) {
             const maxScroll = this.bracketDisplay.scrollWidth - viewport.clientWidth

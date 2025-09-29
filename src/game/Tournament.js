@@ -424,14 +424,15 @@ export class TournamentBracket {
             }
         }
 
-        if (roundComplete && this.currentRound < this.bracket.length - 1) {
+        if (roundComplete && this.currentRound < this.bracket.length) {
             this.currentRound++;
         }
     }
 
     getRoundInfo() {
-        const totalRounds = this.bracket.length - 1; // -1 because last round is the winner
-        const roundNames = ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Quarterfinals', 'Semifinals', 'Final'];
+        const totalRounds = this.bracket.length - 1; // Total playable rounds (bracket.length - 1 = winner slot)
+        // Round names: R1(128→64), R2(64→32), R3(32→16), R4(16→8), R5(8→4), Quarters(4→2), Semis(2→1), Final is the winner
+        const roundNames = ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Quarterfinals', 'Semifinals', 'Final'];
 
         return {
             current: this.currentRound,
@@ -442,7 +443,8 @@ export class TournamentBracket {
     }
 
     isComplete() {
-        return this.currentRound >= this.bracket.length - 1 && this.bracket[this.bracket.length - 1][0];
+        // Tournament is complete when we've fought the final round and have a winner
+        return this.currentRound > this.bracket.length - 1;
     }
 
     getWinner() {

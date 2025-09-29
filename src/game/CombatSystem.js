@@ -70,10 +70,11 @@ export class CombatSystem {
      */
     getMaxHPForRound(currentRound) {
         // HP scaling: 5HP base, 8HP quarters, 12HP semis, 20HP final
-        if (currentRound >= 7) return 20 // Final
-        if (currentRound >= 6) return 12 // Semifinals
-        if (currentRound >= 5) return 8  // Quarterfinals
-        return 5 // All earlier rounds
+        // With 128 bracket: R1-R5=5HP, R6(quarters 8→4)=8HP, R7(semis 4→2)=12HP, R8(final 2→1)=20HP
+        if (currentRound >= 8) return 20 // Final (2 fighters battle)
+        if (currentRound >= 7) return 12 // Semifinals (4 fighters)
+        if (currentRound >= 6) return 8  // Quarterfinals (8 fighters)
+        return 5 // All earlier rounds (128→8 fighters)
     }
 
     /**
@@ -110,6 +111,9 @@ export class CombatSystem {
      */
     async runCombatLoop() {
         return new Promise((resolve) => {
+            // 50/50 chance to determine who attacks first
+            let currentAttacker = Math.random() < 0.5 ? 'left' : 'right'
+
             const executeTurn = () => {
                 // Check for battle end
                 if (this.leftFighterHP <= 0 || this.rightFighterHP <= 0) {
@@ -127,8 +131,12 @@ export class CombatSystem {
                     return
                 }
 
-                // Execute combat turn
-                this.executeCombatTurn()
+                // Execute combat turn with current attacker
+                const defenderSide = currentAttacker === 'left' ? 'right' : 'left'
+                this.executeAttack(currentAttacker, defenderSide)
+
+                // Swap attacker and defender for next turn
+                currentAttacker = defenderSide
 
                 // Continue combat after delay
                 setTimeout(executeTurn, 1500)
@@ -140,43 +148,73 @@ export class CombatSystem {
     }
 
     /**
-     * Execute a single combat turn
+     * Roll for defense
+     * Returns: 'parry', 'block', or 'hit'
      */
-    executeCombatTurn() {
-        const leftAttacks = Math.random() < 0.5
+    rollDefense() {
+        const roll = Math.random()
 
-        if (leftAttacks) {
-            this.executeAttack('left', 'right')
-        } else {
-            this.executeAttack('right', 'left')
-        }
+        // 20% parry
+        if (roll < 0.20) return 'parry'
+
+        // 35% block (20% + 35% = 55%)
+        if (roll < 0.55) return 'block'
+
+        // 45% hit
+        return 'hit'
     }
 
     /**
      * Execute an attack
      */
     executeAttack(attackerSide, defenderSide) {
-        const damage = this.calculateDamage()
-        const isCrit = damage === 7
+        const attackDamage = this.calculateDamage()
+        const isCrit = attackDamage === 7
+        const defenseResult = this.rollDefense()
 
-        // Apply damage
-        if (defenderSide === 'left') {
-            this.leftFighterHP = Math.max(0, this.leftFighterHP - damage)
-            this.updateHealthDisplay(this.arena.elements.leftFighter, this.leftFighterHP)
-        } else {
-            this.rightFighterHP = Math.max(0, this.rightFighterHP - damage)
-            this.updateHealthDisplay(this.arena.elements.rightFighter, this.rightFighterHP)
-        }
-
-        // Show attack animation
-        this.showAttackAnimation(attackerSide, defenderSide, damage, isCrit)
-
-        // Add battle message
         const attacker = attackerSide === 'left' ? this.arena.elements.leftFighterName.textContent : this.arena.elements.rightFighterName.textContent
         const defender = defenderSide === 'left' ? this.arena.elements.leftFighterName.textContent : this.arena.elements.rightFighterName.textContent
 
-        const critText = isCrit ? ' CRITICAL HIT!' : ''
-        this.arena.chat.addBattleMessage(`${attacker} deals ${damage} damage to ${defender}${critText}`)
+        let finalDamage = 0
+        let message = ''
+
+        // Determine outcome based on defense roll
+        if (defenseResult === 'parry') {
+            // Parry - no damage
+            finalDamage = 0
+            message = `${defender} parried ${attacker}'s attack!`
+        } else if (defenseResult === 'block') {
+            // Block - no damage on normal attacks, half damage on crits
+            if (isCrit) {
+                finalDamage = Math.ceil(attackDamage / 2)
+                message = `${defender} blocked the critical hit! ${finalDamage} damage taken.`
+            } else {
+                finalDamage = 0
+                message = `${defender} blocked the attack!`
+            }
+        } else {
+            // Hit - full damage
+            finalDamage = attackDamage
+            const critText = isCrit ? ' CRITICAL HIT!' : ''
+            message = `${attacker} deals ${finalDamage} damage to ${defender}${critText}`
+        }
+
+        // Apply damage
+        if (finalDamage > 0) {
+            if (defenderSide === 'left') {
+                this.leftFighterHP = Math.max(0, this.leftFighterHP - finalDamage)
+                this.updateHealthDisplay(this.arena.elements.leftFighter, this.leftFighterHP)
+            } else {
+                this.rightFighterHP = Math.max(0, this.rightFighterHP - finalDamage)
+                this.updateHealthDisplay(this.arena.elements.rightFighter, this.rightFighterHP)
+            }
+        }
+
+        // Show attack animation
+        this.showAttackAnimation(attackerSide, defenderSide, finalDamage, isCrit, defenseResult)
+
+        // Add battle message to chat
+        this.arena.chat.addBattleMessage(message)
     }
 
     /**
@@ -218,7 +256,7 @@ export class CombatSystem {
     /**
      * Show attack animation
      */
-    showAttackAnimation(attackerSide, defenderSide, damage, isCrit) {
+    showAttackAnimation(attackerSide, defenderSide, damage, isCrit, defenseResult) {
         const attacker = attackerSide === 'left' ? this.arena.elements.leftFighter : this.arena.elements.rightFighter
         const defender = defenderSide === 'left' ? this.arena.elements.leftFighter : this.arena.elements.rightFighter
 
@@ -231,17 +269,19 @@ export class CombatSystem {
             }, 500)
         }
 
-        // Defender animation (damage taken)
+        // Defender animation (damage taken) - only if hit and crit
         const defenderSprite = defender.querySelector('.fighter-sprite img')
-        if (defenderSprite && isCrit) {
+        if (defenderSprite && isCrit && defenseResult === 'hit') {
             defenderSprite.style.filter = 'drop-shadow(0 0 20px red) drop-shadow(0 0 40px red)'
             setTimeout(() => {
                 defenderSprite.style.filter = 'drop-shadow(2px 2px 8px rgba(0, 0, 0, 0.6))'
             }, 1000)
         }
 
-        // Show damage number
-        this.showDamageNumber(defender, damage, isCrit)
+        // Show damage number (only if damage was dealt)
+        if (damage > 0) {
+            this.showDamageNumber(defender, damage, isCrit)
+        }
     }
 
     /**

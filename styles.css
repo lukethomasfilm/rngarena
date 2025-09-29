@@ -29,7 +29,7 @@ body {
     overflow: visible;
 }
 
-/* Bracket Development Frame */
+/* Bracket Development Frame - Match iPhone dimensions */
 .bracket-dev-frame {
     width: 844px;
     height: 390px;
@@ -74,7 +74,7 @@ body {
 }
 
 .bracket-dev-frame::before {
-    content: "📱 Tournament Bracket View - Development Frame";
+    content: "📱 Tournament Bracket View - iPhone Landscape 844×390";
     position: absolute;
     top: -35px;
     left: 50%;
@@ -109,7 +109,7 @@ body {
     margin: 0;
     background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
     border-radius: 18px;
-    overflow: auto;
+    overflow: hidden;
     padding: 12px;
 }
 
@@ -1601,7 +1601,7 @@ body {
 .bracket-viewport {
     flex: 1;
     position: relative;
-    overflow-x: hidden;
+    overflow-x: auto;
     overflow-y: auto;
     background: rgba(0, 0, 0, 0.2);
 }
@@ -1630,15 +1630,8 @@ body {
     padding: 10px;
     font-size: 0.65rem;
     line-height: 1.2;
-    transform: scale(0.5) translateZ(0);
     -webkit-overflow-scrolling: touch;
-    transition: transform 0.3s ease;
-    transform-origin: top left;
-    width: max-content;
-    height: max-content;
-    overflow: visible;
-    min-width: 100%;
-    min-height: 100%;
+    display: inline-block;
 }
 
 .bracket-slider-container {

@@ -177,12 +177,24 @@
         </div>
     </div>
 
-    <script type="module">
-        import { RNGArena } from './script.js';
-
-        // Initialize the game when the page loads
+    <script src="./tournament.js"></script>
+    <script src="./script.js"></script>
+    <script>
+        // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', () => {
-            new RNGArena();
+            console.log('DOM loaded, starting game');
+
+            setTimeout(() => {
+                console.log('Creating RNGArena after delay');
+
+                try {
+                    const arena = new RNGArena();
+                    console.log('Arena created successfully');
+                } catch (error) {
+                    console.error('Arena creation failed:', error);
+                    alert('Arena failed: ' + error.message);
+                }
+            }, 500);
         });
     </script>
 

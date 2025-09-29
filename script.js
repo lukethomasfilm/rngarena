@@ -1,8 +1,8 @@
-import { TournamentBracket } from './tournament.js';
-
-export class RNGArena {
+class RNGArena {
     constructor() {
+        console.log('RNGArena constructor called!');
         this.tournament = new TournamentBracket();
+        console.log('Tournament created:', this.tournament);
         this.currentOpponent = 'Random Fighter';
         this.tournamentStarted = false;
         this.autoContinue = false;
@@ -43,6 +43,27 @@ export class RNGArena {
         this.leftFighterCard = document.querySelector('.left-fighter-card');
         this.rightFighterCard = document.querySelector('.right-fighter-card');
         this.bracketDisplay = document.getElementById('bracket-display');
+
+        // Force bracket display assignment if not found
+        if (!this.bracketDisplay) {
+            console.warn('bracketDisplay not found, trying again in 100ms');
+            setTimeout(() => {
+                this.bracketDisplay = document.getElementById('bracket-display');
+                console.log('Delayed bracket assignment:', !!this.bracketDisplay);
+                if (this.bracketDisplay) {
+                    this.renderBracket();
+                }
+            }, 100);
+        }
+
+        console.log('DOM Elements Found:');
+        console.log('leftFighter:', !!this.leftFighter);
+        console.log('rightFighter:', !!this.rightFighter);
+        console.log('battleStatus:', !!this.battleStatus);
+        console.log('startButton:', !!this.startButton);
+        console.log('chatMessages:', !!this.chatMessages);
+        console.log('bracketDisplay:', !!this.bracketDisplay);
+        console.log('arenaViewport:', !!this.arenaViewport);
         this.chatContainer = document.querySelector('.chat-container');
         this.chatInput = document.getElementById('chat-input');
         this.sendChatBtn = document.getElementById('send-chat');
@@ -213,47 +234,80 @@ export class RNGArena {
     }
 
     async init() {
-        // Null checks for DOM elements
-        if (!this.leftFighter || !this.rightFighter || !this.battleStatus || !this.startButton) {
-            console.error('Required DOM elements not found');
-            return;
+        console.log('Init called - restoring functionality');
+
+        try {
+            // Add start button functionality
+            if (this.startButton) {
+                this.startButton.addEventListener('click', () => {
+                    console.log('Starting tournament...');
+                    this.startTournament();
+                });
+                console.log('Start button click listener added');
+            } else {
+                console.warn('No start button found');
+            }
+
+            // Add back functionality one by one to find what breaks bracket
+            this.renderBracket();
+            console.log('Bracket rendered');
+
+            // Test 1: Add chat functionality
+            if (this.sendChatBtn) {
+                this.sendChatBtn.addEventListener('click', () => this.sendUserMessage());
+            }
+
+            if (this.chatInput) {
+                this.chatInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendUserMessage();
+                    }
+                });
+            }
+
+            console.log('Chat functionality added - bracket should still be there');
+
+            // Restore essential systems step by step
+            this.startChatScroll();
+            this.updateOdds();
+            this.initProgressBar();
+            this.updateDisplay();
+            this.hideRightFighter();
+            console.log('Essential systems restored');
+
+            // Create a simple tournament status display in the working bracket area
+            const bracketDisplay = document.getElementById('bracket-display');
+            if (bracketDisplay) {
+                // Add tournament status at the top of the bracket
+                const tournamentStatus = document.createElement('div');
+                tournamentStatus.id = 'tournament-status';
+                tournamentStatus.style.cssText = 'background: #1a1a2e; color: white; padding: 15px; margin-bottom: 10px; border: 2px solid #4a69bd; border-radius: 5px; text-align: center;';
+                tournamentStatus.innerHTML = `
+                    <h3 style="margin: 0; color: #ffd700;">🏰 RNG ARENA TOURNAMENT 🏰</h3>
+                    <div id="current-match" style="margin: 5px 0; font-size: 14px;">Click START TOURNAMENT to begin!</div>
+                    <div id="fighter-display" style="margin: 10px 0;">
+                        <span id="left-fighter" style="color: #4CAF50; font-weight: bold;">READY</span>
+                        <span style="color: white;"> VS </span>
+                        <span id="right-fighter" style="color: #f44336; font-weight: bold;">WAITING</span>
+                    </div>
+                `;
+
+                // Insert at the beginning of bracket display
+                bracketDisplay.insertBefore(tournamentStatus, bracketDisplay.firstChild);
+
+                // Store references for tournament updates
+                this.currentMatchEl = document.getElementById('current-match');
+                this.leftFighterEl = document.getElementById('left-fighter');
+                this.rightFighterEl = document.getElementById('right-fighter');
+
+                console.log('Tournament status display created in bracket area');
+            }
+
+            console.log('Init completed with essential functionality');
+        } catch (error) {
+            console.error('Error in init:', error);
+            throw error;
         }
-
-        // Show start button immediately for testing
-        this.startButton.style.display = 'block';
-        this.startButton.addEventListener('click', () => this.startTournament());
-
-        // Preload all graphics in background
-        this.preloadAllGraphics();
-
-        if (this.sendChatBtn) {
-            this.sendChatBtn.addEventListener('click', () => this.sendUserMessage());
-        }
-
-        if (this.chatInput) {
-            this.chatInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    this.sendUserMessage();
-                }
-            });
-        }
-        this.startChatScroll();
-        this.updateOdds();
-        this.initProgressBar();
-        // Initially hide the right fighter (opponent)
-        this.hideRightFighter();
-
-        // Fighters will be shown when tournament starts
-
-        // Set initial background
-        this.arenaViewport.className = `arena-viewport ${this.backgrounds[this.currentBgIndex]}`;
-
-        this.updateDisplay();
-        this.renderBracket();
-        this.initBracketControls();
-        this.initBracketOverlay();
-        this.initBracketAutoScroll();
-        this.initBracketAccordion();
     }
 
     async preloadAllGraphics() {
@@ -302,22 +356,34 @@ export class RNGArena {
 
     hideRightFighter() {
         // Hide the right fighter initially
-        this.rightFighter.style.opacity = '0';
-        // this.rightFighter.style.transform = 'translateX(100px)';
-        this.rightFighterCard.style.opacity = '0';
-        this.rightFighterCard.style.transform = 'translateX(50px)';
+        if (this.rightFighter) {
+            this.rightFighter.style.opacity = '0';
+            // this.rightFighter.style.transform = 'translateX(100px)';
+        }
+        if (this.rightFighterCard) {
+            this.rightFighterCard.style.opacity = '0';
+            this.rightFighterCard.style.transform = 'translateX(50px)';
+        }
     }
 
     showOpponentEntrance() {
         // Animate the opponent entering the battlefield
-        this.rightFighter.style.transition = 'opacity 1s ease, transform 1s ease';
-        this.rightFighterCard.style.transition = 'opacity 1s ease, transform 1s ease';
+        if (this.rightFighter) {
+            this.rightFighter.style.transition = 'opacity 1s ease, transform 1s ease';
+        }
+        if (this.rightFighterCard) {
+            this.rightFighterCard.style.transition = 'opacity 1s ease, transform 1s ease';
+        }
 
         setTimeout(() => {
-            this.rightFighter.style.opacity = '1';
-            // this.rightFighter.style.transform = 'translateX(0)';
-            this.rightFighterCard.style.opacity = '1';
-            this.rightFighterCard.style.transform = 'translateX(0)';
+            if (this.rightFighter) {
+                this.rightFighter.style.opacity = '1';
+                // this.rightFighter.style.transform = 'translateX(0)';
+            }
+            if (this.rightFighterCard) {
+                this.rightFighterCard.style.opacity = '1';
+                this.rightFighterCard.style.transform = 'translateX(0)';
+            }
         }, 500); // Small delay for dramatic effect
     }
 
@@ -361,27 +427,68 @@ export class RNGArena {
     }
 
     startTournament() {
-        if (!this.tournamentStarted) {
-            this.tournamentStarted = true;
-            this.autoContinue = true;
-            this.startButton.style.display = 'none';
-            this.addChatMessage("TOURNAMENT BEGINS! DARING HERO VS THE WORLD!");
+        console.log('=== startTournament() CALLED ===');
 
-            // Show opponent entrance animation
-            this.showOpponentEntrance();
+        try {
+            if (!this.tournamentStarted) {
+                console.log('Starting tournament for the first time');
+                this.tournamentStarted = true;
+                this.autoContinue = true;
 
-            // Delay starting the battle to let entrance animation complete
-            setTimeout(() => {
+                if (this.startButton) {
+                    this.startButton.style.display = 'none';
+                    console.log('Start button hidden');
+                } else {
+                    console.warn('Start button not found when trying to hide it');
+                }
+
+                console.log('Adding chat messages...');
+                this.addChatMessage("🎺 TOURNAMENT BEGINS! 🎺");
+                this.addChatMessage("DARING HERO VS THE WORLD!");
+                this.addChatMessage("BATTLE COMMENCING NOW!");
+                console.log('Chat messages added');
+
+                // Update the tournament display
+                if (this.currentMatchEl) {
+                    this.currentMatchEl.textContent = '🎺 TOURNAMENT BEGINS! FIRST BATTLE STARTING! 🎺';
+                    console.log('Current match element updated');
+                }
+
+                if (this.leftFighterEl) {
+                    this.leftFighterEl.textContent = 'DARING HERO';
+                    this.leftFighterEl.style.color = '#ffd700';
+                    console.log('Left fighter element updated');
+                }
+
+                if (this.rightFighterEl) {
+                    this.rightFighterEl.textContent = 'ENEMY FIGHTER';
+                    this.rightFighterEl.style.color = '#ff4444';
+                    console.log('Right fighter element updated');
+                }
+
+                console.log('Tournament display updated, calling startBattle in 1500ms');
+
+                // Delay starting the battle to let entrance animation complete
+                setTimeout(() => {
+                    console.log('Timeout reached, calling startBattle');
+                    this.startBattle();
+                }, 1500);
+            } else {
+                console.log('Tournament already started, calling startBattle directly');
                 this.startBattle();
-            }, 1500);
-        } else {
-            this.startBattle();
+            }
+        } catch (error) {
+            console.error('Error in startTournament:', error);
+            alert('Tournament start failed: ' + error.message);
         }
     }
 
     startBattle() {
+        console.log('startBattle called!');
         const match = this.tournament.getCurrentMatch();
+        console.log('Current match:', match);
         if (!match) {
+            console.log('No match found, calling handleNoMatch');
             this.handleNoMatch();
             return;
         }
@@ -421,10 +528,14 @@ export class RNGArena {
     }
 
     resetFighters() {
-        this.leftFighter.className = 'fighter-left';
-        this.rightFighter.className = 'fighter-right';
-        const leftSprite = this.leftFighter.querySelector('.fighter-sprite');
-        const rightSprite = this.rightFighter.querySelector('.fighter-sprite');
+        if (this.leftFighter) {
+            this.leftFighter.className = 'fighter-left';
+        }
+        if (this.rightFighter) {
+            this.rightFighter.className = 'fighter-right';
+        }
+        const leftSprite = this.leftFighter ? this.leftFighter.querySelector('.fighter-sprite') : null;
+        const rightSprite = this.rightFighter ? this.rightFighter.querySelector('.fighter-sprite') : null;
         if (leftSprite) leftSprite.style.animation = '';
         if (rightSprite) rightSprite.style.animation = '';
 
@@ -433,8 +544,16 @@ export class RNGArena {
     }
 
     fighterEntrance() {
-        this.leftFighter.classList.add('fighter-entrance-left');
-        this.rightFighter.classList.add('fighter-entrance-right');
+        // Show both fighters
+        if (this.leftFighter) {
+            this.leftFighter.style.opacity = '1';
+            this.leftFighter.classList.add('fighter-entrance-left');
+        }
+
+        if (this.rightFighter) {
+            this.rightFighter.style.opacity = '1';
+            this.rightFighter.classList.add('fighter-entrance-right');
+        }
 
         // Add entrance chat messages
         this.addChatMessage("FIGHTERS ENTER THE ARENA!");
@@ -560,25 +679,38 @@ export class RNGArena {
     }
 
     addChatMessage(message) {
-        if (!this.chatMessages || !message) return;
+        console.log('=== addChatMessage DEBUG ===');
+        console.log('Message:', message);
+        console.log('this.chatMessages:', this.chatMessages);
 
-        // Use DocumentFragment for better performance
-        const fragment = document.createDocumentFragment();
+        // Try to find chat element again
+        const chatEl = document.getElementById('chat-messages');
+        console.log('Direct search for chat-messages:', chatEl);
+
+        if (!chatEl) {
+            console.error('CHAT ELEMENT NOT FOUND!');
+            // Try to create a visible message somewhere
+            const testMsg = document.createElement('div');
+            testMsg.textContent = 'CHAT: ' + message;
+            testMsg.style.cssText = 'position: fixed; top: 100px; right: 10px; background: red; color: white; padding: 5px; z-index: 9999; font-size: 12px; max-width: 200px;';
+            document.body.appendChild(testMsg);
+            return;
+        }
+
+        console.log('Adding message to chat:', message);
+
         const messageElement = document.createElement('div');
         messageElement.className = 'chat-message';
 
-        const username = this.generateRandomUsername();
+        const username = this.generateRandomUsername() || 'Player';
         messageElement.innerHTML = `
             <span class="chat-username">${username}: ${message}</span>
         `;
 
-        fragment.appendChild(messageElement);
-        this.chatMessages.appendChild(fragment);
+        this.chatMessages.appendChild(messageElement);
 
-        // Use requestAnimationFrame for scroll timing
-        requestAnimationFrame(() => {
-            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
-        });
+        // Scroll to bottom
+        this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
 
         // Limit chat messages to prevent memory issues
         const maxMessages = 100;
@@ -697,8 +829,11 @@ export class RNGArena {
     }
 
     updateDisplay() {
+        console.log('updateDisplay called');
         const match = this.tournament.getCurrentMatch();
+        console.log('Current match:', match);
         const displayOrder = this.tournament.getDisplayOrder();
+        console.log('Display order:', displayOrder);
         this.updateFighterCards(match, displayOrder);
     }
 
@@ -740,9 +875,13 @@ export class RNGArena {
     }
 
     updateFighterCards(match, displayOrder) {
-        // Reset all card classes
-        this.leftFighterCard.className = 'fighter-card left-fighter-card';
-        this.rightFighterCard.className = 'fighter-card right-fighter-card';
+        // Reset all card classes (with null checks)
+        if (this.leftFighterCard) {
+            this.leftFighterCard.className = 'fighter-card left-fighter-card';
+        }
+        if (this.rightFighterCard) {
+            this.rightFighterCard.className = 'fighter-card right-fighter-card';
+        }
 
         if (!match) return;
 
@@ -752,18 +891,22 @@ export class RNGArena {
 
         // Apply styling based on displayed fighters
         // Winners always get gold nameplate
-        if (this.tournament.isWinner(leftFighter)) {
-            this.leftFighterCard.classList.add('following');
-        } else if (leftFighter === 'Daring Hero') {
-            // Daring Hero gets blue when not a winner yet
-            this.leftFighterCard.classList.add('daring-hero');
+        if (this.leftFighterCard) {
+            if (this.tournament.isWinner(leftFighter)) {
+                this.leftFighterCard.classList.add('following');
+            } else if (leftFighter === 'Daring Hero') {
+                // Daring Hero gets blue when not a winner yet
+                this.leftFighterCard.classList.add('daring-hero');
+            }
         }
 
-        if (this.tournament.isWinner(rightFighter)) {
-            this.rightFighterCard.classList.add('following');
-        } else if (rightFighter === 'Daring Hero') {
-            // Daring Hero gets blue when not a winner yet
-            this.rightFighterCard.classList.add('daring-hero');
+        if (this.rightFighterCard) {
+            if (this.tournament.isWinner(rightFighter)) {
+                this.rightFighterCard.classList.add('following');
+            } else if (rightFighter === 'Daring Hero') {
+                // Daring Hero gets blue when not a winner yet
+                this.rightFighterCard.classList.add('daring-hero');
+            }
         }
     }
 
@@ -1347,10 +1490,39 @@ export class RNGArena {
     }
 
     renderBracket() {
-        if (!this.bracketDisplay) return;
+        console.log('renderBracket called, bracketDisplay element:', this.bracketDisplay);
+        if (!this.bracketDisplay) {
+            console.warn('No bracket display element found');
+            return;
+        }
+
+        // Keep the real bracket content and add extra debugging
+        console.log('renderBracket called - checking tournament status');
+
+        const currentMatch = this.tournament.getCurrentMatch();
+        console.log('Current match from tournament:', currentMatch);
 
         const roundInfo = this.tournament.getRoundInfo();
-        const currentMatch = this.tournament.getCurrentMatch();
+        console.log('Round info:', roundInfo);
+
+        if (currentMatch) {
+            console.log('Match participants:', currentMatch.participant1, 'vs', currentMatch.participant2);
+
+            // Update our tournament status display if it exists
+            if (this.currentMatchEl) {
+                this.currentMatchEl.textContent = `Current Match: ${currentMatch.participant1} VS ${currentMatch.participant2}`;
+            }
+
+            if (this.leftFighterEl) {
+                this.leftFighterEl.textContent = currentMatch.participant1;
+            }
+
+            if (this.rightFighterEl) {
+                this.rightFighterEl.textContent = currentMatch.participant2;
+            }
+        }
+
+        // Continue with the original bracket rendering
 
         // Use array join for better performance than string concatenation
         const htmlParts = ['<div class="bracket-tree">'];
@@ -1914,7 +2086,4 @@ export class RNGArena {
 }
 
 
-// Initialize the game when the page loads
-document.addEventListener('DOMContentLoaded', () => {
-    new RNGArena();
-});/* Optimized for performance - removed cache busters */
+/* Optimized for performance - removed cache busters */

@@ -1,5 +1,6 @@
-export class TournamentBracket {
+class TournamentBracket {
     constructor() {
+        console.log('TournamentBracket constructor called!');
         // 128 is the next power of 2 that accommodates 100 participants
         this.totalParticipants = 100;
         this.bracketSize = 128;

@@ -76,8 +76,15 @@ export class RNGArena {
      */
     initEventListeners() {
         // Battle button
+        console.log('Start button element:', this.elements.startButton)
         if (this.elements.startButton) {
-            this.elements.startButton.addEventListener('click', () => this.startBattle())
+            console.log('Adding click listener to start button')
+            this.elements.startButton.addEventListener('click', () => {
+                console.log('Start button clicked!')
+                this.startBattle()
+            })
+        } else {
+            console.log('Start button not found!')
         }
 
         // Chat system
@@ -145,28 +152,38 @@ export class RNGArena {
      * Start a battle
      */
     async startBattle() {
+        console.log('startBattle() called!')
+
+        console.log('Tournament hasMatchToFight:', this.tournament.hasMatchToFight())
         if (!this.tournament.hasMatchToFight()) {
             console.log('No more matches to fight')
             return
         }
 
+        console.log('Tournament started status:', this.tournamentStarted)
         if (!this.tournamentStarted) {
             this.tournamentStarted = true
+            console.log('Adding system messages to chat')
             this.chat.addSystemMessage('🎺 LIVE TOURNAMENT BEGINS! 🎺')
             this.chat.addSystemMessage('⚡ Non-stop action until we crown a champion! ⚡')
 
             // Start crowd simulation
+            console.log('Starting crowd simulation')
             this.startCrowdSimulation()
         }
 
+        console.log('Hiding start button')
         this.elements.startButton.style.display = 'none'
 
         try {
             // Update display for current match
+            console.log('Updating display')
             this.updateDisplay()
 
             // Run combat
+            console.log('Starting combat execution')
             const result = await this.combat.executeBattle()
+            console.log('Combat result:', result)
 
             // Process battle result
             this.processBattleResult(result)

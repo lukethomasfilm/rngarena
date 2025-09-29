@@ -7,7 +7,7 @@ export class BracketRenderer {
     constructor() {
         this.bracketDisplay = null
         this.tournament = null
-        this.isCollapsed = true  // Start collapsed by default
+        this.isCollapsed = false  // Start expanded for testing
         this.zoomLevel = 100
     }
 
@@ -15,6 +15,10 @@ export class BracketRenderer {
      * Initialize the bracket renderer
      */
     init(bracketDisplay, tournament) {
+        console.log('BracketRenderer init called')
+        console.log('bracketDisplay element:', bracketDisplay)
+        console.log('tournament object:', tournament)
+
         this.bracketDisplay = bracketDisplay
         this.tournament = tournament
 
@@ -23,8 +27,11 @@ export class BracketRenderer {
             return
         }
 
+        console.log('Setting up bracket event listeners')
         this.setupEventListeners()
+        console.log('Initializing collapsed state')
         this.initializeCollapsedState()  // Set initial collapsed state
+        console.log('Rendering bracket')
         this.render()
     }
 
@@ -68,8 +75,8 @@ export class BracketRenderer {
 
         const htmlParts = []
 
-        // Render each round
-        for (let roundIndex = 0; roundIndex < this.tournament.bracket.length - 1; roundIndex++) {
+        // Render each round (including the final round)
+        for (let roundIndex = 0; roundIndex < this.tournament.bracket.length; roundIndex++) {
             const round = this.tournament.bracket[roundIndex]
             const roundNumber = roundIndex + 1
             const roundName = this.getRoundName(roundNumber)
@@ -85,15 +92,16 @@ export class BracketRenderer {
 
                 // Check if this match has been completed
                 const nextRound = this.tournament.bracket[roundIndex + 1]
-                const isCompleted = nextRound && nextRound[matchIndex]
+                const isFinalRound = roundIndex === this.tournament.bracket.length - 1
+                const isCompleted = isFinalRound ? this.tournament.isComplete() : (nextRound && nextRound[matchIndex])
                 const isCurrent = currentMatch &&
                     roundIndex + 1 === roundInfo.current &&
                     ((participant1 === currentMatch.participant1 && participant2 === currentMatch.participant2) ||
                      (participant1 === currentMatch.participant2 && participant2 === currentMatch.participant1))
 
                 const isOnFollowingPath = this.isMatchOnFollowingPath(participant1, participant2, roundIndex + 1)
-                const winner = nextRound ? nextRound[matchIndex] : null
-                const showConnector = roundIndex < this.tournament.bracket.length - 2
+                const winner = isFinalRound ? this.tournament.getWinner() : (nextRound ? nextRound[matchIndex] : null)
+                const showConnector = !isFinalRound
 
                 htmlParts.push(this.renderMatch(participant1, participant2, isCompleted, isCurrent, winner, isOnFollowingPath, showConnector))
             }
@@ -101,7 +109,7 @@ export class BracketRenderer {
             htmlParts.push(`</div>`)
         }
 
-        // Add winner display if tournament is complete
+        // Add champion display if tournament is complete (after the final round)
         if (this.tournament.isComplete()) {
             const winner = this.tournament.getWinner()
             htmlParts.push(`<div class="bracket-round">`)
@@ -257,16 +265,31 @@ export class BracketRenderer {
         const bracketToggle = document.getElementById('bracket-toggle')
         const bracketContainer = document.querySelector('.bracket-container')
 
-        if (bracketContent) {
-            bracketContent.classList.add('collapsed')
-        }
+        if (this.isCollapsed) {
+            if (bracketContent) {
+                bracketContent.classList.add('collapsed')
+            }
 
-        if (bracketToggle) {
-            bracketToggle.classList.add('collapsed')
-        }
+            if (bracketToggle) {
+                bracketToggle.classList.add('collapsed')
+            }
 
-        if (bracketContainer) {
-            bracketContainer.classList.add('collapsed')
+            if (bracketContainer) {
+                bracketContainer.classList.add('collapsed')
+            }
+        } else {
+            console.log('Bracket set to expanded by default')
+            if (bracketContent) {
+                bracketContent.classList.remove('collapsed')
+            }
+
+            if (bracketToggle) {
+                bracketToggle.classList.remove('collapsed')
+            }
+
+            if (bracketContainer) {
+                bracketContainer.classList.remove('collapsed')
+            }
         }
     }
 

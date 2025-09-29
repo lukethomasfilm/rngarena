@@ -154,7 +154,44 @@ class TournamentBracket {
     }
 
     getCharacterTitles(name) {
-        return this.heroTitles[name] || ['The Unknown', 'Mystery Fighter'];
+        // Truncate name to 18 characters max
+        const truncatedName = name.length > 18 ? name.substring(0, 15) + '...' : name;
+
+        let titles = this.heroTitles[name] || ['The Unknown', 'Mystery Fighter'];
+
+        // Truncate titles to total of 30 characters max
+        let totalTitleLength = titles.join(' • ').length;
+        if (totalTitleLength > 30) {
+            // Try to truncate individual titles proportionally
+            let remainingLength = 30;
+            let truncatedTitles = [];
+
+            for (let i = 0; i < titles.length && remainingLength > 0; i++) {
+                const separator = i > 0 ? ' • ' : '';
+                const separatorLength = separator.length;
+                const availableLength = remainingLength - separatorLength;
+
+                if (availableLength > 3) { // Need at least 3 chars for "X.."
+                    let truncatedTitle = titles[i];
+                    if (truncatedTitle.length > availableLength) {
+                        truncatedTitle = truncatedTitle.substring(0, availableLength - 2) + '..';
+                    }
+                    truncatedTitles.push(truncatedTitle);
+                    remainingLength -= (truncatedTitle.length + separatorLength);
+                } else {
+                    break; // Not enough space for more titles
+                }
+            }
+
+            titles = truncatedTitles;
+        }
+
+        return titles;
+    }
+
+    getCharacterName(name) {
+        // Truncate name to 18 characters max
+        return name.length > 18 ? name.substring(0, 15) + '...' : name;
     }
 
     isWinner(name) {
@@ -421,13 +458,13 @@ class TournamentBracket {
             }
         }
 
-        if (roundComplete && this.currentRound < this.bracket.length - 1) {
+        if (roundComplete && this.currentRound < this.bracket.length) {
             this.currentRound++;
         }
     }
 
     getRoundInfo() {
-        const totalRounds = this.bracket.length - 1; // -1 because last round is the winner
+        const totalRounds = this.bracket.length; // Include the final round
         const roundNames = ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Quarterfinals', 'Semifinals', 'Final'];
 
         return {
@@ -439,7 +476,7 @@ class TournamentBracket {
     }
 
     isComplete() {
-        return this.currentRound >= this.bracket.length - 1 && this.bracket[this.bracket.length - 1][0];
+        return this.currentRound > this.bracket.length - 1 && this.bracket[this.bracket.length - 1][0];
     }
 
     getWinner() {

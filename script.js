@@ -19,7 +19,15 @@ class RNGArena {
         this.rightFighterHP = 5;
         this.combatLog = [];
         this.currentTurn = 'left'; // 'left' or 'right'
+        this.leftDefenseStance = null; // 'block' or 'parry' or null
+        this.rightDefenseStance = null; // 'block' or 'parry' or null
         this.combatRound = 1;
+
+        // HP bar elements
+        this.leftHPFill = document.getElementById('left-hp-fill');
+        this.rightHPFill = document.getElementById('right-hp-fill');
+        this.leftHPText = document.getElementById('left-hp-text');
+        this.rightHPText = document.getElementById('right-hp-text');
 
         // Seeded random number generator for fairness
         this.seed = this.generateSeed();
@@ -302,6 +310,10 @@ class RNGArena {
 
                 console.log('Tournament status display created in bracket area');
             }
+
+            // Initialize bracket overlay functionality
+            this.initBracketOverlay();
+            console.log('Bracket overlay initialized');
 
             console.log('Init completed with essential functionality');
         } catch (error) {
@@ -603,6 +615,12 @@ class RNGArena {
 
         // Update battle status
         this.battleStatus.textContent = `${battleResult.winner.toUpperCase()} WINS!`;
+        this.battleStatus.style.opacity = '1';
+
+        // Fade out after 1 second
+        setTimeout(() => {
+            this.battleStatus.style.opacity = '0';
+        }, 1000);
 
         // Add announcer victory messages
         this.addAnnouncerMessage(`🏆 ${battleResult.winner.toUpperCase()} WINS! 🏆`);
@@ -844,7 +862,7 @@ class RNGArena {
 
         // Show fighters based on their assigned visual sides
         if (this.leftFighterNameEl) {
-            this.leftFighterNameEl.textContent = displayOrder.leftFighter;
+            this.leftFighterNameEl.textContent = this.tournament.getCharacterName(displayOrder.leftFighter);
             // Update character sprite
             this.updateFighterSprite(this.leftFighter, displayOrder.leftFighter);
         }
@@ -857,7 +875,7 @@ class RNGArena {
 
         // Right side shows the other fighter
         if (this.rightFighterNameEl) {
-            this.rightFighterNameEl.textContent = displayOrder.rightFighter;
+            this.rightFighterNameEl.textContent = this.tournament.getCharacterName(displayOrder.rightFighter);
             // Update character sprite
             this.updateFighterSprite(this.rightFighter, displayOrder.rightFighter);
 
@@ -952,7 +970,7 @@ class RNGArena {
     updateByeDisplay(byeInfo) {
         // Show the character on their assigned side, hide the other
         if (byeInfo.position === 'left') {
-            this.leftFighterNameEl.textContent = byeInfo.character;
+            this.leftFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
             const leftTitles = this.tournament.getCharacterTitles(byeInfo.character);
             this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
             // Update character sprite
@@ -964,7 +982,7 @@ class RNGArena {
             const rightSprite = this.rightFighter.querySelector('.fighter-sprite');
             if (rightSprite) rightSprite.innerHTML = '';
         } else {
-            this.rightFighterNameEl.textContent = byeInfo.character;
+            this.rightFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
             const rightTitles = this.tournament.getCharacterTitles(byeInfo.character);
             this.rightFighterTitlesEl.textContent = rightTitles.join(' • ');
             // Update character sprite
@@ -1005,7 +1023,7 @@ class RNGArena {
             winnerFighter = this.leftFighter;
             winnerSide = 'left';
             // Update the display to show the winner
-            this.leftFighterNameEl.textContent = winner;
+            this.leftFighterNameEl.textContent = this.tournament.getCharacterName(winner);
             const winnerTitles = this.tournament.getCharacterTitles(winner);
             this.leftFighterTitlesEl.textContent = winnerTitles.join(' • ');
         }
@@ -1054,7 +1072,7 @@ class RNGArena {
 
             const winnerTitles = this.tournament.getCharacterTitles(winner);
             nameplate.innerHTML = `
-                <div class="victory-name">${winner}</div>
+                <div class="victory-name">${this.tournament.getCharacterName(winner)}</div>
                 <div class="victory-title">${winnerTitles.join(' • ')}</div>
             `;
 
@@ -1102,6 +1120,31 @@ class RNGArena {
         return 5; // All earlier rounds
     }
 
+    updateHPBars() {
+        const maxHP = this.getMaxHPForRound();
+
+        // Update left HP bar (hero)
+        if (this.leftHPFill && this.leftHPText) {
+            const leftPercentage = (this.leftFighterHP / maxHP) * 100;
+            this.leftHPFill.style.width = `${Math.max(0, leftPercentage)}%`;
+            this.leftHPText.textContent = `${Math.max(0, this.leftFighterHP)}/${maxHP}`;
+        }
+
+        // Update right HP bar (opponent)
+        if (this.rightHPFill && this.rightHPText) {
+            const rightPercentage = (this.rightFighterHP / maxHP) * 100;
+            this.rightHPFill.style.width = `${Math.max(0, rightPercentage)}%`;
+            this.rightHPText.textContent = `${Math.max(0, this.rightFighterHP)}/${maxHP}`;
+        }
+    }
+
+    initializeHPBars() {
+        const maxHP = this.getMaxHPForRound();
+        this.leftFighterHP = maxHP;
+        this.rightFighterHP = maxHP;
+        this.updateHPBars();
+    }
+
     // Combat System Methods
     initHealthDisplays() {
         // Remove existing health displays from new nameplate structure
@@ -1121,6 +1164,8 @@ class RNGArena {
         this.rightFighterHP = maxHP;
         this.combatLog = [];
         this.currentTurn = 'left';
+        this.leftDefenseStance = null;
+        this.rightDefenseStance = null;
         this.combatRound = 1;
 
         // Reset seed for this fight
@@ -1170,8 +1215,14 @@ class RNGArena {
 
     startCombat() {
         this.initHealthDisplays();
+        this.initializeHPBars();
         this.battleStatus.textContent = 'COMBAT BEGINS!';
         this.battleStatus.style.opacity = '1';
+
+        // Fade out after 1 second
+        setTimeout(() => {
+            this.battleStatus.style.opacity = '0';
+        }, 1000);
 
         // Start the first combat beat
         setTimeout(() => this.executeCombatBeat(), 1000);
@@ -1192,33 +1243,79 @@ class RNGArena {
         const isCrit = attackRoll === 5;
 
         this.addCombatAnimation(attackerFighter, 'fighter-attacking');
+        if (isCrit) {
+            this.addCombatAnimation(attackerFighter, 'fighter-crit-attack');
+        }
 
-        // Show attack action immediately with animation
-        this.showCombatText(attackerFighter, 'ATTACK!', 'attacker-name');
+        // Show attack text immediately when knight starts growing (but not for misses)
+        if (attackRoll !== 6) {
+            this.showAttackerDamage(attackerFighter, attackRoll, isCrit);
+        }
 
         setTimeout(() => {
             if (attackRoll === 6) {
                 // Miss!
                 this.handleMiss(attackerFighter, attackerName);
             } else {
-                // Damage attempted, defender rolls (2-8)
-                const defendRoll = this.rollDie(7) + 1; // 2-8
+                // Check if defender has a defensive stance prepared
+                const defenderStance = defender === 'left' ? this.leftDefenseStance : this.rightDefenseStance;
 
-                this.addCombatAnimation(defenderFighter, 'fighter-defending');
-
-                setTimeout(() => {
-                    if (defendRoll === 7) {
-                        // Block!
+                if (defenderStance === 'block') {
+                    // Block activated!
+                    this.addCombatAnimation(defenderFighter, 'fighter-defending');
+                    setTimeout(() => {
                         this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit);
-                    } else if (defendRoll === 8) {
-                        // Parry! Damage bounces back
+                        // Clear the stance after use
+                        if (defender === 'left') {
+                            this.leftDefenseStance = null;
+                        } else {
+                            this.rightDefenseStance = null;
+                        }
+                    }, 500);
+                } else if (defenderStance === 'parry') {
+                    // Parry activated!
+                    this.addCombatAnimation(defenderFighter, 'fighter-defending');
+                    setTimeout(() => {
                         this.handleParry(attackerFighter, defenderFighter, attackerName, defenderName, attackRoll, isCrit);
-                    } else {
-                        // Hit lands!
-                        const damage = isCrit ? 7 : attackRoll;
-                        this.handleHit(defenderFighter, defenderName, damage, defender, isCrit);
-                    }
-                }, 500);
+                        // Clear the stance after use
+                        if (defender === 'left') {
+                            this.leftDefenseStance = null;
+                        } else {
+                            this.rightDefenseStance = null;
+                        }
+                    }, 500);
+                } else {
+                    // Normal damage resolution - defender rolls (2-8)
+                    const defendRoll = this.rollDie(7) + 1; // 2-8
+
+                    this.addCombatAnimation(defenderFighter, 'fighter-defending');
+
+                    setTimeout(() => {
+                        if (defendRoll === 7) {
+                            // Random block - also sets defensive stance for next turn
+                            this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit);
+                            if (defender === 'left') {
+                                this.leftDefenseStance = 'block';
+                            } else {
+                                this.rightDefenseStance = 'block';
+                            }
+                            this.addCombatMessage(`🛡️ ${defenderName} prepares to block the next attack!`);
+                        } else if (defendRoll === 8) {
+                            // Random parry - also sets defensive stance for next turn
+                            this.handleParry(attackerFighter, defenderFighter, attackerName, defenderName, attackRoll, isCrit);
+                            if (defender === 'left') {
+                                this.leftDefenseStance = 'parry';
+                            } else {
+                                this.rightDefenseStance = 'parry';
+                            }
+                            this.addCombatMessage(`⚔️ ${defenderName} prepares to parry the next attack!`);
+                        } else {
+                            // Hit lands!
+                            const damage = isCrit ? 7 : attackRoll;
+                            this.handleHit(defenderFighter, defenderName, damage, defender, isCrit);
+                        }
+                    }, 500);
+                }
             }
         }, 800);
     }
@@ -1263,6 +1360,7 @@ class RNGArena {
                 this.rightFighterHP -= damage;
                 // Only update hero HP
             }
+            this.updateHPBars();
 
             const damageText = isCrit ? 'CRIT' : damage.toString();
             const logEntry = `${defenderName} parries and reflects ${damageText} damage back to ${attackerName}!`;
@@ -1281,9 +1379,6 @@ class RNGArena {
         const attackerFighter = defenderSide === 'left' ? this.rightFighter : this.leftFighter;
         const attackerName = defenderSide === 'left' ? this.rightFighterNameEl.textContent : this.leftFighterNameEl.textContent;
 
-        // Show big white damage text from attacker first
-        this.showAttackerDamage(attackerFighter, damage, isCrit);
-
         setTimeout(() => {
             this.addCombatAnimation(defenderFighter, 'fighter-hit');
             if (isCrit) {
@@ -1298,6 +1393,7 @@ class RNGArena {
                 this.rightFighterHP -= damage;
                 // Only update hero HP
             }
+            this.updateHPBars();
 
             const damageText = isCrit ? 'CRIT' : damage.toString();
             const logEntry = `${attackerName} deals ${damageText} damage to ${defenderName}!`;
@@ -1331,6 +1427,12 @@ class RNGArena {
         this.addCombatLog(logEntry);
 
         this.battleStatus.textContent = `${winner.toUpperCase()} WINS!`;
+        this.battleStatus.style.opacity = '1';
+
+        // Fade out after 1 second
+        setTimeout(() => {
+            this.battleStatus.style.opacity = '0';
+        }, 1000);
 
         // Continue with existing victory logic
         setTimeout(() => {
@@ -1346,7 +1448,7 @@ class RNGArena {
     showDamageNumber(fighter, damage, isCrit = false) {
         const damageEl = document.createElement('div');
         damageEl.className = isCrit ? 'crit-number' : 'damage-number';
-        damageEl.textContent = isCrit ? 'CRIT!' : `-${damage}`;
+        damageEl.textContent = isCrit ? 'CRITICAL' : `-${damage}`;
         fighter.appendChild(damageEl);
 
         const duration = isCrit ? 2500 : 2000;
@@ -1356,7 +1458,7 @@ class RNGArena {
     showAttackerDamage(fighter, damage, isCrit = false) {
         const damageEl = document.createElement('div');
         damageEl.className = isCrit ? 'attacker-crit-number' : 'attacker-damage-number';
-        damageEl.textContent = `${damage}`;
+        damageEl.textContent = isCrit ? 'CRITICAL' : `Attack +${damage}`;
         fighter.appendChild(damageEl);
 
         const duration = isCrit ? 1500 : 1200;
@@ -1413,6 +1515,8 @@ class RNGArena {
         this.rightFighterHP = maxHP;
         this.combatLog = [];
         this.currentTurn = 'left';
+        this.leftDefenseStance = null;
+        this.rightDefenseStance = null;
         this.combatRound = 1;
     }
 
@@ -1771,6 +1875,7 @@ class RNGArena {
         ];
 
         const currentRound = Math.max(0, roundInfo.current - 1);
+        // Start with lowest tier and progress to diamond (final reward)
         const lootType = lootTypes[Math.min(currentRound, lootTypes.length - 1)];
 
         // Update loot header

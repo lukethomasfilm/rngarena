@@ -20,7 +20,7 @@
                     <div class="loot-description">Gray → White → Green → Blue → Purple → Orange → Gold</div>
                     <div class="loot-content">
                         <div id="loot-box" class="treasure-chest">
-                            <img src="/images/Loot/chest_01.png" alt="Treasure Chest" class="chest-image">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image">
                         </div>
                     </div>
                 </div>
@@ -31,18 +31,32 @@
                 <div class="arena-viewport castle">
                     <!-- Top Tournament Progress -->
                     <div class="top-progress">
+                        <!-- Left Fighter HP Bar -->
+                        <div class="hp-bar left-hp">
+                            <div class="hp-bar-background"></div>
+                            <div class="hp-bar-fill" id="left-hp-fill"></div>
+                            <div class="hp-text" id="left-hp-text">5/5</div>
+                        </div>
+
                         <div class="progress-container">
                             <div class="progress-label">Tournament Progress</div>
                             <div class="progress-bar">
                                 <div class="progress-segments" id="progress-segments"></div>
                             </div>
                         </div>
+
+                        <!-- Right Fighter HP Bar -->
+                        <div class="hp-bar right-hp">
+                            <div class="hp-bar-background"></div>
+                            <div class="hp-bar-fill" id="right-hp-fill"></div>
+                            <div class="hp-text" id="right-hp-text">5/5</div>
+                        </div>
                     </div>
 
                     <!-- Top Odds Display -->
                     <div class="top-odds">
                         <div class="odds-display">
-                            <span class="odds-label">Odds:</span>
+                            <span class="odds-label">odds:</span>
                             <span class="crown-odds">1 in 16,384</span>
                         </div>
                     </div>

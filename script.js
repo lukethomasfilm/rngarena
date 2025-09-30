@@ -1964,10 +1964,16 @@ class RNGArena {
         // Debug scroll dimensions
         setTimeout(() => {
             console.log('=== BRACKET VIEWPORT DEBUG ===');
+            console.log('bracketViewport element:', this.bracketViewport);
+            console.log('bracketViewport classList:', this.bracketViewport.classList);
+            console.log('bracketDisplay element:', this.bracketDisplay);
+            console.log('bracketDisplay classList:', this.bracketDisplay.classList);
             console.log('Viewport clientWidth:', this.bracketViewport.clientWidth);
             console.log('Viewport clientHeight:', this.bracketViewport.clientHeight);
             console.log('Viewport scrollWidth:', this.bracketViewport.scrollWidth);
             console.log('Viewport scrollHeight:', this.bracketViewport.scrollHeight);
+            console.log('Viewport computed height:', getComputedStyle(this.bracketViewport).height);
+            console.log('Viewport computed maxHeight:', getComputedStyle(this.bracketViewport).maxHeight);
             console.log('Display offsetWidth:', this.bracketDisplay?.offsetWidth);
             console.log('Display offsetHeight:', this.bracketDisplay?.offsetHeight);
             console.log('Display scrollWidth:', this.bracketDisplay?.scrollWidth);
@@ -1975,6 +1981,7 @@ class RNGArena {
             console.log('Display computed width:', getComputedStyle(this.bracketDisplay).width);
             console.log('Display computed height:', getComputedStyle(this.bracketDisplay).height);
             console.log('Display zoom:', getComputedStyle(this.bracketDisplay).zoom);
+            console.log('Display display property:', getComputedStyle(this.bracketDisplay).display);
             console.log('Viewport overflow-x:', getComputedStyle(this.bracketViewport).overflowX);
             console.log('Viewport overflow-y:', getComputedStyle(this.bracketViewport).overflowY);
             console.log('Can scroll horizontally:', this.bracketViewport.scrollWidth > this.bracketViewport.clientWidth);
@@ -1985,7 +1992,18 @@ class RNGArena {
             if (firstRound) {
                 console.log('First round offsetHeight:', firstRound.offsetHeight);
                 console.log('First round scrollHeight:', firstRound.scrollHeight);
+                const allRounds = this.bracketDisplay?.querySelectorAll('.bracket-round');
+                console.log('Total rounds:', allRounds?.length);
             }
+
+            // Try manual scroll test
+            console.log('Attempting manual scroll test...');
+            this.bracketViewport.scrollTop = 50;
+            this.bracketViewport.scrollLeft = 50;
+            setTimeout(() => {
+                console.log('After scroll attempt - scrollTop:', this.bracketViewport.scrollTop);
+                console.log('After scroll attempt - scrollLeft:', this.bracketViewport.scrollLeft);
+            }, 100);
         }, 500);
 
         // Zoom controls
@@ -2048,16 +2066,10 @@ class RNGArena {
         // Scale: 1.0 = 90% of 48% = 43.2% of original
         const actualScale = this.currentZoom * 0.432;
 
-        // Clear any previous constraints
-        this.bracketDisplay.style.width = '';
-        this.bracketDisplay.style.height = '';
-
         // Apply zoom CSS property - this properly handles scrolling
         this.bracketDisplay.style.zoom = actualScale;
         this.bracketDisplay.style.transform = '';
         this.bracketDisplay.style.transformOrigin = '';
-
-        console.log('Applied zoom:', actualScale);
     }
 
     updateZoomDisplay() {

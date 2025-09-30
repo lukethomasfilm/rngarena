@@ -71,6 +71,7 @@
     overflow-y: auto;
     background: rgba(0, 0, 0, 0.2);
     min-height: 0;
+    height: 0;
 }
 
 .bracket-display {
@@ -78,6 +79,8 @@
     display: flex;
     gap: 4px;
     align-items: flex-start;
+    min-width: 2000px;
+    min-height: 1000px;
 }
 
 .bracket-round {

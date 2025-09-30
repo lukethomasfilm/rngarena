@@ -44,6 +44,12 @@ class RNGArena {
         this.backgrounds = ['castle', 'forest', 'desert', 'mountain', 'ships'];
         this.currentBgIndex = 0;
 
+        // Emoji reaction system
+        this.emojiSpawnRate = 1000; // ms between spawns (starts at 1/sec)
+        this.emojiSpawnInterval = null;
+        this.emojiPool = ['⚔️', '🛡️', '💥', '🔥', '⚡', '💀', '👑', '🎯', '✨', '💫', '🌟', '🏆'];
+        this.currentRoundEmojis = [];
+
         this.leftFighterNameEl = document.getElementById('left-nameplate-name');
         this.rightFighterNameEl = document.getElementById('right-nameplate-name');
         this.leftFighterTitlesEl = document.getElementById('left-nameplate-titles');
@@ -293,6 +299,10 @@ class RNGArena {
             this.initBracketControls();
             console.log('Bracket controls initialized');
 
+            // Initialize emoji button click handlers
+            this.initEmojiButtons();
+            console.log('Emoji buttons initialized');
+
             console.log('Init completed with essential functionality');
         } catch (error) {
             console.error('Error in init:', error);
@@ -494,6 +504,10 @@ class RNGArena {
         }
 
         console.log('No bye, proceeding with normal battle');
+
+        // Start/update emoji reactions based on current round
+        this.updateEmojiSpawnRate();
+        this.startEmojiReactions();
 
         // Add announcer messages for round start and match
         const roundInfo = this.tournament.getRoundInfo();
@@ -1008,6 +1022,10 @@ class RNGArena {
     }
 
     showVictoryAnimation(winner) {
+        // MAX EMOJI SPAM for victory!
+        this.emojiSpawnRate = 100; // 10 per second
+        this.startEmojiReactions();
+
         // Create dark overlay to fade in behind victory
         const overlay = document.createElement('div');
         overlay.className = 'victory-overlay';
@@ -2507,6 +2525,99 @@ class RNGArena {
         if (bracketOverlay) {
             bracketOverlay.classList.add('hidden');
         }
+    }
+
+    // ============================================
+    // EMOJI REACTION SYSTEM
+    // ============================================
+
+    startEmojiReactions() {
+        // Calculate spawn rate based on tournament progress
+        this.updateEmojiSpawnRate();
+
+        // Clear any existing interval
+        if (this.emojiSpawnInterval) {
+            clearInterval(this.emojiSpawnInterval);
+        }
+
+        // Start spawning emojis
+        this.emojiSpawnInterval = setInterval(() => {
+            this.spawnRandomEmoji();
+        }, this.emojiSpawnRate);
+    }
+
+    stopEmojiReactions() {
+        if (this.emojiSpawnInterval) {
+            clearInterval(this.emojiSpawnInterval);
+            this.emojiSpawnInterval = null;
+        }
+    }
+
+    updateEmojiSpawnRate() {
+        // Calculate rate based on tournament round (1-8)
+        const totalRounds = 8;
+        const currentRound = this.tournament.currentRound;
+
+        // Linear interpolation: Round 1 = 1000ms (1/sec), Round 8 = 100ms (10/sec)
+        // Formula: 1000 - (currentRound / totalRounds) * 900
+        const minRate = 1000; // 1 per second
+        const maxRate = 100;  // 10 per second
+        const progress = (currentRound - 1) / (totalRounds - 1);
+        this.emojiSpawnRate = Math.max(maxRate, minRate - (progress * (minRate - maxRate)));
+    }
+
+    spawnRandomEmoji() {
+        const emoji = this.emojiPool[Math.floor(Math.random() * this.emojiPool.length)];
+        const side = Math.random() < 0.5 ? 'left' : 'right';
+        this.spawnEmoji(emoji, side);
+    }
+
+    spawnEmoji(emoji, side = null) {
+        // Default to random side if not specified
+        if (!side) {
+            side = Math.random() < 0.5 ? 'left' : 'right';
+        }
+
+        const emojiEl = document.createElement('div');
+        emojiEl.className = 'floating-emoji';
+        emojiEl.textContent = emoji;
+
+        // Random positioning with padding
+        const padding = 20; // px from edge
+        const staggerX = Math.random() * 60; // 0-60px horizontal stagger
+        const staggerY = Math.random() * 40; // 0-40px vertical stagger
+
+        if (side === 'left') {
+            emojiEl.style.left = `${padding + staggerX}px`;
+        } else {
+            emojiEl.style.right = `${padding + staggerX}px`;
+        }
+
+        emojiEl.style.bottom = `${-20 + staggerY}px`; // Start slightly below screen
+
+        // Random animation duration (5-8 seconds)
+        const duration = 5 + Math.random() * 3;
+        emojiEl.style.animationDuration = `${duration}s`;
+
+        // Add to viewport
+        this.arenaViewport.appendChild(emojiEl);
+
+        // Remove after animation completes
+        setTimeout(() => {
+            if (emojiEl.parentNode) {
+                emojiEl.remove();
+            }
+        }, duration * 1000);
+    }
+
+    initEmojiButtons() {
+        const emojiButtons = document.querySelectorAll('.emoji-btn');
+        emojiButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const emoji = btn.dataset.emoji || btn.textContent.trim();
+                this.spawnEmoji(emoji);
+            });
+        });
     }
 }
 

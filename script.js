@@ -474,21 +474,26 @@ class RNGArena {
     }
 
     startBattle() {
-        console.log('startBattle called!');
+        console.log('=== startBattle called! ===');
         const match = this.tournament.getCurrentMatch();
         console.log('Current match:', match);
         if (!match) {
-            console.log('No match found, calling handleNoMatch');
+            console.log('ERROR: No match found, calling handleNoMatch');
             this.handleNoMatch();
             return;
         }
 
         // Check for bye round
+        console.log('Checking for bye round...');
         const byeInfo = this.tournament.hasFollowedCharacterBye();
+        console.log('Bye info:', byeInfo);
         if (byeInfo) {
+            console.log('BYE DETECTED, handling bye round');
             this.handleByeRound(byeInfo);
             return;
         }
+
+        console.log('No bye, proceeding with normal battle');
 
         // Add announcer messages for round start and match
         const roundInfo = this.tournament.getRoundInfo();
@@ -675,6 +680,12 @@ class RNGArena {
     }
 
     addChatMessage(message) {
+        // Skip empty or whitespace-only messages
+        if (!message || !message.trim()) {
+            console.log('Skipping empty message');
+            return;
+        }
+
         console.log('=== addChatMessage DEBUG ===');
         console.log('Message:', message);
         console.log('this.chatMessages:', this.chatMessages);
@@ -716,25 +727,29 @@ class RNGArena {
     }
 
     addAnnouncerMessage(message) {
-        if (!this.chatMessages || !message) return;
+        if (!message || !message.trim()) return;
+
+        const chatEl = document.getElementById('chat-messages');
+        if (!chatEl) return;
 
         const messageElement = document.createElement('div');
         messageElement.className = 'chat-message announcer-message';
+        messageElement.style.cssText = 'text-align: center; font-weight: bold; color: gold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); margin: 5px 0; font-size: 1.1em;';
 
         messageElement.innerHTML = `
-            <span class="chat-username announcer-username">ANNOUNCER: ${message}</span>
+            <span style="color: gold;">${message}</span>
         `;
 
-        this.chatMessages.appendChild(messageElement);
+        chatEl.appendChild(messageElement);
 
         requestAnimationFrame(() => {
-            this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            chatEl.scrollTop = chatEl.scrollHeight;
         });
 
         // Limit chat messages to prevent memory issues
         const maxMessages = 100;
-        while (this.chatMessages.children.length > maxMessages) {
-            this.chatMessages.removeChild(this.chatMessages.firstChild);
+        while (chatEl.children.length > maxMessages) {
+            chatEl.removeChild(chatEl.firstChild);
         }
     }
 
@@ -913,15 +928,13 @@ class RNGArena {
 
     handleByeRound(byeInfo) {
         // Display the bye announcement message
-        this.battleStatus.textContent = 'BYE ROUND';
+        this.battleStatus.textContent = 'LUCKY BYE!';
         this.battleStatus.style.opacity = '1';
 
-        // Add the specific bye message requested by user
-        this.addChatMessage("rest easy my friend and prepare for your next battle");
-
-        // Add some additional atmosphere
-        this.addChatMessage(`${byeInfo.character.toUpperCase()} ADVANCES AUTOMATICALLY!`);
-        this.addChatMessage("NO OPPONENT AVAILABLE!");
+        // Add the bye messages
+        this.addChatMessage("🍀 LUCKY BYE! 🍀");
+        this.addChatMessage("Free Loot Upgrade!");
+        this.addChatMessage(`${byeInfo.character.toUpperCase()} ADVANCES TO NEXT ROUND!`);
 
         // Update display to show only the advancing character
         this.updateByeDisplay(byeInfo);
@@ -985,6 +998,28 @@ class RNGArena {
     }
 
     showVictoryAnimation(winner) {
+        // Create dark overlay to fade in behind victory
+        const overlay = document.createElement('div');
+        overlay.className = 'victory-overlay';
+        overlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            pointer-events: none;
+        `;
+        this.arenaViewport.appendChild(overlay);
+
+        // Fade in the overlay
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+        }, 100);
+
         // Determine which fighter is the winner and move them to center
         const leftFighterName = this.leftFighterNameEl.textContent;
         const rightFighterName = this.rightFighterNameEl.textContent;
@@ -1025,6 +1060,13 @@ class RNGArena {
         if (winnerSprite) {
             winnerSprite.style.filter = 'drop-shadow(0 0 20px white) drop-shadow(0 0 40px white) drop-shadow(0 0 60px white)';
             winnerSprite.style.animation = 'victory-glow 2s ease-in-out infinite';
+        }
+
+        // Add soft gold glow to chest (tournament victory only)
+        const chestImage = document.querySelector('.loot-chest-image');
+        if (chestImage) {
+            chestImage.style.filter = 'drop-shadow(0 0 15px gold) drop-shadow(0 0 30px gold)';
+            chestImage.style.animation = 'victory-glow 2s ease-in-out infinite';
         }
 
         // Create and add crown element
@@ -1467,25 +1509,52 @@ class RNGArena {
         }
 
         // Remove any leftover damage numbers or combat text
-        this.leftFighter.querySelectorAll('.damage-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
-        this.rightFighter.querySelectorAll('.damage-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
+        if (this.leftFighter) {
+            this.leftFighter.querySelectorAll('.damage-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
+        }
+        if (this.rightFighter) {
+            this.rightFighter.querySelectorAll('.damage-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
+        }
 
         // Remove any leftover victory elements
-        this.arenaViewport.querySelectorAll('.victor-text').forEach(el => el.remove());
-        this.leftFighter.querySelectorAll('.victory-crown, .victory-nameplate').forEach(el => el.remove());
-        this.rightFighter.querySelectorAll('.victory-crown, .victory-nameplate').forEach(el => el.remove());
+        if (this.arenaViewport) {
+            this.arenaViewport.querySelectorAll('.victor-text').forEach(el => el.remove());
+        }
+        if (this.leftFighter) {
+            this.leftFighter.querySelectorAll('.victory-crown, .victory-nameplate').forEach(el => el.remove());
+        }
+        if (this.rightFighter) {
+            this.rightFighter.querySelectorAll('.victory-crown, .victory-nameplate').forEach(el => el.remove());
+        }
 
         // Reset fighter opacities and styles
-        this.leftFighter.style.opacity = '1';
-        this.rightFighter.style.opacity = '1';
-        this.leftFighter.style.removeProperty('--start-position');
-        this.leftFighter.style.removeProperty('--start-transform');
-        this.rightFighter.style.removeProperty('--start-position');
-        this.rightFighter.style.removeProperty('--start-transform');
+        if (this.leftFighter) {
+            this.leftFighter.style.opacity = '1';
+            this.leftFighter.style.removeProperty('--start-position');
+            this.leftFighter.style.removeProperty('--start-transform');
+            this.leftFighter.classList.remove('victory-center');
+        }
+        if (this.rightFighter) {
+            this.rightFighter.style.opacity = '1';
+            this.rightFighter.style.removeProperty('--start-position');
+            this.rightFighter.style.removeProperty('--start-transform');
+            this.rightFighter.classList.remove('victory-center');
+        }
 
-        // Remove any victory classes
-        this.leftFighter.classList.remove('victory-center');
-        this.rightFighter.classList.remove('victory-center');
+        // Remove victory overlay if it exists
+        if (this.arenaViewport) {
+            const victoryOverlay = this.arenaViewport.querySelector('.victory-overlay');
+            if (victoryOverlay) {
+                victoryOverlay.remove();
+            }
+        }
+
+        // Reset chest glow
+        const chestImage = document.querySelector('.loot-chest-image');
+        if (chestImage) {
+            chestImage.style.filter = '';
+            chestImage.style.animation = '';
+        }
 
         // Reset combat state with current round HP
         const maxHP = this.getMaxHPForRound();

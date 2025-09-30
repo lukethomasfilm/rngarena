@@ -2237,7 +2237,7 @@ body {
     position: absolute !important;
     left: 50% !important;
     right: auto !important;
-    bottom: 20% !important;
+    bottom: 0 !important;
     transform: translateX(-50%) !important;
     z-index: 100 !important;
     animation: moveToCenter 2s ease-in-out forwards !important;

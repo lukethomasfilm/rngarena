@@ -315,6 +315,39 @@ class TournamentBracket {
         }
 
         this.processInitialByes();
+
+        // Check if the followed character got a bye in round 1
+        // If so, they're already in round 2, advance currentRound
+        const round1 = this.bracket[0];
+        let heroInRound1 = false;
+        console.log('=== CHECKING FOR HERO BYE ===');
+        console.log('Following character:', this.followingCharacter);
+        console.log('Round 1 first 10 slots:', round1.slice(0, 10));
+        console.log('Looking for hero in round 1...');
+
+        for (let i = 0; i < round1.length; i += 2) {
+            const p1 = round1[i];
+            const p2 = round1[i + 1];
+            if (p1 === this.followingCharacter || p2 === this.followingCharacter) {
+                console.log(`Hero found at position ${i}: p1=${p1}, p2=${p2}`);
+                if ((p1 === this.followingCharacter && p2) || (p2 === this.followingCharacter && p1)) {
+                    heroInRound1 = true;
+                    console.log('Hero has real opponent in round 1');
+                    break;
+                } else {
+                    console.log('Hero has BYE in round 1');
+                }
+            }
+        }
+
+        // If hero is not in round 1 with a real opponent, they got a bye
+        if (!heroInRound1) {
+            console.log('Hero NOT in round 1 with opponent, advancing to round 2');
+            this.currentRound = 2;
+            console.log('Current round now:', this.currentRound);
+        } else {
+            console.log('Hero IS in round 1 with opponent, staying at round 1');
+        }
     }
 
     processInitialByes() {

@@ -84,7 +84,7 @@ class RNGArena {
         this.zoomLevel = document.getElementById('zoom-level');
 
         // Zoom and scroll state
-        this.currentZoom = 1.0; // Default to 100% zoom (90% of previous scale)
+        this.currentZoom = 1.6; // Default to 160% actual zoom (displays as 100%, minimum)
         this.currentScrollX = 0;
         this.currentScrollY = 0;
 
@@ -283,33 +283,7 @@ class RNGArena {
             this.hideRightFighter();
             console.log('Essential systems restored');
 
-            // Create a simple tournament status display in the working bracket area
-            const bracketDisplay = document.getElementById('bracket-display');
-            if (bracketDisplay) {
-                // Add tournament status at the top of the bracket
-                const tournamentStatus = document.createElement('div');
-                tournamentStatus.id = 'tournament-status';
-                tournamentStatus.style.cssText = 'background: #1a1a2e; color: white; padding: 15px; margin-bottom: 10px; border: 2px solid #4a69bd; border-radius: 5px; text-align: center;';
-                tournamentStatus.innerHTML = `
-                    <h3 style="margin: 0; color: #ffd700;">🏰 RNG ARENA TOURNAMENT 🏰</h3>
-                    <div id="current-match" style="margin: 5px 0; font-size: 14px;">Click START TOURNAMENT to begin!</div>
-                    <div id="fighter-display" style="margin: 10px 0;">
-                        <span id="left-fighter" style="color: #4CAF50; font-weight: bold;">READY</span>
-                        <span style="color: white;"> VS </span>
-                        <span id="right-fighter" style="color: #f44336; font-weight: bold;">WAITING</span>
-                    </div>
-                `;
-
-                // Insert at the beginning of bracket display
-                bracketDisplay.insertBefore(tournamentStatus, bracketDisplay.firstChild);
-
-                // Store references for tournament updates
-                this.currentMatchEl = document.getElementById('current-match');
-                this.leftFighterEl = document.getElementById('left-fighter');
-                this.rightFighterEl = document.getElementById('right-fighter');
-
-                console.log('Tournament status display created in bracket area');
-            }
+            // Tournament status removed - rounds fit to top of screen
 
             // Initialize bracket overlay functionality
             this.initBracketOverlay();
@@ -1633,7 +1607,7 @@ class RNGArena {
         // Continue with the original bracket rendering
 
         // Use array join for better performance than string concatenation
-        const htmlParts = ['<div class="bracket-tree">'];
+        const htmlParts = [];
 
         // Render each round horizontally
         for (let roundIndex = 0; roundIndex < this.tournament.bracket.length - 1; roundIndex++) {
@@ -1678,7 +1652,6 @@ class RNGArena {
         }
         htmlParts.push(`</div>`);
 
-        htmlParts.push('</div>');
         this.bracketDisplay.innerHTML = htmlParts.join('');
 
         // Update transform after content renders to establish scrollable dimensions
@@ -2016,6 +1989,14 @@ class RNGArena {
             this.zoomOut();
         });
 
+        // Initialize zoom display and disable zoom out at minimum (1.6 = 100%)
+        this.updateZoomDisplay();
+        if (this.currentZoom <= 1.6 && this.zoomOutBtn) {
+            this.zoomOutBtn.disabled = true;
+            this.zoomOutBtn.style.opacity = '0.5';
+            this.zoomOutBtn.style.cursor = 'not-allowed';
+        }
+
         // Slider for vertical scrolling
         this.bracketSlider.addEventListener('input', (e) => {
             this.updateVerticalScroll(e.target.value);
@@ -2048,15 +2029,29 @@ class RNGArena {
             this.updateBracketTransform();
             this.updateZoomDisplay();
             this.updateSliderRange();
+
+            // Enable zoom out button when zooming in from minimum (1.6)
+            if (this.currentZoom > 1.6 && this.zoomOutBtn) {
+                this.zoomOutBtn.disabled = false;
+                this.zoomOutBtn.style.opacity = '1';
+                this.zoomOutBtn.style.cursor = 'pointer';
+            }
         }
     }
 
     zoomOut() {
-        if (this.currentZoom > 0.1) {
-            this.currentZoom = Math.max(0.1, this.currentZoom - 0.1);
+        if (this.currentZoom > 1.6) {
+            this.currentZoom = Math.max(1.6, this.currentZoom - 0.1);
             this.updateBracketTransform();
             this.updateZoomDisplay();
             this.updateSliderRange();
+
+            // Disable zoom out button if at minimum (1.6 = 100%)
+            if (this.currentZoom <= 1.6 && this.zoomOutBtn) {
+                this.zoomOutBtn.disabled = true;
+                this.zoomOutBtn.style.opacity = '0.5';
+                this.zoomOutBtn.style.cursor = 'not-allowed';
+            }
         }
     }
 
@@ -2074,7 +2069,10 @@ class RNGArena {
 
     updateZoomDisplay() {
         if (this.zoomLevel) {
-            this.zoomLevel.textContent = `${Math.round(this.currentZoom * 100)}%`;
+            // Display zoom: 1.6 = 100% (minimum), scales up from there
+            // Formula: (currentZoom / 1.6) * 100
+            const displayZoom = (this.currentZoom / 1.6) * 100;
+            this.zoomLevel.textContent = `${Math.round(displayZoom)}%`;
         }
     }
 
@@ -2235,7 +2233,7 @@ class RNGArena {
         const overlayBackground = document.querySelector('.bracket-overlay-background');
 
         // Overlay zoom state
-        this.overlayZoom = 1.0; // Start at 100% zoom (90% of previous scale)
+        this.overlayZoom = 1.6; // Start at 160% actual zoom (displays as 100%, minimum)
 
         // Get overlay control elements
         this.overlayBracketDisplay = document.getElementById('overlay-bracket-display');
@@ -2269,17 +2267,38 @@ class RNGArena {
                 if (this.overlayZoom < 3.0) {
                     this.overlayZoom = Math.min(3.0, this.overlayZoom + 0.1);
                     this.updateOverlayTransform();
+
+                    // Enable zoom out button when zooming in from minimum (1.6)
+                    if (this.overlayZoom > 1.6 && this.overlayZoomOut) {
+                        this.overlayZoomOut.disabled = false;
+                        this.overlayZoomOut.style.opacity = '1';
+                        this.overlayZoomOut.style.cursor = 'pointer';
+                    }
                 }
             });
         }
 
         if (this.overlayZoomOut) {
             this.overlayZoomOut.addEventListener('click', () => {
-                if (this.overlayZoom > 0.1) {
-                    this.overlayZoom = Math.max(0.1, this.overlayZoom - 0.1);
+                if (this.overlayZoom > 1.6) {
+                    this.overlayZoom = Math.max(1.6, this.overlayZoom - 0.1);
                     this.updateOverlayTransform();
+
+                    // Disable zoom out button if at minimum (1.6 = 100%)
+                    if (this.overlayZoom <= 1.6 && this.overlayZoomOut) {
+                        this.overlayZoomOut.disabled = true;
+                        this.overlayZoomOut.style.opacity = '0.5';
+                        this.overlayZoomOut.style.cursor = 'not-allowed';
+                    }
                 }
             });
+        }
+
+        // Initialize overlay zoom out button as disabled (at minimum)
+        if (this.overlayZoomOut && this.overlayZoom <= 1.6) {
+            this.overlayZoomOut.disabled = true;
+            this.overlayZoomOut.style.opacity = '0.5';
+            this.overlayZoomOut.style.cursor = 'not-allowed';
         }
 
         // Setup overlay slider
@@ -2305,14 +2324,30 @@ class RNGArena {
                 if (e.ctrlKey) {
                     e.preventDefault();
                     if (e.deltaY < 0) {
+                        // Zoom in
                         if (this.overlayZoom < 3.0) {
                             this.overlayZoom = Math.min(3.0, this.overlayZoom + 0.1);
                             this.updateOverlayTransform();
+
+                            // Enable zoom out button when zooming in from minimum
+                            if (this.overlayZoom > 1.6 && this.overlayZoomOut) {
+                                this.overlayZoomOut.disabled = false;
+                                this.overlayZoomOut.style.opacity = '1';
+                                this.overlayZoomOut.style.cursor = 'pointer';
+                            }
                         }
                     } else {
-                        if (this.overlayZoom > 0.1) {
-                            this.overlayZoom = Math.max(0.1, this.overlayZoom - 0.1);
+                        // Zoom out
+                        if (this.overlayZoom > 1.6) {
+                            this.overlayZoom = Math.max(1.6, this.overlayZoom - 0.1);
                             this.updateOverlayTransform();
+
+                            // Disable zoom out button if at minimum
+                            if (this.overlayZoom <= 1.6 && this.overlayZoomOut) {
+                                this.overlayZoomOut.disabled = true;
+                                this.overlayZoomOut.style.opacity = '0.5';
+                                this.overlayZoomOut.style.cursor = 'not-allowed';
+                            }
                         }
                     }
                 }
@@ -2336,7 +2371,9 @@ class RNGArena {
         }
 
         if (this.overlayZoomLevel) {
-            this.overlayZoomLevel.textContent = `${Math.round(this.overlayZoom * 100)}%`;
+            // Display zoom: 1.6 = 100% (minimum), scales up from there
+            const displayZoom = (this.overlayZoom / 1.6) * 100;
+            this.overlayZoomLevel.textContent = `${Math.round(displayZoom)}%`;
         }
     }
 
@@ -2353,6 +2390,17 @@ class RNGArena {
 
             // Apply initial zoom
             this.updateOverlayTransform();
+
+            // Reset scroll position to top-left
+            if (this.overlayViewport) {
+                this.overlayViewport.scrollTop = 0;
+                this.overlayViewport.scrollLeft = 0;
+            }
+
+            // Reset slider to beginning
+            if (this.overlaySlider) {
+                this.overlaySlider.value = 0;
+            }
 
             // Debug scroll dimensions after overlay opens
             setTimeout(() => {

@@ -1752,15 +1752,16 @@ class RNGArena {
 
     getRoundName(roundNumber) {
         // For 128 participants bracket = 8 rounds (last is winner slot)
+        // Round progression: R1-R4, Quarterfinals, Semifinals, Finals, Championship
         const roundNames = {
             1: 'Round 1',
             2: 'Round 2',
             3: 'Round 3',
             4: 'Round 4',
-            5: 'Round 5',
-            6: 'Quarterfinals',
-            7: 'Semifinals',
-            8: 'Final'
+            5: 'Quarterfinals',
+            6: 'Semifinals',
+            7: 'Finals',
+            8: 'Championship'
         };
         return roundNames[roundNumber] || `Round ${roundNumber}`;
     }

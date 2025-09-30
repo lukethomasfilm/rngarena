@@ -294,6 +294,16 @@ class TournamentBracket {
             }
         }
 
+        // Shuffle the entire first round to randomize bye positions
+        // BUT keep 'Daring Hero' at index 0
+        const hero = firstRound[0]; // Save the hero
+        const restOfRound = firstRound.slice(1); // Get everything else
+        this.shuffleArray(restOfRound); // Shuffle the rest
+        firstRound[0] = hero; // Put hero back at index 0
+        for (let i = 1; i < firstRound.length; i++) {
+            firstRound[i] = restOfRound[i - 1]; // Replace with shuffled values
+        }
+
         this.bracket.push(firstRound);
 
         // Generate subsequent rounds
@@ -422,14 +432,25 @@ class TournamentBracket {
             const participant2 = currentRoundMatches[i + 1];
             const nextMatchIndex = Math.floor(i / 2);
 
-            // Skip if this is the match we're currently watching
-            if ((participant1 === this.followingCharacter || participant2 === this.followingCharacter) &&
-                participant1 && participant2) {
+            // Skip if already resolved
+            if (this.bracket[this.currentRound][nextMatchIndex]) {
                 continue;
             }
 
-            // Skip if already resolved or has bye
-            if (this.bracket[this.currentRound][nextMatchIndex] || !participant1 || !participant2) {
+            // Handle byes - auto-advance the participant
+            if (participant1 && !participant2) {
+                this.bracket[this.currentRound][nextMatchIndex] = participant1;
+                continue;
+            } else if (!participant1 && participant2) {
+                this.bracket[this.currentRound][nextMatchIndex] = participant2;
+                continue;
+            } else if (!participant1 && !participant2) {
+                // Both null, skip
+                continue;
+            }
+
+            // Skip if this is the match we're currently watching
+            if ((participant1 === this.followingCharacter || participant2 === this.followingCharacter)) {
                 continue;
             }
 

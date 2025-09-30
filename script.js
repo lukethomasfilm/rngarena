@@ -727,20 +727,30 @@ class RNGArena {
     }
 
     addAnnouncerMessage(message) {
-        if (!message || !message.trim()) return;
+        console.log('=== addAnnouncerMessage called ===');
+        console.log('Message:', message);
+
+        if (!message || !message.trim()) {
+            console.log('Message was empty or whitespace, skipping');
+            return;
+        }
 
         const chatEl = document.getElementById('chat-messages');
-        if (!chatEl) return;
+        console.log('Chat element found:', !!chatEl);
+        if (!chatEl) {
+            console.log('Chat element not found, returning');
+            return;
+        }
 
         const messageElement = document.createElement('div');
         messageElement.className = 'chat-message announcer-message';
-        messageElement.style.cssText = 'text-align: center; font-weight: bold; color: gold; text-shadow: 0 0 10px rgba(255, 215, 0, 0.8); margin: 5px 0; font-size: 1.1em;';
 
-        messageElement.innerHTML = `
-            <span style="color: gold;">${message}</span>
-        `;
+        // Style like battle announcements - small text with gold/white color
+        messageElement.innerHTML = `<span style="color: gold; font-weight: bold; font-size: 0.65rem;">${message}</span>`;
+        messageElement.style.cssText = 'margin-bottom: 3px; padding: 2px 0; display: block !important; opacity: 1 !important;';
 
         chatEl.appendChild(messageElement);
+        console.log('Announcer message added to chat, total messages:', chatEl.children.length);
 
         requestAnimationFrame(() => {
             chatEl.scrollTop = chatEl.scrollHeight;
@@ -931,10 +941,10 @@ class RNGArena {
         this.battleStatus.textContent = 'LUCKY BYE!';
         this.battleStatus.style.opacity = '1';
 
-        // Add the bye messages
-        this.addChatMessage("🍀 LUCKY BYE! 🍀");
-        this.addChatMessage("Free Loot Upgrade!");
-        this.addChatMessage(`${byeInfo.character.toUpperCase()} ADVANCES TO NEXT ROUND!`);
+        // Add the bye announcer messages
+        this.addAnnouncerMessage("🍀 LUCKY BYE! 🍀");
+        this.addAnnouncerMessage("Free Loot Upgrade!");
+        this.addAnnouncerMessage(`${byeInfo.character.toUpperCase()} ADVANCES TO NEXT ROUND!`);
 
         // Update display to show only the advancing character
         this.updateByeDisplay(byeInfo);

@@ -1119,12 +1119,12 @@ body {
 }
 
 .fighter-left {
-    left: 0; /* Start of first column */
+    left: 8%; /* Move slightly towards center */
     transform: translateX(-100%);
 }
 
 .fighter-right {
-    right: 0; /* Start of third column from right */
+    right: 8%; /* Move slightly towards center */
     transform: translateX(100%);
 }
 

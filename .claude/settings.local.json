@@ -14,7 +14,10 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git log:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Bash(explorer:*)",
+      "Bash(start \"\" \"C:\\Users\\Luke\\rngarena\\public\\images\\backgrounds\")",
+      "Bash(start http://localhost:8000)"
     ],
     "deny": [],
     "ask": []

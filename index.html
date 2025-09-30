@@ -191,19 +191,18 @@
         </div>
     </div>
 
+    <!-- Game Scripts - ES6 Modules -->
     <script src="./tournament.js"></script>
-    <script src="./script.js"></script>
-    <script>
+    <script type="module">
+        // Import all game systems
+        import { RNGArena } from './js/RNGArena.js';
+
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', () => {
-            console.log('DOM loaded, starting game');
-
             setTimeout(() => {
-                console.log('Creating RNGArena after delay');
-
                 try {
                     const arena = new RNGArena();
-                    console.log('Arena created successfully');
+                    window.arena = arena; // For debugging
                 } catch (error) {
                     console.error('Arena creation failed:', error);
                     alert('Arena failed: ' + error.message);

@@ -17,7 +17,8 @@
       "Bash(cat:*)",
       "Bash(explorer:*)",
       "Bash(start \"\" \"C:\\Users\\Luke\\rngarena\\public\\images\\backgrounds\")",
-      "Bash(start http://localhost:8000)"
+      "Bash(start http://localhost:8000)",
+      "Bash(start \"\" \"C:\\Users\\Luke\\rngarena\\index.html\")"
     ],
     "deny": [],
     "ask": []

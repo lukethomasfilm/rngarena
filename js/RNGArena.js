@@ -128,6 +128,24 @@ export class RNGArena {
                 this.startButton.style.display = 'none';
             }
 
+            // Get the first match and populate names BEFORE animation
+            const firstMatch = this.tournament.getCurrentMatch();
+            if (firstMatch) {
+                // Make sure fighters are hidden before updating display
+                if (this.leftFighter) this.leftFighter.style.opacity = '0';
+                if (this.rightFighter) this.rightFighter.style.opacity = '0';
+
+                this.updateMatchDisplay(firstMatch);
+            }
+
+            // Animate nameplates into view with names already on them
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
+            if (nameplateContainer) {
+                setTimeout(() => {
+                    nameplateContainer.classList.add('visible');
+                }, 100);
+            }
+
             this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.TOURNAMENT_START);
             this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.DARING_HERO_START);
             this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.BATTLE_COMMENCE);
@@ -141,16 +159,16 @@ export class RNGArena {
     }
 
     startBattle() {
-        const match = this.tournament.getCurrentMatch();
-        if (!match) {
-            this.handleNoMatch();
-            return;
-        }
-
-        // Check for bye round
+        // Check for bye round FIRST (before checking for match)
         const byeInfo = this.tournament.hasFollowedCharacterBye();
         if (byeInfo) {
             this.handleByeRound(byeInfo);
+            return;
+        }
+
+        const match = this.tournament.getCurrentMatch();
+        if (!match) {
+            this.handleNoMatch();
             return;
         }
 
@@ -166,8 +184,9 @@ export class RNGArena {
         this.chatSystem.addAnnouncerMessage(`🎺 ${roundInfo.name.toUpperCase()} BEGINS! 🎺`);
         this.chatSystem.addAnnouncerMessage(`⚔️ ${match.participant1.toUpperCase()} VS ${match.participant2.toUpperCase()} ⚔️`);
 
-        // Update loot
+        // Update loot and progress bar together
         this.lootSystem.updateLootBox(roundInfo);
+        this.updateProgressBar();
 
         // Render bracket and scroll to current match
         this.renderBracket();
@@ -302,36 +321,62 @@ export class RNGArena {
     }
 
     handleByeRound(byeInfo) {
-        this.battleStatus.textContent = 'LUCKY BYE!';
-        this.battleStatus.style.opacity = '1';
+        this.battleStatus.textContent = 'LADY BY-CHANCE APPEARS!';
+        this.battleStatus.style.opacity = '0'; // Start hidden
 
-        this.chatSystem.addAnnouncerMessage("🍀 LUCKY BYE! 🍀");
-        this.chatSystem.addAnnouncerMessage("Free Loot Upgrade!");
-        this.chatSystem.addAnnouncerMessage(`${byeInfo.character.toUpperCase()} ADVANCES TO NEXT ROUND!`);
+        this.chatSystem.addAnnouncerMessage("🍀 LUCKY YOU! 🍀");
+        this.chatSystem.addAnnouncerMessage("✨ YOU'VE BEEN VISITED BY LADY BY-CHANCE! ✨");
+        this.chatSystem.addAnnouncerMessage("🎁 FREE LOOT UPGRADE! 🎁");
+        this.chatSystem.addAnnouncerMessage(`⬆️ ${byeInfo.character.toUpperCase()} ADVANCES TO NEXT ROUND! ⬆️`);
 
-        // Update loot
+        // Update loot and progress bar together
         const roundInfo = this.tournament.getRoundInfo();
         this.lootSystem.updateLootBox(roundInfo);
+        this.updateProgressBar();
 
         // Update chat rate based on round
         this.updateChatRate(roundInfo.current);
 
+        // Reset fighters
+        this.resetFighters();
+        this.cleanupCombatElements();
+
+        // Hide fighters initially
+        if (this.leftFighter) this.leftFighter.style.opacity = '0';
+        if (this.rightFighter) this.rightFighter.style.opacity = '0';
+
         this.updateByeDisplay(byeInfo);
         this.switchBackground();
 
-        // Show fighters for bye round
-        if (this.leftFighter) this.leftFighter.style.opacity = '1';
-        if (this.rightFighter) this.rightFighter.style.opacity = '1';
+        // Start fighter entrance animations
+        setTimeout(() => {
+            if (this.leftFighter) {
+                this.leftFighter.style.opacity = '1';
+                this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
+            }
+            if (this.rightFighter) {
+                this.rightFighter.style.opacity = '1';
+                this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
+            }
 
-        // Fade out battle status
+            // Show battle status after entrance
+            setTimeout(() => {
+                this.battleStatus.style.opacity = '1';
+            }, 500);
+        }, GAME_CONFIG.TIMING.FIGHTER_ENTRANCE_DELAY);
+
+        // Lucky clover shower from above for 7 seconds
+        this.emojiSystem.startEmojiShower(['🍀'], 7000);
+
+        // Fade out battle status after 7 seconds
         setTimeout(() => {
             this.battleStatus.style.opacity = '0';
-        }, 2000);
+        }, 7000);
 
+        // Advance after 7 seconds
         setTimeout(() => {
             this.tournament.advanceToNextMatch();
             this.updateOdds();
-            this.updateProgressBar();
             this.updateDisplay();
             this.renderBracket();
 
@@ -340,7 +385,7 @@ export class RNGArena {
             } else {
                 this.enableRestart();
             }
-        }, GAME_CONFIG.TIMING.AUTO_CONTINUE_DELAY);
+        }, 7000);
     }
 
     handleNoMatch() {
@@ -407,20 +452,30 @@ export class RNGArena {
             this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
             this.updateFighterSprite(this.leftFighter, byeInfo.character);
 
-            this.rightFighterNameEl.textContent = '---';
-            this.rightFighterTitlesEl.textContent = 'No Opponent';
-            const rightSprite = this.rightFighter.querySelector('.fighter-sprite');
-            if (rightSprite) rightSprite.innerHTML = '';
+            // Show Lady By-Chance on the right
+            this.rightFighterNameEl.textContent = 'Lady By-Chance';
+            this.rightFighterTitlesEl.textContent = 'Bringer of Fortune';
+            this.updateFighterSprite(this.rightFighter, 'Lady By-Chance');
+
+            // Add green styling to right card
+            if (this.rightFighterCard) {
+                this.rightFighterCard.classList.add('lady-bye-chance');
+            }
         } else {
             this.rightFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
             const rightTitles = this.tournament.getCharacterTitles(byeInfo.character);
             this.rightFighterTitlesEl.textContent = rightTitles.join(' • ');
             this.updateFighterSprite(this.rightFighter, byeInfo.character);
 
-            this.leftFighterNameEl.textContent = '---';
-            this.leftFighterTitlesEl.textContent = 'No Opponent';
-            const leftSprite = this.leftFighter.querySelector('.fighter-sprite');
-            if (leftSprite) leftSprite.innerHTML = '';
+            // Show Lady By-Chance on the left
+            this.leftFighterNameEl.textContent = 'Lady By-Chance';
+            this.leftFighterTitlesEl.textContent = 'Bringer of Fortune';
+            this.updateFighterSprite(this.leftFighter, 'Lady By-Chance');
+
+            // Add green styling to left card
+            if (this.leftFighterCard) {
+                this.leftFighterCard.classList.add('lady-bye-chance');
+            }
         }
 
         const match = { participant1: null, participant2: null };
@@ -500,6 +555,10 @@ export class RNGArena {
     getCharacterImage(characterName) {
         if (characterName === 'Daring Hero') {
             return CHARACTER_CONFIG.HERO_IMAGE;
+        }
+
+        if (characterName === 'Lady By-Chance') {
+            return 'Lady_bye_chance.png';
         }
 
         if (!this.characterImageCache.has(characterName)) {

@@ -149,6 +149,19 @@ body {
     justify-content: center;
     align-items: center;
     border: none;
+    position: relative;
+}
+
+.left-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10%;
+    height: 100%;
+    background: linear-gradient(to left, rgba(255,255,255,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .battlefield-section {
@@ -171,6 +184,19 @@ body {
     align-items: center;
     background: linear-gradient(135deg, rgba(40, 10, 10, 0.8), rgba(30, 5, 5, 0.9)), rgba(255, 0, 0, 0.3);
     border: none;
+    position: relative;
+}
+
+.right-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .info-panel {
@@ -190,7 +216,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
+    background-image: linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 10%),
+                      linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
+                      radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
                       url('/images/UX%20Images/stone_texture_1.png');
     background-position: center;
     background-size: cover;
@@ -224,7 +252,9 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
+    background-image: linear-gradient(to left, rgba(255,255,255,0.3) 0%, transparent 10%),
+                      linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
+                      radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
                       url('/images/UX%20Images/stone_texture_2.png');
     background-position: center;
     background-size: cover;
@@ -436,6 +466,14 @@ body {
     box-shadow: 0 6px 25px rgba(74, 144, 226, 0.4);
 }
 
+.left-fighter-card.lady-bye-chance,
+.right-fighter-card.lady-bye-chance {
+    border-color: #00ff00;
+    background: linear-gradient(135deg, rgba(0, 255, 0, 0.25) 0%, rgba(0, 255, 0, 0.1) 100%);
+    color: #00ff00;
+    box-shadow: 0 6px 25px rgba(0, 255, 0, 0.4);
+}
+
 .right-fighter-card {
     border-color: #e74c3c;
     background: linear-gradient(135deg, rgba(231, 76, 60, 0.15) 0%, rgba(231, 76, 60, 0.05) 100%);
@@ -614,6 +652,12 @@ body {
     z-index: 10;
     padding: 0 20px;
     gap: 2px;
+    transform: translateY(150%);
+    transition: transform 1s ease-out;
+}
+
+.nameplate-vs-container.visible {
+    transform: translateY(0);
 }
 
 .nameplate {
@@ -728,15 +772,12 @@ body {
 
 .odds-label {
     font-size: 0.6rem; /* Same as progress-label */
-    background: linear-gradient(45deg, #ffd700, #ffed4e);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+    color: #ffd700;
     font-weight: 900;
     text-transform: lowercase; /* Lowercase instead of uppercase */
     margin-bottom: 5px;
     letter-spacing: 2px; /* Match progress-label */
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
     font-family: 'serif';
 }
 
@@ -1066,7 +1107,7 @@ body {
     position: relative;
     width: 95%;
     height: 95%;
-    background: #1a1a2e;
+    background: rgba(26, 26, 46, 0.12);
     border: 2px solid #ffd700;
     border-radius: 8px;
     overflow: hidden;
@@ -1411,6 +1452,22 @@ body {
     flex-shrink: 0 !important;
 }
 
+.chat-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to right,
+        rgba(0, 0, 0, 0.8) 0%,
+        transparent 15%,
+        transparent 85%,
+        rgba(0, 0, 0, 0.8) 100%);
+    pointer-events: none;
+    z-index: 0;
+}
+
 
 .loot-container {
     height: 100%;
@@ -1490,7 +1547,12 @@ body {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    background: linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)), url('/images/Loot/loot_room.jpg') no-repeat bottom center / cover;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.9) 0%, transparent 30%),
+                linear-gradient(to right, rgba(0,0,0,0.8) 0%, transparent 15%),
+                linear-gradient(to left, rgba(0,0,0,0.8) 0%, transparent 15%),
+                linear-gradient(to top, rgba(0,0,0,0.6) 0%, transparent 15%),
+                linear-gradient(rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.35)),
+                url('/images/Loot/loot_room.jpg') no-repeat bottom center / cover;
     padding: 0px;
     position: relative;
 }
@@ -3164,6 +3226,15 @@ body {
     will-change: transform, opacity;
 }
 
+.falling-emoji {
+    position: absolute;
+    font-size: 1rem;
+    pointer-events: none;
+    z-index: 1;
+    animation: floatDown 3s linear forwards;
+    will-change: transform, opacity;
+}
+
 @keyframes floatUp {
     0% {
         transform: translateY(0);
@@ -3179,6 +3250,23 @@ body {
     }
     100% {
         transform: translateY(-100vh);
+        opacity: 0;
+    }
+}
+
+@keyframes floatDown {
+    0% {
+        transform: translateY(-20vh);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    80% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(120vh);
         opacity: 0;
     }
 }

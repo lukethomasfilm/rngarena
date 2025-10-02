@@ -1,6 +1,5 @@
 class TournamentBracket {
     constructor() {
-        console.log('TournamentBracket constructor called!');
         // 128 is the next power of 2 that accommodates 100 participants
         this.totalParticipants = 100;
         this.bracketSize = 128;
@@ -509,4 +508,7 @@ class TournamentBracket {
         }
         return null;
     }
-}/* Optimized tournament bracket system */
+}
+
+// Make TournamentBracket globally available
+window.TournamentBracket = TournamentBracket;

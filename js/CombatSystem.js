@@ -236,7 +236,7 @@ export class CombatSystem {
                 if (defenderStance === 'block') {
                     this.addCombatAnimation(defenderFighter, 'fighter-defending');
                     setTimeout(() => {
-                        this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit);
+                        this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit, defender);
                         if (defender === 'left') {
                             this.leftDefenseStance = null;
                         } else {
@@ -261,7 +261,7 @@ export class CombatSystem {
                     setTimeout(() => {
                         if (defendRoll === 7) {
                             // Random block
-                            this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit);
+                            this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit, defender);
                             if (defender === 'left') {
                                 this.leftDefenseStance = 'block';
                             } else {
@@ -305,16 +305,43 @@ export class CombatSystem {
     /**
      * Handle block
      */
-    handleBlock(defenderFighter, defenderName, damage, isCrit) {
+    handleBlock(defenderFighter, defenderName, damage, isCrit, defenderSide) {
         this.addCombatAnimation(defenderFighter, 'fighter-block');
         this.showCombatText(defenderFighter, 'BLOCK!', 'block-text');
 
-        const damageText = isCrit ? 'CRIT' : damage.toString();
-        const logEntry = `${defenderName} blocks ${damageText} damage!`;
-        this.addCombatLog(logEntry);
-        this.sendCombatMessage(`🛡️ ${defenderName} blocks ${damageText} damage!`);
+        if (isCrit) {
+            // Critical hits deal 3 damage even when blocked
+            const critBlockDamage = 3;
 
-        this.nextTurn();
+            setTimeout(() => {
+                this.showDamageNumber(defenderFighter, critBlockDamage, false);
+
+                if (defenderSide === 'left') {
+                    this.leftFighterHP -= critBlockDamage;
+                    this.updateHealthDisplay(this.leftFighter, this.leftFighterHP);
+                } else {
+                    this.rightFighterHP -= critBlockDamage;
+                }
+                this.updateHPBars();
+
+                const logEntry = `${defenderName} blocks the CRIT but takes ${critBlockDamage} damage!`;
+                this.addCombatLog(logEntry);
+                this.sendCombatMessage(`🛡️ ${defenderName} blocks the CRIT but takes ${critBlockDamage} damage!`);
+
+                if (this.leftFighterHP <= 0 || this.rightFighterHP <= 0) {
+                    this.endCombat();
+                } else {
+                    this.nextTurn();
+                }
+            }, 400);
+        } else {
+            // Normal block - no damage
+            const damageText = damage.toString();
+            const logEntry = `${defenderName} blocks ${damageText} damage!`;
+            this.addCombatLog(logEntry);
+            this.sendCombatMessage(`🛡️ ${defenderName} blocks ${damageText} damage!`);
+            this.nextTurn();
+        }
     }
 
     /**

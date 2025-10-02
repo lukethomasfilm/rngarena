@@ -136,12 +136,59 @@ export class EmojiSystem {
     }
 
     /**
+     * Spawn a falling emoji from the top (for shower effect)
+     */
+    spawnFallingEmoji(emoji) {
+        if (!this.arenaViewport) return;
+
+        const emojiEl = document.createElement('div');
+        emojiEl.className = 'falling-emoji';
+        emojiEl.textContent = emoji;
+
+        // Random horizontal position across the entire width
+        const randomX = Math.random() * 100; // 0-100%
+        emojiEl.style.left = `${randomX}%`;
+        emojiEl.style.top = '-20vh'; // Start above screen
+
+        // Random animation duration (2-4 seconds)
+        const duration = 2 + Math.random() * 2;
+        emojiEl.style.animationDuration = `${duration}s`;
+
+        // Add to viewport
+        this.arenaViewport.appendChild(emojiEl);
+
+        // Remove after animation completes
+        setTimeout(() => {
+            if (emojiEl.parentNode) {
+                emojiEl.remove();
+            }
+        }, duration * 1000);
+    }
+
+    /**
+     * Start emoji shower from above (for special moments like bye rounds)
+     */
+    startEmojiShower(emojis, duration = 5000) {
+        const showerInterval = setInterval(() => {
+            const emoji = emojis[Math.floor(Math.random() * emojis.length)];
+            this.spawnFallingEmoji(emoji);
+        }, 100); // 10 emojis per second
+
+        // Stop shower after duration
+        setTimeout(() => {
+            clearInterval(showerInterval);
+        }, duration);
+
+        return showerInterval;
+    }
+
+    /**
      * Clear all floating emojis from screen
      */
     clearAllEmojis() {
         if (!this.arenaViewport) return;
 
-        const emojis = this.arenaViewport.querySelectorAll('.floating-emoji');
+        const emojis = this.arenaViewport.querySelectorAll('.floating-emoji, .falling-emoji');
         emojis.forEach(emoji => emoji.remove());
     }
 }

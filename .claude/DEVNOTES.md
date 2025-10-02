@@ -53,28 +53,51 @@ npx http-server -p 8000 .
 
 ## Recent Changes (2025-10-01)
 
-### UI Polish
-- Added stone texture backgrounds to UI windows (exit, chat, chat mode buttons)
-- Added vignette depth effects to textured windows and battlefield
-- Reduced button glow effects for cleaner look
-- Adjusted chat background opacity and padding alignment
-- Redesigned tournament progress bar as tab-styled components
-- Added gradient borders to HP bars (black to grey, flipped on right side)
-- Improved odds display readability (removed gradient texture)
+### Lady By-Chance Bye Round System
+- **New Feature:** Lady By-Chance character appears during bye rounds
+  - Green nameplate with "Bringer of Fortune" title
+  - 7-second lucky clover shower (falling emoji animation)
+  - Special announcer messages: "LUCKY YOU! YOU'VE BEEN VISITED BY LADY BY-CHANCE!"
+  - Free loot upgrade on bye rounds
+  - Character sprite: `images/Characters/Lady_bye_chance.png`
+
+### Combat Improvements
+- Critical hits now deal 3 damage even when blocked
+  - Normal blocks still prevent all damage
+  - Message: "[Name] blocks the CRIT but takes 3 damage!"
+  - Updated handleBlock() in CombatSystem.js
+
+### UI Animations & Polish
+- **Nameplate Entrance:** Nameplates slide up from bottom when tournament starts
+  - Smooth 1-second transition on first battle
+  - Names populate before animation (no blank slides)
+- **Falling Emojis:** Added falling animation system for bye rounds
+  - Size: 1rem (smaller, subtle)
+  - Z-index: 1 (behind UI, above background)
+  - Duration: 3 seconds fall time
+- Blank nameplates before tournament starts for cleaner initial state
+- Fixed fighter entrance glitching by setting opacity before display updates
 
 ### Bug Fixes
-- **CRITICAL:** Fixed duplicate RNGArena instances causing 2-4 simultaneous combat actions
-  - Removed auto-initialization in RNGArena.js (kept only index.html initialization)
-- Fixed bye round progression - now properly advances to next round
-- Fixed HP bar positioning to be independent of progress bar width
-- Rounded HP bar corners to 5px for softer appearance
+- **CRITICAL:** Fixed bye round detection order
+  - Moved `hasFollowedCharacterBye()` check before `getCurrentMatch()`
+  - Prevents bye rounds from being skipped
+- Fixed fighter entrance animations on bye rounds
+- Eliminated fighter blink on tournament start
 
 ### Technical Notes
-- HP bars now use flexbox positioning with 10px gap between elements
-- Progress bar has fixed 252px width, independent of container
-- Odds tab padding: 6px 20px
-- Tournament progress system uses tab-style UI with rounded corners
-- Stone textures: UX Images folder with URL-encoded paths
+- Bye round check must happen BEFORE match check in startBattle()
+- Falling emoji CSS class: `.falling-emoji` with floatDown animation
+- Lady By-Chance styling: `.lady-bye-chance` class with green theme
+- Nameplate animation: `.nameplate-vs-container.visible` class triggers slide-up
+- Fighter opacity must be set to '0' before updateMatchDisplay() to prevent glitches
+
+### Previous Changes (Earlier 2025-10-01)
+- Added stone texture backgrounds to UI windows
+- Added vignette depth effects to textured windows and battlefield
+- Redesigned tournament progress bar as tab-styled components
+- Added gradient borders to HP bars
+- Fixed duplicate RNGArena instances causing 2-4 simultaneous combat actions
 
 ---
-*Last updated: 2025-10-01*
+*Last updated: 2025-10-02*

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, orientation=landscape">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>RNG Arena</title>
     <meta name="description" content="Epic medieval tournament battles with turn-based combat and RNG mechanics">
     <meta name="theme-color" content="#1a1a2e">
@@ -16,13 +16,14 @@
             <!-- Left Side: Loot Container -->
             <div class="left-section">
                 <div class="loot-container">
-                    <div class="loot-header">LOOT TIER</div>
-                    <div class="loot-description">Gray → White → Green → Blue → Purple → Orange → Gold</div>
+                    <div class="loot-header-top">LOOT<br>CHEST</div>
                     <div class="loot-content">
                         <div id="loot-box" class="treasure-chest">
+                            <img src="/images/Loot/chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
                             <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image">
                         </div>
                     </div>
+                    <div class="loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
                 </div>
             </div>
 
@@ -92,7 +93,7 @@
             <!-- Right Side: Battle Emojis -->
             <div class="right-section">
                 <div class="emoji-panel">
-                    <div class="emoji-header">BATTLE EMOJIS</div>
+                    <div class="emoji-header">BATTLE<br>EMOJIS</div>
                     <div class="emoji-grid">
                         <button class="emoji-btn" data-emoji="⚔️">⚔️</button>
                         <button class="emoji-btn" data-emoji="🛡️">🛡️</button>
@@ -130,8 +131,8 @@
             <!-- Bottom Right: Chat Mode Button -->
             <div class="bottom-right-section">
                 <div class="chat-mode-container">
-                    <button id="chat-mode" class="chat-mode-btn">VIEW<br>LIVE CHAT<br>MODE</button>
-                    <button id="bracket-mode" class="chat-mode-btn">VIEW<br>TOURNAMENT<br>BRACKET</button>
+                    <button id="chat-mode" class="chat-mode-btn">LIVE CHAT<br>MODE</button>
+                    <button id="bracket-mode" class="chat-mode-btn">TOURNAMENT<br>BRACKET</button>
                 </div>
             </div>
     </div>

@@ -86,15 +86,14 @@ export class EmojiSystem {
         emojiEl.className = 'floating-emoji';
         emojiEl.textContent = emoji;
 
-        // Random positioning with padding
-        const padding = 20; // px from edge
-        const staggerX = Math.random() * 60; // 0-60px horizontal stagger
+        // Position at screen edges with minimal horizontal variation
+        const staggerX = Math.random() * 20; // 0-20px horizontal stagger
         const staggerY = Math.random() * 40; // 0-40px vertical stagger
 
         if (side === 'left') {
-            emojiEl.style.left = `${padding + staggerX}px`;
+            emojiEl.style.left = `${staggerX}px`;
         } else {
-            emojiEl.style.right = `${padding + staggerX}px`;
+            emojiEl.style.right = `${staggerX}px`;
         }
 
         emojiEl.style.bottom = `${-20 + staggerY}px`; // Start slightly below screen

@@ -18,10 +18,10 @@ import {
  * RNGArena - Main game controller
  * Coordinates all systems and manages game flow
  */
-class RNGArena {
+export class RNGArena {
     constructor() {
         // Core tournament
-        this.tournament = new TournamentBracket();
+        this.tournament = new window.TournamentBracket();
         this.tournamentStarted = false;
         this.autoContinue = false;
         this.battleInProgress = false;
@@ -46,11 +46,16 @@ class RNGArena {
         this.leftFighterCard = document.querySelector('.left-fighter-card');
         this.rightFighterCard = document.querySelector('.right-fighter-card');
         this.bracketDisplay = document.getElementById('bracket-display');
+        this.overlayBracketDisplay = document.getElementById('overlay-bracket-display');
         this.bracketViewport = document.querySelector('.bracket-viewport');
         this.bracketSlider = document.getElementById('bracket-slider');
         this.zoomInBtn = document.getElementById('zoom-in');
         this.zoomOutBtn = document.getElementById('zoom-out');
         this.zoomLevel = document.getElementById('zoom-level');
+        this.overlayZoomInBtn = document.getElementById('overlay-zoom-in');
+        this.overlayZoomOutBtn = document.getElementById('overlay-zoom-out');
+        this.overlayZoomLevel = document.getElementById('overlay-zoom-level');
+        this.overlayBracketSlider = document.getElementById('overlay-bracket-slider');
         this.chatContainer = document.querySelector('.chat-container');
         this.chatInput = document.getElementById('chat-input');
         this.sendChatBtn = document.getElementById('send-chat');
@@ -104,6 +109,7 @@ class RNGArena {
         this.startChatScroll();
         this.updateOdds();
         this.initProgressBar();
+        this.updateProgressBar(); // Apply initial tier colors
         this.updateDisplay();
         this.hideRightFighter();
         this.initBracketOverlay();
@@ -152,6 +158,9 @@ class RNGArena {
         const roundInfo = this.tournament.getRoundInfo();
         this.emojiSystem.updateEmojiSpawnRate(roundInfo.current);
         this.emojiSystem.startEmojiReactions(roundInfo.current);
+
+        // Update chat rate based on round
+        this.updateChatRate(roundInfo.current);
 
         // Add announcer messages
         this.chatSystem.addAnnouncerMessage(`🎺 ${roundInfo.name.toUpperCase()} BEGINS! 🎺`);
@@ -304,8 +313,20 @@ class RNGArena {
         const roundInfo = this.tournament.getRoundInfo();
         this.lootSystem.updateLootBox(roundInfo);
 
+        // Update chat rate based on round
+        this.updateChatRate(roundInfo.current);
+
         this.updateByeDisplay(byeInfo);
         this.switchBackground();
+
+        // Show fighters for bye round
+        if (this.leftFighter) this.leftFighter.style.opacity = '1';
+        if (this.rightFighter) this.rightFighter.style.opacity = '1';
+
+        // Fade out battle status
+        setTimeout(() => {
+            this.battleStatus.style.opacity = '0';
+        }, 2000);
 
         setTimeout(() => {
             this.tournament.advanceToNextMatch();
@@ -607,8 +628,8 @@ class RNGArena {
             winnerSprite.style.animation = 'victory-glow 2s ease-in-out infinite';
         }
 
-        // Loot glow
-        this.lootSystem.addVictoryGlow();
+        // Upgrade chest to legendary (chest_01) with glow
+        this.lootSystem.setMaxTier();
 
         // Crown
         setTimeout(() => {
@@ -699,8 +720,6 @@ class RNGArena {
         const currentMatch = this.tournament.getCurrentMatch();
         const roundInfo = this.tournament.getRoundInfo();
 
-        if (!currentMatch) return;
-
         const htmlParts = [];
 
         // Render each round
@@ -744,7 +763,11 @@ class RNGArena {
         }
         htmlParts.push(`</div>`);
 
-        this.bracketDisplay.innerHTML = htmlParts.join('');
+        const bracketHTML = htmlParts.join('');
+        this.bracketDisplay.innerHTML = bracketHTML;
+        if (this.overlayBracketDisplay) {
+            this.overlayBracketDisplay.innerHTML = bracketHTML;
+        }
 
         setTimeout(() => {
             this.updateBracketTransform();
@@ -840,13 +863,19 @@ class RNGArena {
         const roundInfo = this.tournament.getRoundInfo();
         const segments = this.progressSegments.querySelectorAll('.progress-segment');
 
+        // Tier names for each round - New system: Wood/Stone/Copper/Bronze/Silver/Gold/Diamond/Platinum
+        const tiers = ['grey', 'green', 'blue', 'teal', 'purple', 'orange', 'crimson', 'gold'];
+
         segments.forEach((segment, index) => {
-            if (index < roundInfo.current - 1) {
+            // Remove all tier classes first
+            tiers.forEach(tier => segment.classList.remove(`tier-${tier}`));
+
+            // Current round and all previous rounds should be filled/completed
+            if (index <= roundInfo.current - 1) {
                 segment.classList.add('completed');
                 segment.classList.remove('active');
-            } else if (index === roundInfo.current - 1) {
-                segment.classList.add('active');
-                segment.classList.remove('completed');
+                // Add tier class for completed segments
+                segment.classList.add(`tier-${tiers[index]}`);
             } else {
                 segment.classList.remove('completed', 'active');
             }
@@ -861,11 +890,24 @@ class RNGArena {
         this.chatSystem.addChatMessage("Welcome to RNG Arena!");
         this.chatSystem.addChatMessage("Pure RNG battles await...");
 
+        this.updateChatRate(1); // Start with round 1 rate
+    }
+
+    updateChatRate(roundNumber) {
+        // Clear existing interval
+        if (this.chatScrollInterval) {
+            clearInterval(this.chatScrollInterval);
+        }
+
+        // Get base rate for this round
+        const baseRate = UI_CONFIG.CHAT_RATE_BY_ROUND[roundNumber] || 1200;
+        const randomVariation = Math.random() * 400; // Add some randomness
+
         this.chatScrollInterval = setInterval(() => {
-            if (!this.startButton.disabled) {
+            if (!this.startButton.disabled || this.tournamentStarted) {
                 this.chatSystem.addChatMessage(this.chatSystem.getRandomHypeMessage());
             }
-        }, 800 + Math.random() * 1200);
+        }, baseRate + randomVariation);
     }
 
     sendUserMessage() {
@@ -881,6 +923,7 @@ class RNGArena {
     // ===== Bracket Controls =====
 
     initBracketControls() {
+        // Dev frame zoom controls
         if (this.zoomInBtn) {
             this.zoomInBtn.addEventListener('click', () => {
                 this.currentZoom = Math.min(BRACKET_CONFIG.MAX_ZOOM, this.currentZoom + BRACKET_CONFIG.ZOOM_STEP);
@@ -904,6 +947,34 @@ class RNGArena {
             });
         }
 
+        // Overlay zoom controls
+        if (this.overlayZoomInBtn) {
+            this.overlayZoomInBtn.addEventListener('click', () => {
+                this.currentZoom = Math.min(BRACKET_CONFIG.MAX_ZOOM, this.currentZoom + BRACKET_CONFIG.ZOOM_STEP);
+                if (this.overlayBracketDisplay) {
+                    this.overlayBracketDisplay.style.zoom = this.currentZoom;
+                }
+                this.updateZoomDisplay();
+            });
+        }
+
+        if (this.overlayZoomOutBtn) {
+            this.overlayZoomOutBtn.addEventListener('click', () => {
+                this.currentZoom = Math.max(BRACKET_CONFIG.MIN_ZOOM, this.currentZoom - BRACKET_CONFIG.ZOOM_STEP);
+                if (this.overlayBracketDisplay) {
+                    this.overlayBracketDisplay.style.zoom = this.currentZoom;
+                }
+                this.updateZoomDisplay();
+            });
+        }
+
+        if (this.overlayBracketSlider) {
+            this.overlayBracketSlider.addEventListener('input', (e) => {
+                const scrollPercent = parseFloat(e.target.value);
+                // TODO: Implement overlay bracket scrolling
+            });
+        }
+
         this.updateZoomDisplay();
     }
 
@@ -912,11 +983,32 @@ class RNGArena {
             const displayZoom = this.bracketSystem.getDisplayZoom();
             this.zoomLevel.textContent = `${displayZoom}%`;
         }
+        if (this.overlayZoomLevel) {
+            const displayZoom = this.bracketSystem.getDisplayZoom();
+            this.overlayZoomLevel.textContent = `${displayZoom}%`;
+        }
+
+        // Update button states
+        if (this.zoomOutBtn) {
+            this.zoomOutBtn.disabled = this.currentZoom <= BRACKET_CONFIG.MIN_ZOOM;
+        }
+        if (this.zoomInBtn) {
+            this.zoomInBtn.disabled = this.currentZoom >= BRACKET_CONFIG.MAX_ZOOM;
+        }
+        if (this.overlayZoomOutBtn) {
+            this.overlayZoomOutBtn.disabled = this.currentZoom <= BRACKET_CONFIG.MIN_ZOOM;
+        }
+        if (this.overlayZoomInBtn) {
+            this.overlayZoomInBtn.disabled = this.currentZoom >= BRACKET_CONFIG.MAX_ZOOM;
+        }
     }
 
     updateBracketTransform() {
         if (this.bracketDisplay) {
             this.bracketDisplay.style.zoom = this.currentZoom;
+        }
+        if (this.overlayBracketDisplay) {
+            this.overlayBracketDisplay.style.zoom = this.currentZoom;
         }
     }
 
@@ -946,18 +1038,28 @@ class RNGArena {
     // ===== Bracket Overlay =====
 
     initBracketOverlay() {
-        const bracketIcon = document.getElementById('bracket-icon');
+        const bracketModeBtn = document.getElementById('bracket-mode');
+        const chatModeBtn = document.getElementById('chat-mode');
         const bracketOverlay = document.getElementById('bracket-overlay');
         const closeBracket = document.getElementById('close-bracket');
 
-        if (bracketIcon && bracketOverlay) {
-            bracketIcon.addEventListener('click', () => {
+        if (bracketModeBtn && bracketOverlay) {
+            bracketModeBtn.addEventListener('click', () => {
+                bracketOverlay.classList.remove('hidden');
                 bracketOverlay.classList.add('active');
+            });
+        }
+
+        if (chatModeBtn && bracketOverlay) {
+            chatModeBtn.addEventListener('click', () => {
+                bracketOverlay.classList.add('hidden');
+                bracketOverlay.classList.remove('active');
             });
         }
 
         if (closeBracket && bracketOverlay) {
             closeBracket.addEventListener('click', () => {
+                bracketOverlay.classList.add('hidden');
                 bracketOverlay.classList.remove('active');
             });
         }
@@ -965,18 +1067,10 @@ class RNGArena {
         if (bracketOverlay) {
             bracketOverlay.addEventListener('click', (e) => {
                 if (e.target === bracketOverlay) {
+                    bracketOverlay.classList.add('hidden');
                     bracketOverlay.classList.remove('active');
                 }
             });
         }
     }
-}
-
-// Initialize when DOM is ready
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => {
-        window.game = new RNGArena();
-    });
-} else {
-    window.game = new RNGArena();
 }

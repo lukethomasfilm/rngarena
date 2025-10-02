@@ -6,8 +6,9 @@ import { LOOT_CONFIG, CHARACTER_CONFIG } from './constants.js';
 export class LootSystem {
     constructor() {
         this.lootBox = document.getElementById('loot-box');
-        this.lootHeader = document.querySelector('.loot-header');
-        this.currentChestNumber = 8; // Start with lowest tier
+        this.lootHeaderTop = document.querySelector('.loot-header-top');
+        this.lootHeaderBottom = document.querySelector('.loot-header-bottom');
+        this.currentChestNumber = 8; // Start with lowest tier (Common Wood = chest_08)
     }
 
     /**
@@ -16,24 +17,45 @@ export class LootSystem {
     updateLootBox(roundInfo) {
         if (!this.lootBox) return;
 
-        // Loot tier progression (lower chest number = higher tier)
+        // Loot tier progression - New system
         const lootTiers = [
-            { name: 'gray', material: 'Gray', chestNumber: 1 },      // Round 1
-            { name: 'white', material: 'White', chestNumber: 2 },    // Round 2
-            { name: 'green', material: 'Green', chestNumber: 3 },    // Round 3
-            { name: 'blue', material: 'Blue', chestNumber: 4 },      // Round 4
-            { name: 'purple', material: 'Purple', chestNumber: 5 },  // Round 5
-            { name: 'orange', material: 'Orange', chestNumber: 6 },  // Round 6
-            { name: 'gold', material: 'Gold', chestNumber: 7 },      // Quarterfinals
-            { name: 'gold', material: 'LEGENDARY GOLD', chestNumber: 8 }  // Finals
+            { name: 'grey', material: 'Wood', rarity: 'Common', chestNumber: 8 },       // Round 1
+            { name: 'green', material: 'Stone', rarity: 'Uncommon', chestNumber: 7 },   // Round 2
+            { name: 'blue', material: 'Copper', rarity: 'Rare', chestNumber: 6 },       // Round 3
+            { name: 'teal', material: 'Bronze', rarity: 'Superior', chestNumber: 5 },   // Round 4
+            { name: 'purple', material: 'Silver', rarity: 'Epic', chestNumber: 4 },     // Round 5
+            { name: 'orange', material: 'Gold', rarity: 'Legendary', chestNumber: 3 },  // Round 6
+            { name: 'crimson', material: 'Diamond', rarity: 'Mythic', chestNumber: 2 }, // Round 7
+            { name: 'gold', material: 'Platinum', rarity: 'Exalted', chestNumber: 1 }   // Round 8
         ];
 
         const currentRound = Math.max(0, roundInfo.current - 1);
         const lootTier = lootTiers[Math.min(currentRound, lootTiers.length - 1)];
 
-        // Update loot header
-        if (this.lootHeader) {
-            this.lootHeader.textContent = `${lootTier.material.toUpperCase()} LOOT`;
+        // Update bottom loot header with tier info
+        if (this.lootHeaderBottom) {
+            const material = lootTier.material.toUpperCase();
+            const rarity = lootTier.rarity.toUpperCase();
+            this.lootHeaderBottom.innerHTML = `${material} CHEST<br>${rarity} LOOT`;
+
+            // Apply tier color from progress bar colors
+            const tierColors = {
+                'grey': 'linear-gradient(135deg, #808080, #a0a0a0, #606060)',
+                'green': 'linear-gradient(135deg, #00ff7f, #32cd32, #228b22)',
+                'blue': 'linear-gradient(135deg, #4169e1, #1e90ff, #0066cc)',
+                'teal': 'linear-gradient(135deg, #00CED1, #20B2AA, #008B8B)',
+                'purple': 'linear-gradient(135deg, #8a2be2, #9370db, #6a0dad)',
+                'orange': 'linear-gradient(135deg, #ff8c00, #ffa500, #ff6347)',
+                'crimson': 'linear-gradient(135deg, #DC143C, #B22222, #8B0000)',
+                'gold': 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)'
+            };
+
+            const tierName = lootTier.name.toLowerCase();
+            if (tierColors[tierName]) {
+                this.lootHeaderBottom.style.background = tierColors[tierName];
+                // Use white text for all backgrounds
+                this.lootHeaderBottom.style.color = '#fff';
+            }
         }
 
         // Construct chest image path
@@ -51,7 +73,10 @@ export class LootSystem {
         this.lootBox.style.transition = 'opacity 0.3s ease-in-out';
 
         setTimeout(() => {
-            this.lootBox.innerHTML = `<img src="${newImageSrc}" alt="${lootTier.material} Chest" class="loot-chest-image">`;
+            this.lootBox.innerHTML = `
+                <img src="${CHARACTER_CONFIG.LOOT_PATH}chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
+                <img src="${newImageSrc}" alt="${lootTier.material} Chest" class="loot-chest-image">
+            `;
             this.lootBox.style.opacity = '1';
             this.currentChestNumber = lootTier.chestNumber;
         }, 300);
@@ -66,6 +91,11 @@ export class LootSystem {
             chestImage.style.filter = 'drop-shadow(0 0 15px gold) drop-shadow(0 0 30px gold)';
             chestImage.style.animation = 'victory-glow 2s ease-in-out infinite';
         }
+
+        // Add dark backdrop behind chest
+        if (this.lootBox) {
+            this.lootBox.classList.add('victory-backdrop');
+        }
     }
 
     /**
@@ -76,6 +106,11 @@ export class LootSystem {
         if (chestImage) {
             chestImage.style.filter = '';
             chestImage.style.animation = '';
+        }
+
+        // Remove dark backdrop
+        if (this.lootBox) {
+            this.lootBox.classList.remove('victory-backdrop');
         }
     }
 
@@ -97,39 +132,60 @@ export class LootSystem {
      * Reset loot to initial state
      */
     reset() {
-        this.currentChestNumber = 1;
+        this.currentChestNumber = 8;
         this.removeVictoryGlow();
 
-        if (this.lootHeader) {
-            this.lootHeader.textContent = 'LOOT TIER';
+        // Top header stays gold always
+        if (this.lootHeaderTop) {
+            this.lootHeaderTop.innerHTML = 'LOOT<br>CHEST';
+            this.lootHeaderTop.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)';
+            this.lootHeaderTop.style.color = '#000';
+        }
+
+        // Bottom header resets to Wood/Common
+        if (this.lootHeaderBottom) {
+            this.lootHeaderBottom.innerHTML = 'WOOD CHEST<br>COMMON LOOT';
+            this.lootHeaderBottom.style.background = 'linear-gradient(135deg, #808080, #a0a0a0, #606060)';
+            this.lootHeaderBottom.style.color = '#fff';
         }
 
         if (this.lootBox) {
-            const initialImageSrc = `${CHARACTER_CONFIG.LOOT_PATH}chest_01.png`;
-            this.lootBox.innerHTML = `<img src="${initialImageSrc}" alt="Gray Chest" class="loot-chest-image">`;
+            const initialImageSrc = `${CHARACTER_CONFIG.LOOT_PATH}chest_08.png`;
+            this.lootBox.innerHTML = `
+                <img src="${CHARACTER_CONFIG.LOOT_PATH}chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
+                <img src="${initialImageSrc}" alt="Common Wood Chest" class="loot-chest-image">
+            `;
             this.lootBox.style.opacity = '1';
         }
     }
 
     /**
-     * Set loot to maximum tier (gold)
+     * Set loot to maximum tier (Platinum/Exalted)
      */
     setMaxTier() {
         if (!this.lootBox) return;
 
-        const goldImageSrc = `${CHARACTER_CONFIG.LOOT_PATH}chest_08.png`;
+        const platinumImageSrc = `${CHARACTER_CONFIG.LOOT_PATH}chest_01.png`;
         this.lootBox.style.opacity = '0';
         this.lootBox.style.transition = 'opacity 0.3s ease-in-out';
 
         setTimeout(() => {
-            this.lootBox.innerHTML = `<img src="${goldImageSrc}" alt="Legendary Gold Chest" class="loot-chest-image">`;
+            this.lootBox.innerHTML = `
+                <img src="${CHARACTER_CONFIG.LOOT_PATH}chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
+                <img src="${platinumImageSrc}" alt="Exalted Platinum Chest" class="loot-chest-image">
+            `;
             this.lootBox.style.opacity = '1';
-            this.currentChestNumber = 8;
+            this.currentChestNumber = 1;
             this.addVictoryGlow();
         }, 300);
 
-        if (this.lootHeader) {
-            this.lootHeader.textContent = 'LEGENDARY GOLD';
+        // Top header stays gold always (already set)
+        // Bottom header shows Platinum/Exalted
+        if (this.lootHeaderBottom) {
+            this.lootHeaderBottom.innerHTML = 'PLATINUM CHEST<br>EXALTED LOOT';
+            // Apply gold gradient
+            this.lootHeaderBottom.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)';
+            this.lootHeaderBottom.style.color = '#000';
         }
     }
 

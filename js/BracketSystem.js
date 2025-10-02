@@ -208,8 +208,8 @@ export class BracketSystem {
      * Get current zoom level (as percentage for display)
      */
     getDisplayZoom() {
-        // Convert actual zoom to display zoom (100% display = 160% actual)
-        return Math.round((this.currentZoom / BRACKET_CONFIG.MIN_ZOOM) * 100);
+        // Convert actual zoom to display zoom (100% display = 0.7 actual)
+        return Math.round((this.currentZoom / 0.7) * 100);
     }
 
     /**

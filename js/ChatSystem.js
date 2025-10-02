@@ -7,6 +7,8 @@ export class ChatSystem {
     constructor(chatMessagesElement) {
         this.chatMessages = chatMessagesElement;
         this.usernameCache = []; // Cache generated usernames for reuse
+        this.announcerQueue = [];
+        this.isProcessingAnnouncer = false;
     }
 
     /**
@@ -43,23 +45,48 @@ export class ChatSystem {
             return;
         }
 
-        const chatEl = this.chatMessages || document.getElementById('chat-messages');
-        if (!chatEl) {
-            return;
+        // Add to queue
+        this.announcerQueue.push(message);
+
+        // Start processing if not already processing
+        if (!this.isProcessingAnnouncer) {
+            this.processAnnouncerQueue();
+        }
+    }
+
+    /**
+     * Process announcer message queue with delays
+     */
+    async processAnnouncerQueue() {
+        this.isProcessingAnnouncer = true;
+
+        while (this.announcerQueue.length > 0) {
+            let message = this.announcerQueue.shift();
+
+            const chatEl = this.chatMessages || document.getElementById('chat-messages');
+            if (chatEl) {
+                // Add single space before all announcer messages
+                message = ' ' + message;
+
+                const messageElement = document.createElement('div');
+                messageElement.className = 'chat-message announcer-message';
+                messageElement.innerHTML = `<span style="color: gold; font-weight: bold; font-size: 0.65rem;">${message}</span>`;
+                messageElement.style.cssText = 'margin-bottom: 3px; padding: 2px 0; display: block !important; opacity: 1 !important;';
+
+                chatEl.appendChild(messageElement);
+
+                requestAnimationFrame(() => {
+                    chatEl.scrollTop = chatEl.scrollHeight;
+                });
+
+                this.limitMessages(chatEl);
+            }
+
+            // Wait 250ms before next message
+            await new Promise(resolve => setTimeout(resolve, 250));
         }
 
-        const messageElement = document.createElement('div');
-        messageElement.className = 'chat-message announcer-message';
-        messageElement.innerHTML = `<span style="color: gold; font-weight: bold; font-size: 0.65rem;">${message}</span>`;
-        messageElement.style.cssText = 'margin-bottom: 3px; padding: 2px 0; display: block !important; opacity: 1 !important;';
-
-        chatEl.appendChild(messageElement);
-
-        requestAnimationFrame(() => {
-            chatEl.scrollTop = chatEl.scrollHeight;
-        });
-
-        this.limitMessages(chatEl);
+        this.isProcessingAnnouncer = false;
     }
 
     /**

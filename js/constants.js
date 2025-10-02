@@ -35,7 +35,7 @@ export const GAME_CONFIG = {
         TURN_DELAY: 1800,
         VICTORY_DISPLAY: 2000,
         AUTO_CONTINUE_DELAY: 2000,
-        FIGHTER_ENTRANCE_DELAY: 500,
+        FIGHTER_ENTRANCE_DELAY: 100,
         STATUS_FADE_OUT: 1000
     }
 };
@@ -46,19 +46,19 @@ export const EMOJI_CONFIG = {
 
     // Spawn rate by round (faster as tournament progresses)
     SPAWN_RATE_BY_ROUND: {
-        1: 1000,
-        2: 900,
-        3: 800,
-        4: 700,
-        5: 600,
-        6: 500,
+        1: 2000,  // Start slow (half the emojis)
+        2: 1600,
+        3: 1300,
+        4: 1000,
+        5: 800,
+        6: 600,
         7: 400,   // Quarterfinals
         8: 300,   // Semifinals
         9: 200    // Finals
     },
 
     // Available emojis
-    EMOJI_POOL: ['⚔️', '🛡️', '💥', '🔥', '⚡', '💀', '👑', '🎯', '✨', '💫', '🌟', '🏆'],
+    EMOJI_POOL: ['⚔️', '🛡️', '💥', '🔥', '⚡', '💀', '👑', '🏆', '💪', '🎯'],
 
     // Animation duration (ms)
     ANIMATION_DURATION: 5000
@@ -66,13 +66,13 @@ export const EMOJI_CONFIG = {
 
 export const BRACKET_CONFIG = {
     // Zoom settings
-    MIN_ZOOM: 1.6,
-    MAX_ZOOM: 4.0,
-    ZOOM_STEP: 0.4,
-    DEFAULT_ZOOM: 1.6,
+    MIN_ZOOM: 0.7,
+    MAX_ZOOM: 2.0,
+    ZOOM_STEP: 0.1,
+    DEFAULT_ZOOM: 0.7,
 
     // Display settings
-    ZOOM_DISPLAY_OFFSET: 100, // Shows 100% when actual is 160%
+    ZOOM_DISPLAY_OFFSET: 70, // Shows 100% when actual is 0.7
     SCROLL_DELAY: 200
 };
 
@@ -105,7 +105,7 @@ export const LOOT_CONFIG = {
 
 export const ARENA_CONFIG = {
     // Available backgrounds
-    BACKGROUNDS: ['castle', 'courtyard', 'desert', 'forest', 'mountain', 'mushrooms', 'ruins', 'ships'],
+    BACKGROUNDS: ['castle', 'courtyard', 'desert', 'japan', 'mushrooms', 'ruins', 'ships', 'snow'],
 
     // Special gold background
     GOLD_BACKGROUND: 'gold',
@@ -129,8 +129,21 @@ export const CHARACTER_CONFIG = {
 
 export const UI_CONFIG = {
     // Chat settings
-    MAX_CHAT_MESSAGES: 100,
+    MAX_CHAT_MESSAGES: 200,
     CHAT_SCROLL_BEHAVIOR: 'smooth',
+
+    // Chat spawn rate by round (faster as tournament progresses)
+    CHAT_RATE_BY_ROUND: {
+        1: 3600,  // Start very slow (half the chat)
+        2: 2800,
+        3: 2200,
+        4: 1800,
+        5: 1400,
+        6: 1000,
+        7: 600,   // Quarterfinals
+        8: 400,   // Semifinals
+        9: 200    // Finals - very fast
+    },
 
     // Progress bar segments
     TOTAL_ROUNDS: 8, // Displayed rounds (actual is 9 but we show 8)
@@ -197,8 +210,8 @@ export const CHAT_MESSAGES = {
         castle: "Welcome to the Castle Arena!",
         courtyard: "Welcome to the Courtyard!",
         desert: "Welcome to the Desert Wastes!",
-        forest: "Welcome to the Ancient Forest!",
-        mountain: "Welcome to the Frozen Peaks!",
+        japan: "Welcome to the Ancient Dojo!",
+        snow: "Welcome to the Frozen Peaks!",
         mushrooms: "Welcome to the Mushroom Grove!",
         ruins: "Welcome to the Ancient Ruins!",
         ships: "Welcome to the Ship Graveyard!",
@@ -210,7 +223,7 @@ export const CHAT_MESSAGES = {
 export const ANNOUNCER_MESSAGES = {
     TOURNAMENT_START: "🎺 TOURNAMENT BEGINS! 🎺",
     DARING_HERO_START: "DARING HERO VS THE WORLD!",
-    BATTLE_COMMENCE: "BATTLE COMMENCING NOW!",
+    BATTLE_COMMENCE: "🛡️ BATTLE COMMENCING NOW! 🛡️",
     HERO_ELIMINATED: "💀 DARING HERO HAS BEEN ELIMINATED! 💀",
     NEW_FOLLOW_PREFIX: "👑 NOW FOLLOWING ",
     WINNER_PREFIX: "🏆 ",

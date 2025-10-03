@@ -25,6 +25,10 @@ export class RNGArena {
         this.tournamentStarted = false;
         this.autoContinue = false;
         this.battleInProgress = false;
+        this.heroLootOnlyMode = true; // Default: only track hero's wins
+        this.isFirstBattle = true; // Track if this is the first battle (no fade needed)
+        this.heroMaxRound = 0; // Track the max round the hero reached
+        this.heroEliminated = false; // Track if hero has been eliminated
 
         // Character management
         this.characterImageCache = new Map();
@@ -35,10 +39,12 @@ export class RNGArena {
         this.leftFighter = document.querySelector('.fighter-left');
         this.rightFighter = document.querySelector('.fighter-right');
         this.battleStatus = document.querySelector('.battle-status');
+        this.roundAnnouncement = document.querySelector('.round-announcement');
         this.startButton = document.getElementById('start-battle');
         this.chatMessages = document.getElementById('chat-messages');
         this.arenaViewport = document.querySelector('.arena-viewport');
         this.progressSegments = document.getElementById('progress-segments');
+        this.heroProgressIndicator = document.getElementById('hero-progress-indicator');
         this.leftFighterNameEl = document.getElementById('left-nameplate-name');
         this.rightFighterNameEl = document.getElementById('right-nameplate-name');
         this.leftFighterTitlesEl = document.getElementById('left-nameplate-titles');
@@ -115,6 +121,125 @@ export class RNGArena {
         this.initBracketOverlay();
         this.initBracketControls();
         this.emojiSystem.initEmojiButtons();
+        this.initTestModeToggle();
+        this.initLootClaimDevFrame();
+        this.initClaimLootButton();
+    }
+
+    initTestModeToggle() {
+        const daringHeroCheckbox = document.getElementById('daring-hero-checkbox');
+        if (daringHeroCheckbox) {
+            daringHeroCheckbox.addEventListener('change', (e) => {
+                // Inverted: checked = track all battles, unchecked = only hero
+                this.heroLootOnlyMode = !e.target.checked;
+                console.log('Daring Hero Tracking:', e.target.checked ? 'ALL BATTLES' : 'HERO ONLY');
+
+                const claimBtn = document.getElementById('claim-loot-btn');
+                const lootBox = document.getElementById('loot-box');
+
+                if (e.target.checked) {
+                    this.chatSystem.addChatMessage('🌐 TRACKING ALL BATTLE LOOT');
+                    // Update loot to current tournament round
+                    const roundInfo = this.tournament.getRoundInfo();
+                    this.lootSystem.updateLootBox(roundInfo);
+
+                    // Hide claim button when tracking all battles
+                    if (claimBtn) {
+                        claimBtn.classList.add('hidden');
+                    }
+                    if (lootBox) {
+                        lootBox.classList.remove('claimable');
+                    }
+                } else {
+                    this.chatSystem.addChatMessage('🎯 TRACKING HERO WINS ONLY');
+                    // Update loot back to hero's max round
+                    if (this.heroMaxRound > 0) {
+                        this.lootSystem.updateLootBox({ current: this.heroMaxRound });
+                    }
+                    // Show button only if hero has been eliminated
+                    this.showClaimLootButton();
+                }
+
+                // Update chevron position and color based on toggle state
+                this.updateHeroProgressIndicator();
+            });
+        }
+    }
+
+    initLootClaimDevFrame() {
+        const lootClaimOverlay = document.getElementById('loot-claim-overlay');
+        const popupLootContainer = document.querySelector('.popup-loot-container');
+
+        if (lootClaimOverlay) {
+            // Click overlay background to close
+            lootClaimOverlay.addEventListener('click', (e) => {
+                // Close if clicking on the overlay background (not the container)
+                if (e.target === lootClaimOverlay || e.target.classList.contains('loot-claim-viewport')) {
+                    lootClaimOverlay.classList.add('hidden');
+                }
+            });
+        }
+
+        // Prevent clicks inside the popup container from closing
+        if (popupLootContainer) {
+            popupLootContainer.addEventListener('click', (e) => {
+                e.stopPropagation();
+            });
+        }
+    }
+
+    initClaimLootButton() {
+        const claimBtn = document.getElementById('claim-loot-btn');
+        if (claimBtn) {
+            claimBtn.addEventListener('click', () => {
+                this.claimLoot();
+            });
+        }
+    }
+
+    showClaimLootButton() {
+        console.log('showClaimLootButton called', {
+            heroLootOnlyMode: this.heroLootOnlyMode,
+            heroEliminated: this.heroEliminated
+        });
+
+        // Only show button if BOTH:
+        // 1. We're in hero-only mode (toggle OFF)
+        // 2. Hero has been eliminated
+        if (!this.heroLootOnlyMode || !this.heroEliminated) {
+            console.log('Button not shown - conditions not met');
+            return;
+        }
+
+        const claimBtn = document.getElementById('claim-loot-btn');
+        const lootBox = document.getElementById('loot-box');
+
+        console.log('Elements found:', { claimBtn, lootBox });
+
+        if (claimBtn) {
+            claimBtn.classList.remove('hidden');
+            console.log('Button shown!');
+        }
+
+        if (lootBox) {
+            lootBox.classList.add('claimable');
+            console.log('Chest glow added!');
+        }
+    }
+
+    claimLoot() {
+        const lootClaimOverlay = document.getElementById('loot-claim-overlay');
+
+        // Show the loot claim popup overlay (keep button and glow visible)
+        if (lootClaimOverlay) {
+            lootClaimOverlay.classList.remove('hidden');
+        }
+
+        // Add feedback message
+        this.chatSystem.addAnnouncerMessage('🎁 LOOT CLAIMED! 🎁');
+        this.chatSystem.addChatMessage('Check your inventory!');
+
+        // Optional: trigger chest opening animation or other effects here
     }
 
     // ===== Tournament Flow =====
@@ -123,27 +248,39 @@ export class RNGArena {
         if (!this.tournamentStarted) {
             this.tournamentStarted = true;
             this.autoContinue = true;
+            this.heroEliminated = false; // Reset hero elimination status
 
             if (this.startButton) {
                 this.startButton.style.display = 'none';
             }
 
-            // Get the first match and populate names BEFORE animation
-            const firstMatch = this.tournament.getCurrentMatch();
-            if (firstMatch) {
-                // Make sure fighters are hidden before updating display
-                if (this.leftFighter) this.leftFighter.style.opacity = '0';
-                if (this.rightFighter) this.rightFighter.style.opacity = '0';
+            // Check if first round is a bye - if so, skip initial nameplate animation
+            const firstBye = this.tournament.hasFollowedCharacterBye();
 
-                this.updateMatchDisplay(firstMatch);
-            }
+            if (!firstBye) {
+                // Get the first match and populate names BEFORE animation
+                const firstMatch = this.tournament.getCurrentMatch();
+                if (firstMatch) {
+                    // Make sure fighters are hidden before updating display
+                    if (this.leftFighter) this.leftFighter.style.opacity = '0';
+                    if (this.rightFighter) this.rightFighter.style.opacity = '0';
 
-            // Animate nameplates into view with names already on them
-            const nameplateContainer = document.querySelector('.nameplate-vs-container');
-            if (nameplateContainer) {
-                setTimeout(() => {
-                    nameplateContainer.classList.add('visible');
-                }, 100);
+                    this.updateMatchDisplay(firstMatch);
+                }
+
+                // Animate nameplates into view with names already on them
+                const nameplateContainer = document.querySelector('.nameplate-vs-container');
+                if (nameplateContainer) {
+                    setTimeout(() => {
+                        nameplateContainer.classList.add('visible');
+                    }, 100);
+                }
+            } else {
+                // First round is a bye - keep nameplates hidden, let handleByeRound animate them
+                const nameplateContainer = document.querySelector('.nameplate-vs-container');
+                if (nameplateContainer) {
+                    nameplateContainer.classList.remove('visible');
+                }
             }
 
             this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.TOURNAMENT_START);
@@ -180,12 +317,22 @@ export class RNGArena {
         // Update chat rate based on round
         this.updateChatRate(roundInfo.current);
 
+        // Show round announcement
+        this.showRoundAnnouncement(roundInfo.name);
+
         // Add announcer messages
         this.chatSystem.addAnnouncerMessage(`🎺 ${roundInfo.name.toUpperCase()} BEGINS! 🎺`);
         this.chatSystem.addAnnouncerMessage(`⚔️ ${match.participant1.toUpperCase()} VS ${match.participant2.toUpperCase()} ⚔️`);
 
-        // Update loot and progress bar together
-        this.lootSystem.updateLootBox(roundInfo);
+        // Track hero's progress if Daring Hero is in this match
+        if (match.participant1 === 'Daring Hero' || match.participant2 === 'Daring Hero') {
+            this.heroMaxRound = Math.max(this.heroMaxRound, roundInfo.current);
+        }
+
+        // Update loot and progress bar together (only if not in hero-only mode, or if following hero)
+        if (!this.heroLootOnlyMode || this.tournament.followingCharacter === 'Daring Hero') {
+            this.lootSystem.updateLootBox(roundInfo);
+        }
         this.updateProgressBar();
 
         // Render bracket and scroll to current match
@@ -221,9 +368,6 @@ export class RNGArena {
             this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
         }
 
-        this.chatSystem.addChatMessage("FIGHTERS ENTER THE ARENA!");
-        this.chatSystem.addChatMessage("HERE WE GO!");
-
         setTimeout(() => this.executeFight(), GAME_CONFIG.TIMING.ENTRANCE_DURATION);
     }
 
@@ -248,8 +392,6 @@ export class RNGArena {
         };
 
         this.combatSystem.startCombat();
-        this.chatSystem.addChatMessage("TURN-BASED COMBAT BEGINS!");
-        this.chatSystem.addChatMessage("WATCH THE DICE ROLLS!");
     }
 
     resolveFight(leftWins) {
@@ -294,8 +436,12 @@ export class RNGArena {
         // Announcer messages
         this.chatSystem.addAnnouncerMessage(`${ANNOUNCER_MESSAGES.WINNER_PREFIX}${battleResult.winner.toUpperCase()}${ANNOUNCER_MESSAGES.WINNER_SUFFIX}`);
         if (battleResult.loser === 'Daring Hero') {
+            this.heroEliminated = true; // Mark hero as eliminated
             this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.HERO_ELIMINATED);
             this.chatSystem.addAnnouncerMessage(`${ANNOUNCER_MESSAGES.NEW_FOLLOW_PREFIX}${battleResult.winner.toUpperCase()}! 👑`);
+
+            // Show claim loot button and add glow to chest
+            this.showClaimLootButton();
         }
         this.chatSystem.addChatMessage(this.chatSystem.getRandomWinMessage());
         this.chatSystem.addChatMessage("GG!");
@@ -321,17 +467,39 @@ export class RNGArena {
     }
 
     handleByeRound(byeInfo) {
-        this.battleStatus.textContent = 'LADY BY-CHANCE APPEARS!';
+        this.battleStatus.innerHTML = '✨ LADY LUCK VISITS YOU! ✨<br><span style="font-size: 0.6em;">You get a bye and a free loot tier - lucky you!</span>';
         this.battleStatus.style.opacity = '0'; // Start hidden
 
-        this.chatSystem.addAnnouncerMessage("🍀 LUCKY YOU! 🍀");
-        this.chatSystem.addAnnouncerMessage("✨ YOU'VE BEEN VISITED BY LADY BY-CHANCE! ✨");
-        this.chatSystem.addAnnouncerMessage("🎁 FREE LOOT UPGRADE! 🎁");
-        this.chatSystem.addAnnouncerMessage(`⬆️ ${byeInfo.character.toUpperCase()} ADVANCES TO NEXT ROUND! ⬆️`);
+        // Hide nameplates initially to prevent animation jump
+        const nameplateContainer = document.querySelector('.nameplate-vs-container');
+        if (nameplateContainer) {
+            nameplateContainer.classList.remove('visible');
+        }
 
-        // Update loot and progress bar together
+        // Update loot and progress bar together (only if not in hero-only mode, or if following hero)
         const roundInfo = this.tournament.getRoundInfo();
-        this.lootSystem.updateLootBox(roundInfo);
+
+        // Track hero's progress if Daring Hero gets a bye
+        if (byeInfo.character === 'Daring Hero') {
+            this.heroMaxRound = Math.max(this.heroMaxRound, roundInfo.current);
+        }
+
+        // Show round announcement
+        this.showRoundAnnouncement(roundInfo.name);
+
+        // Delay Lady Luck messages until after round announcement (3.5s)
+        setTimeout(() => {
+            this.chatSystem.addAnnouncerMessage("✨ LADY LUCK VISITS YOU! ✨");
+            this.chatSystem.addAnnouncerMessage("🍀 You get a bye and a free loot tier - lucky you! 🍀");
+
+            if (!this.heroLootOnlyMode || this.tournament.followingCharacter === 'Daring Hero') {
+                this.lootSystem.updateLootBox(roundInfo);
+            } else {
+                this.chatSystem.addAnnouncerMessage("🎁 LOOT LOCKED (HERO LOOT ONLY MODE) 🎁");
+            }
+
+            this.chatSystem.addAnnouncerMessage(`⬆️ ${byeInfo.character.toUpperCase()} ADVANCES TO NEXT ROUND! ⬆️`);
+        }, 3500);
         this.updateProgressBar();
 
         // Update chat rate based on round
@@ -359,10 +527,18 @@ export class RNGArena {
                 this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
             }
 
-            // Show battle status after entrance
+            // Show nameplates with smooth slide-up animation
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
+            if (nameplateContainer) {
+                setTimeout(() => {
+                    nameplateContainer.classList.add('visible');
+                }, 100);
+            }
+
+            // Show battle status after round announcement finishes (2.7 seconds)
             setTimeout(() => {
                 this.battleStatus.style.opacity = '1';
-            }, 500);
+            }, 2700);
         }, GAME_CONFIG.TIMING.FIGHTER_ENTRANCE_DELAY);
 
         // Lucky clover shower from above for 7 seconds
@@ -404,6 +580,13 @@ export class RNGArena {
             this.chatSystem.addChatMessage("LEGENDARY!");
 
             this.showVictoryAnimation(winner);
+
+            // Show claim loot button if tournament is complete (hero has lost or won)
+            // Only show if in hero-only mode
+            if (this.heroLootOnlyMode) {
+                this.heroEliminated = true; // Mark as eligible for loot claim
+                this.showClaimLootButton();
+            }
         } else {
             const roundInfo = this.tournament.getRoundInfo();
             this.startButton.textContent = `CONTINUE ${roundInfo.name.toUpperCase()}`;
@@ -452,10 +635,10 @@ export class RNGArena {
             this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
             this.updateFighterSprite(this.leftFighter, byeInfo.character);
 
-            // Show Lady By-Chance on the right
-            this.rightFighterNameEl.textContent = 'Lady By-Chance';
+            // Show Lady Luck on the right
+            this.rightFighterNameEl.textContent = 'Lady Luck';
             this.rightFighterTitlesEl.textContent = 'Bringer of Fortune';
-            this.updateFighterSprite(this.rightFighter, 'Lady By-Chance');
+            this.updateFighterSprite(this.rightFighter, 'Lady Luck');
 
             // Add green styling to right card
             if (this.rightFighterCard) {
@@ -467,10 +650,10 @@ export class RNGArena {
             this.rightFighterTitlesEl.textContent = rightTitles.join(' • ');
             this.updateFighterSprite(this.rightFighter, byeInfo.character);
 
-            // Show Lady By-Chance on the left
-            this.leftFighterNameEl.textContent = 'Lady By-Chance';
+            // Show Lady Luck on the left
+            this.leftFighterNameEl.textContent = 'Lady Luck';
             this.leftFighterTitlesEl.textContent = 'Bringer of Fortune';
-            this.updateFighterSprite(this.leftFighter, 'Lady By-Chance');
+            this.updateFighterSprite(this.leftFighter, 'Lady Luck');
 
             // Add green styling to left card
             if (this.leftFighterCard) {
@@ -557,7 +740,7 @@ export class RNGArena {
             return CHARACTER_CONFIG.HERO_IMAGE;
         }
 
-        if (characterName === 'Lady By-Chance') {
+        if (characterName === 'Lady Luck') {
             return 'Lady_bye_chance.png';
         }
 
@@ -591,36 +774,78 @@ export class RNGArena {
         spriteElement.innerHTML = `<img src="${imagePath}" alt="${characterName}" class="character-image" style="${flipStyle}">`;
     }
 
+    // ===== Round Announcement =====
+
+    showRoundAnnouncement(roundName) {
+        if (!this.roundAnnouncement) return;
+
+        this.roundAnnouncement.textContent = roundName.toUpperCase();
+        this.roundAnnouncement.classList.remove('show');
+
+        // Force reflow to restart animation
+        void this.roundAnnouncement.offsetWidth;
+
+        this.roundAnnouncement.classList.add('show');
+
+        // Remove class after animation completes
+        setTimeout(() => {
+            this.roundAnnouncement.classList.remove('show');
+        }, 2500);
+    }
+
     // ===== Background Management =====
 
     switchBackground() {
         if (!this.arenaViewport) return;
 
-        // Check if finals - use gold background
-        const roundInfo = this.tournament.getRoundInfo();
-        if (roundInfo.current === 9) {
-            this.backgrounds.forEach(bg => {
-                this.arenaViewport.classList.remove(bg);
-            });
-            this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
-            this.arenaViewport.classList.add(ARENA_CONFIG.GOLD_BACKGROUND);
-            this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(ARENA_CONFIG.GOLD_BACKGROUND));
+        // Skip fade on first battle
+        if (this.isFirstBattle) {
+            this.isFirstBattle = false;
+            this.arenaViewport.style.opacity = '1';
+
+            // Just set initial background without fade
+            const newBg = this.backgrounds[this.currentBgIndex];
+            this.arenaViewport.classList.add(newBg);
+            this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+            this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
             return;
         }
 
-        // Remove current background
-        this.backgrounds.forEach(bg => {
-            this.arenaViewport.classList.remove(bg);
-        });
-        this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+        // Fade out
+        this.arenaViewport.style.opacity = '0.3';
+        this.arenaViewport.style.transition = 'opacity 0.5s ease-in-out';
 
-        // Add new background
-        const newBg = this.backgrounds[this.currentBgIndex];
-        this.arenaViewport.classList.add(newBg);
+        setTimeout(() => {
+            // Check if final round - use gold background
+            const roundInfo = this.tournament.getRoundInfo();
+            if (roundInfo.current === 7) {
+                this.backgrounds.forEach(bg => {
+                    this.arenaViewport.classList.remove(bg);
+                });
+                this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+                this.arenaViewport.classList.add(ARENA_CONFIG.GOLD_BACKGROUND);
+                this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(ARENA_CONFIG.GOLD_BACKGROUND));
+            } else {
+                // Remove current background
+                this.backgrounds.forEach(bg => {
+                    this.arenaViewport.classList.remove(bg);
+                });
+                this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
 
-        this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+                // Add new background
+                const newBg = this.backgrounds[this.currentBgIndex];
+                this.arenaViewport.classList.add(newBg);
 
-        this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
+                this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+
+                this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
+            }
+
+            // Fade in
+            setTimeout(() => {
+                this.arenaViewport.style.opacity = '1';
+            }, 50);
+        }, 500);
     }
 
     // ===== Victory Animation =====
@@ -939,6 +1164,35 @@ export class RNGArena {
                 segment.classList.remove('completed', 'active');
             }
         });
+
+        // Update hero progress indicator
+        this.updateHeroProgressIndicator();
+    }
+
+    updateHeroProgressIndicator() {
+        if (!this.heroProgressIndicator || !this.progressSegments) return;
+
+        const segments = this.progressSegments.querySelectorAll('.progress-segment');
+        if (segments.length === 0) return;
+
+        const segmentWidth = 252 / segments.length; // Total progress bar width is 252px
+
+        // Determine which round to show based on toggle state
+        let displayRound;
+        if (!this.heroLootOnlyMode) {
+            // Toggle ON: show current tournament round
+            const roundInfo = this.tournament.getRoundInfo();
+            displayRound = roundInfo.current;
+        } else {
+            // Toggle OFF: show hero's max round
+            displayRound = this.heroMaxRound;
+        }
+
+        // Calculate position - always stay gold, no color changes
+        // If displayRound is 0 or undefined, default to round 1 position (center of first segment)
+        const effectiveRound = displayRound > 0 ? displayRound : 1;
+        const position = (effectiveRound - 1) * segmentWidth + (segmentWidth / 2) - 7; // Center on segment, offset for chevron width
+        this.heroProgressIndicator.style.left = `${position}px`;
     }
 
     // ===== Chat Management =====
@@ -1101,6 +1355,8 @@ export class RNGArena {
         const chatModeBtn = document.getElementById('chat-mode');
         const bracketOverlay = document.getElementById('bracket-overlay');
         const closeBracket = document.getElementById('close-bracket');
+        const fullscreenBtn = document.getElementById('fullscreen-btn');
+        const settingsBtn = document.getElementById('settings-btn');
 
         if (bracketModeBtn && bracketOverlay) {
             bracketModeBtn.addEventListener('click', () => {
@@ -1129,6 +1385,30 @@ export class RNGArena {
                     bracketOverlay.classList.add('hidden');
                     bracketOverlay.classList.remove('active');
                 }
+            });
+        }
+
+        // Fullscreen button
+        const battlefieldSection = document.querySelector('.battlefield-section');
+        const fullscreenCloseBtn = document.querySelector('.battlefield-fullscreen-close');
+
+        if (fullscreenBtn && battlefieldSection) {
+            fullscreenBtn.addEventListener('click', () => {
+                battlefieldSection.classList.add('fullscreen');
+            });
+        }
+
+        if (fullscreenCloseBtn && battlefieldSection) {
+            fullscreenCloseBtn.addEventListener('click', () => {
+                battlefieldSection.classList.remove('fullscreen');
+            });
+        }
+
+        // Settings button (placeholder)
+        if (settingsBtn) {
+            settingsBtn.addEventListener('click', () => {
+                console.log('Settings button clicked');
+                // TODO: Open settings panel
             });
         }
     }

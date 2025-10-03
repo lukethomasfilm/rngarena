@@ -9,6 +9,16 @@ export class LootSystem {
         this.lootHeaderTop = document.querySelector('.loot-header-top');
         this.lootHeaderBottom = document.querySelector('.loot-header-bottom');
         this.currentChestNumber = 8; // Start with lowest tier (Common Wood = chest_08)
+
+        // Dev loot elements
+        this.devLootBox = document.getElementById('dev-loot-box');
+        this.devLootHeaderTop = document.querySelector('.dev-loot-header-top');
+        this.devLootHeaderBottom = document.querySelector('.dev-loot-header-bottom');
+
+        // Popup loot elements
+        this.popupLootBox = document.getElementById('popup-loot-box');
+        this.popupLootHeaderTop = document.querySelector('.popup-loot-header-top');
+        this.popupLootHeaderBottom = document.querySelector('.popup-loot-header-bottom');
     }
 
     /**
@@ -68,18 +78,134 @@ export class LootSystem {
             return; // Same chest, no need to change
         }
 
+        // Check if button should be visible based on game state (not just previous state)
+        const shouldShowButton = window.arena && window.arena.heroEliminated && window.arena.heroLootOnlyMode;
+
         // Add fade transition
         this.lootBox.style.opacity = '0';
         this.lootBox.style.transition = 'opacity 0.3s ease-in-out';
 
         setTimeout(() => {
+            const buttonClass = shouldShowButton ? 'claim-loot-btn' : 'claim-loot-btn hidden';
             this.lootBox.innerHTML = `
                 <img src="${CHARACTER_CONFIG.LOOT_PATH}chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
                 <img src="${newImageSrc}" alt="${lootTier.material} Chest" class="loot-chest-image">
+                <button id="claim-loot-btn" class="${buttonClass}">CLAIM LOOT</button>
             `;
             this.lootBox.style.opacity = '1';
             this.currentChestNumber = lootTier.chestNumber;
+
+            // Re-initialize claim button event listener after HTML update
+            const claimBtn = document.getElementById('claim-loot-btn');
+            if (claimBtn && window.arena) {
+                claimBtn.addEventListener('click', () => {
+                    window.arena.claimLoot();
+                });
+            }
+
+            // Re-apply claimable state only if button should be visible
+            if (shouldShowButton) {
+                this.lootBox.classList.add('claimable');
+            }
         }, 300);
+
+        // Update dev loot chest and popup as well
+        this.updateDevLoot(lootTier);
+        this.updatePopupLoot(lootTier);
+    }
+
+    /**
+     * Update dev loot claim frame chest
+     */
+    updateDevLoot(lootTier) {
+        if (!this.devLootBox) return;
+
+        // Update dev loot header top - keep gold background
+        if (this.devLootHeaderTop) {
+            this.devLootHeaderTop.innerHTML = 'LOOT<br>CHEST';
+            this.devLootHeaderTop.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)';
+            this.devLootHeaderTop.style.color = '#1a1a1a';
+        }
+
+        // Update dev loot header bottom with tier info
+        if (this.devLootHeaderBottom) {
+            const material = lootTier.material.toUpperCase();
+            const rarity = lootTier.rarity.toUpperCase();
+            this.devLootHeaderBottom.innerHTML = `${material} CHEST<br>${rarity} LOOT`;
+
+            // Apply tier color from progress bar colors
+            const tierColors = {
+                'grey': 'linear-gradient(135deg, #808080, #a0a0a0, #606060)',
+                'green': 'linear-gradient(135deg, #00ff7f, #32cd32, #228b22)',
+                'blue': 'linear-gradient(135deg, #4169e1, #1e90ff, #0066cc)',
+                'teal': 'linear-gradient(135deg, #00CED1, #20B2AA, #008B8B)',
+                'purple': 'linear-gradient(135deg, #8a2be2, #9370db, #6a0dad)',
+                'orange': 'linear-gradient(135deg, #ff8c00, #ffa500, #ff6347)',
+                'crimson': 'linear-gradient(135deg, #DC143C, #B22222, #8B0000)',
+                'gold': 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)'
+            };
+
+            const tierName = lootTier.name.toLowerCase();
+            if (tierColors[tierName]) {
+                this.devLootHeaderBottom.style.background = tierColors[tierName];
+                this.devLootHeaderBottom.style.color = '#fff';
+            }
+        }
+
+        // Update dev chest image
+        const chestNumber = lootTier.chestNumber.toString().padStart(2, '0');
+        const newImageSrc = `${CHARACTER_CONFIG.LOOT_PATH}chest_${chestNumber}.png`;
+
+        this.devLootBox.innerHTML = `
+            <img src="${newImageSrc}" alt="${lootTier.material} Chest" class="dev-loot-chest-image">
+        `;
+    }
+
+    /**
+     * Update popup loot chest
+     */
+    updatePopupLoot(lootTier) {
+        if (!this.popupLootBox) return;
+
+        // Update popup loot header top - keep gold background
+        if (this.popupLootHeaderTop) {
+            this.popupLootHeaderTop.innerHTML = 'LOOT<br>CHEST';
+            this.popupLootHeaderTop.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)';
+            this.popupLootHeaderTop.style.color = '#1a1a1a';
+        }
+
+        // Update popup loot header bottom with tier info
+        if (this.popupLootHeaderBottom) {
+            const material = lootTier.material.toUpperCase();
+            const rarity = lootTier.rarity.toUpperCase();
+            this.popupLootHeaderBottom.innerHTML = `${material} CHEST<br>${rarity} LOOT`;
+
+            // Apply tier color from progress bar colors
+            const tierColors = {
+                'grey': 'linear-gradient(135deg, #808080, #a0a0a0, #606060)',
+                'green': 'linear-gradient(135deg, #00ff7f, #32cd32, #228b22)',
+                'blue': 'linear-gradient(135deg, #4169e1, #1e90ff, #0066cc)',
+                'teal': 'linear-gradient(135deg, #00CED1, #20B2AA, #008B8B)',
+                'purple': 'linear-gradient(135deg, #8a2be2, #9370db, #6a0dad)',
+                'orange': 'linear-gradient(135deg, #ff8c00, #ffa500, #ff6347)',
+                'crimson': 'linear-gradient(135deg, #DC143C, #B22222, #8B0000)',
+                'gold': 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)'
+            };
+
+            const tierName = lootTier.name.toLowerCase();
+            if (tierColors[tierName]) {
+                this.popupLootHeaderBottom.style.background = tierColors[tierName];
+                this.popupLootHeaderBottom.style.color = '#fff';
+            }
+        }
+
+        // Update popup chest image
+        const chestNumber = lootTier.chestNumber.toString().padStart(2, '0');
+        const newImageSrc = `${CHARACTER_CONFIG.LOOT_PATH}chest_${chestNumber}.png`;
+
+        this.popupLootBox.innerHTML = `
+            <img src="${newImageSrc}" alt="${lootTier.material} Chest" class="popup-loot-chest-image">
+        `;
     }
 
     /**

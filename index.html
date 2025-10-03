@@ -21,6 +21,7 @@
                         <div id="loot-box" class="treasure-chest">
                             <img src="/images/Loot/chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
                             <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image">
+                            <button id="claim-loot-btn" class="claim-loot-btn hidden">CLAIM LOOT</button>
                         </div>
                     </div>
                     <div class="loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
@@ -29,6 +30,7 @@
 
             <!-- Center: Battlefield Section -->
             <div class="battlefield-section">
+                <button class="battlefield-fullscreen-close">✕</button>
                 <div class="arena-viewport castle">
                     <!-- Top Tournament Progress -->
                     <div class="top-progress">
@@ -43,6 +45,7 @@
                             <div class="progress-label">Tournament Progress</div>
                             <div class="progress-bar">
                                 <div class="progress-segments" id="progress-segments"></div>
+                                <div class="hero-progress-indicator" id="hero-progress-indicator">▲</div>
                             </div>
                         </div>
 
@@ -63,6 +66,7 @@
                     </div>
                     <button id="start-battle" class="battle-btn">START TOURNAMENT</button>
                     <div class="battle-status"></div>
+                    <div class="round-announcement"></div>
                     <div class="fighter-left">
                         <div class="fighter-sprite left-sprite">
                         </div>
@@ -109,10 +113,16 @@
                 </div>
             </div>
 
-            <!-- Bottom Left: Exit Button -->
+            <!-- Bottom Left: 4-Button Control Grid -->
             <div class="bottom-left-section">
-                <div class="exit-container">
-                    <button id="exit-game" class="exit-btn">EXIT</button>
+                <div class="control-grid">
+                    <button id="settings-btn" class="control-btn">⚙️</button>
+                    <button id="mute-audio" class="control-btn mute-btn">🔊</button>
+                    <button id="exit-game" class="control-btn exit-btn">EXIT</button>
+                    <label class="control-btn toggle-btn">
+                        <input type="checkbox" id="daring-hero-checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
 
@@ -128,14 +138,31 @@
                 </div>
             </div>
 
-            <!-- Bottom Right: Chat Mode Button -->
+            <!-- Bottom Right: 4-Button View Grid -->
             <div class="bottom-right-section">
-                <div class="chat-mode-container">
-                    <button id="chat-mode" class="chat-mode-btn">LIVE CHAT<br>MODE</button>
-                    <button id="bracket-mode" class="chat-mode-btn">TOURNAMENT<br>BRACKET</button>
+                <div class="view-grid">
+                    <button id="chat-mode" class="view-btn">LIVE<br>CHAT</button>
+                    <button id="bracket-mode" class="view-btn">BRACKET</button>
+                    <button id="fullscreen-btn" class="view-btn">⛶</button>
+                    <button class="view-btn shield-btn">🛡️</button>
                 </div>
             </div>
-    </div>
+
+        <!-- Loot Claim Popup Overlay -->
+        <div class="loot-claim-overlay hidden" id="loot-claim-overlay">
+            <div class="loot-claim-viewport">
+                <div class="popup-loot-container">
+                    <div class="popup-loot-header-top">LOOT<br>CHEST</div>
+                    <div class="popup-loot-display">
+                        <div id="popup-loot-box" class="popup-treasure-chest">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="popup-loot-chest-image">
+                        </div>
+                    </div>
+                    <div class="popup-loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tournament Bracket Overlay -->
         <div id="bracket-overlay" class="bracket-overlay hidden">
             <div class="bracket-overlay-background"></div>
@@ -187,6 +214,23 @@
                     <div class="bracket-slider-container">
                         <input type="range" id="bracket-slider" class="bracket-slider" min="0" max="100" value="0">
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loot Claim Preview Frame -->
+    <div class="loot-claim-dev-frame">
+        <div class="loot-claim-container-dev">
+            <div class="loot-claim-viewport-dev">
+                <div class="dev-loot-container">
+                    <div class="dev-loot-header-top">LOOT<br>CHEST</div>
+                    <div class="dev-loot-display">
+                        <div id="dev-loot-box" class="dev-treasure-chest">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="dev-loot-chest-image">
+                        </div>
+                    </div>
+                    <div class="dev-loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
                 </div>
             </div>
         </div>

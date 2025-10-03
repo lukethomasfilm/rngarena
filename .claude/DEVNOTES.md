@@ -51,6 +51,51 @@ npx http-server -p 8000 .
 
 ---
 
+## Recent Changes (2025-10-03 - Session 3)
+
+### Loot Helmet Reveal System
+- **NEW FEATURE:** Interactive loot chest opening with helmet reveal
+  - Click chest in loot claim popup to reveal helmet item
+  - Helmet appears with gold/white glow and wiggle animation
+  - Chest fades out when helmet is revealed
+  - After claiming, chest/button/shadow disappear from sidebar
+  - Independent claim states for hero mode vs tournament mode
+  - `heroLootClaimed` flag: Tracks hero-only mode claims (toggle OFF)
+  - `tournamentLootClaimed` flag: Tracks tournament mode claims (toggle ON)
+  - Toggle switching preserves independent claim states
+
+### Fullscreen Fighter Adjustments
+- **Fighter positioning and scaling:**
+  - Scale: 1.35 (198px × 224px character images)
+  - Left fighter: 19% from left edge
+  - Right fighter: 81% from left edge
+  - Bottom position: 5% from bottom
+  - Transform: translateX(-50%) centers fighters on their position
+
+### Victory Screen Improvements
+- **Winner nameplate:**
+  - Text centered when scaled up (textAlign: center)
+  - Nameplate moves to 50% and scales to 1.3x
+  - Loser nameplate and VS display fade out
+- **Claim loot button:**
+  - Now updates after `heroEliminated` flag is set
+  - Ensures button appears on victory screen in hero mode
+
+### Loot System Cleanup
+- Removed fade effect on loot container after claiming
+- Only chest, shadow, and button hide after claim
+- Sidebar headers remain fully visible
+
+### Technical Implementation
+- Helmet image path: `/images/Loot Items/Loot_helmet_test.png`
+- Helmet animations: `helmetWiggle` (1s) and `helmetGlow` (2s)
+- Popup chest click handler in `initLootClaimDevFrame()`
+- `revealHelmet()` checks current mode claim state
+- Toggle handler updates loot box only if not claimed in that mode
+- Loot box visibility restored on toggle switch if not claimed
+
+---
+
 ## Recent Changes (2025-10-03 - Session 2)
 
 ### Fullscreen Battlefield Mode
@@ -168,4 +213,4 @@ npx http-server -p 8000 .
 - **JavaScript:** `js/RNGArena.js` lines 492-493 - Chat messages
 
 ---
-*Last updated: 2025-10-03 Session 2*
+*Last updated: 2025-10-03 Session 3*

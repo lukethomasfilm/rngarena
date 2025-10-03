@@ -120,7 +120,7 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.5);
+    background: rgba(0, 0, 0, 0.7);
     z-index: 1000;
     display: flex;
     align-items: center;
@@ -188,6 +188,12 @@ body {
     justify-content: center;
     transform: scale(0.52) scaleX(-1);
     animation: devChestBounce 2s ease-in-out infinite;
+    cursor: pointer;
+    transition: transform 0.3s ease;
+}
+
+.popup-treasure-chest:hover {
+    transform: scale(0.55) scaleX(-1);
 }
 
 .popup-loot-chest-image {
@@ -448,11 +454,24 @@ body {
 
 .battlefield-section.fullscreen .fighter-left,
 .battlefield-section.fullscreen .fighter-right {
-    bottom: -10% !important;
+    bottom: 5% !important;
+    width: 25% !important;
 }
 
-.battlefield-section.fullscreen .fighter-sprite {
-    transform: scale(0.92);
+.battlefield-section.fullscreen .fighter-left {
+    left: 19% !important;
+    transform: translateX(-50%) scale(1.35) !important;
+}
+
+.battlefield-section.fullscreen .fighter-right {
+    left: 81% !important;
+    transform: translateX(-50%) scale(1.35) !important;
+}
+
+/* Scale the character images directly in fullscreen */
+.battlefield-section.fullscreen .character-image {
+    width: 198px !important;
+    height: 252px !important;
 }
 
 .battlefield-fullscreen-close {
@@ -586,8 +605,6 @@ body {
     color: #000;
     font-size: 0.55rem;
     animation: goldShimmer 3s ease-in-out infinite;
-    grid-column: 1;
-    grid-row: 1 / 3;
 }
 
 .control-btn.toggle-btn {
@@ -621,13 +638,13 @@ body {
 .control-btn.toggle-btn .toggle-slider::before {
     content: '';
     position: absolute;
-    width: calc(50% - 6px);
-    height: calc(100% - 6px);
+    width: calc(50% - 3px);
+    height: calc(100% - 3px);
     border-radius: 50%;
     background: linear-gradient(135deg, #f0f0f0 0%, #d0d0d0 100%);
     transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4), 0 1px 3px rgba(0, 0, 0, 0.3);
-    left: 3px;
+    left: 1.5px;
 }
 
 .control-btn.toggle-btn input[type="checkbox"]:checked + .toggle-slider {
@@ -637,7 +654,7 @@ body {
 }
 
 .control-btn.toggle-btn input[type="checkbox"]:checked + .toggle-slider::before {
-    left: calc(50% + 3px);
+    left: calc(50% + 1.5px);
     background: linear-gradient(135deg, #fff 0%, #e0e0e0 100%);
 }
 
@@ -1958,6 +1975,27 @@ body {
     }
 }
 
+@keyframes helmetWiggle {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1) rotate(0deg);
+    }
+    25% {
+        transform: translate(-50%, -50%) scale(1.05) rotate(-5deg);
+    }
+    75% {
+        transform: translate(-50%, -50%) scale(1.05) rotate(5deg);
+    }
+}
+
+@keyframes helmetGlow {
+    0%, 100% {
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
+    }
+    50% {
+        filter: drop-shadow(0 0 30px rgba(255, 215, 0, 1)) drop-shadow(0 0 60px rgba(255, 255, 255, 1)) drop-shadow(0 0 80px rgba(255, 215, 0, 0.6));
+    }
+}
+
 @keyframes winnerNameGlow {
     0%, 100% {
         text-shadow:
@@ -2034,7 +2072,7 @@ body {
     transform: translate(-50%, -50%);
     z-index: 99;
     color: #ffd700;
-    font-size: 1.6rem; /* Slightly smaller */
+    font-size: 1.1rem; /* Smaller to prevent wrapping on Lady Luck text */
     font-weight: bold;
     text-align: center;
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);

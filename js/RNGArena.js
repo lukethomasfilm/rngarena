@@ -29,6 +29,8 @@ export class RNGArena {
         this.isFirstBattle = true; // Track if this is the first battle (no fade needed)
         this.heroMaxRound = 0; // Track the max round the hero reached
         this.heroEliminated = false; // Track if hero has been eliminated
+        this.heroLootClaimed = false; // Track if hero loot has been claimed
+        this.tournamentLootClaimed = false; // Track if tournament loot has been claimed
 
         // Character management
         this.characterImageCache = new Map();
@@ -143,12 +145,21 @@ export class RNGArena {
                     const roundInfo = this.tournament.getRoundInfo();
                     this.lootSystem.updateLootBox(roundInfo);
 
-                    // Hide claim button when tracking all battles
-                    if (claimBtn) {
-                        claimBtn.classList.add('hidden');
-                    }
-                    if (lootBox) {
-                        lootBox.classList.remove('claimable');
+                    // Hide/show elements based on tournament loot claim state
+                    if (this.tournamentLootClaimed) {
+                        // Hide chest if already claimed in this mode
+                        if (claimBtn) claimBtn.style.display = 'none';
+                        if (lootBox) lootBox.style.display = 'none';
+                    } else {
+                        // Show chest but hide claim button (not in hero mode)
+                        if (claimBtn) {
+                            claimBtn.classList.add('hidden');
+                            claimBtn.style.display = '';
+                        }
+                        if (lootBox) {
+                            lootBox.classList.remove('claimable');
+                            lootBox.style.display = '';
+                        }
                     }
                 } else {
                     this.chatSystem.addChatMessage('🎯 TRACKING HERO WINS ONLY');
@@ -156,8 +167,18 @@ export class RNGArena {
                     if (this.heroMaxRound > 0) {
                         this.lootSystem.updateLootBox({ current: this.heroMaxRound });
                     }
-                    // Show button only if hero has been eliminated
-                    this.showClaimLootButton();
+
+                    // Hide/show elements based on hero loot claim state
+                    if (this.heroLootClaimed) {
+                        // Hide chest if already claimed in this mode
+                        if (claimBtn) claimBtn.style.display = 'none';
+                        if (lootBox) lootBox.style.display = 'none';
+                    } else {
+                        // Show button only if hero has been eliminated
+                        if (claimBtn) claimBtn.style.display = '';
+                        if (lootBox) lootBox.style.display = '';
+                        this.showClaimLootButton();
+                    }
                 }
 
                 // Update chevron position and color based on toggle state
@@ -169,6 +190,7 @@ export class RNGArena {
     initLootClaimDevFrame() {
         const lootClaimOverlay = document.getElementById('loot-claim-overlay');
         const popupLootContainer = document.querySelector('.popup-loot-container');
+        const popupLootBox = document.getElementById('popup-loot-box');
 
         if (lootClaimOverlay) {
             // Click overlay background to close
@@ -176,14 +198,31 @@ export class RNGArena {
                 // Close if clicking on the overlay background (not the container)
                 if (e.target === lootClaimOverlay || e.target.classList.contains('loot-claim-viewport')) {
                     lootClaimOverlay.classList.add('hidden');
+
+                    // If loot was claimed in current mode, hide the sidebar elements
+                    const isLootClaimedInCurrentMode = this.heroLootOnlyMode ? this.heroLootClaimed : this.tournamentLootClaimed;
+                    if (isLootClaimedInCurrentMode) {
+                        const claimBtn = document.getElementById('claim-loot-btn');
+                        const lootBox = document.getElementById('loot-box');
+
+                        if (claimBtn) claimBtn.style.display = 'none';
+                        if (lootBox) lootBox.style.display = 'none';
+                    }
                 }
             });
         }
 
-        // Prevent clicks inside the popup container from closing
+        // Prevent clicks inside the popup container from closing (except chest click)
         if (popupLootContainer) {
             popupLootContainer.addEventListener('click', (e) => {
                 e.stopPropagation();
+            });
+        }
+
+        // Click on chest to reveal helmet
+        if (popupLootBox) {
+            popupLootBox.addEventListener('click', () => {
+                this.revealHelmet();
             });
         }
     }
@@ -236,10 +275,67 @@ export class RNGArena {
         }
 
         // Add feedback message
-        this.chatSystem.addAnnouncerMessage('🎁 LOOT CLAIMED! 🎁');
-        this.chatSystem.addChatMessage('Check your inventory!');
+        this.chatSystem.addAnnouncerMessage('🎁 CLICK THE CHEST TO OPEN! 🎁');
+    }
 
-        // Optional: trigger chest opening animation or other effects here
+    revealHelmet() {
+        const popupLootBox = document.getElementById('popup-loot-box');
+
+        // Check if loot already claimed in current mode
+        const isAlreadyClaimed = this.heroLootOnlyMode ? this.heroLootClaimed : this.tournamentLootClaimed;
+        if (!popupLootBox || isAlreadyClaimed) return;
+
+        // Set the appropriate claim flag based on current mode
+        if (this.heroLootOnlyMode) {
+            this.heroLootClaimed = true;
+        } else {
+            this.tournamentLootClaimed = true;
+        }
+
+        // Remove chest glow and wiggle
+        popupLootBox.classList.remove('claimable');
+        const chestImage = popupLootBox.querySelector('.popup-loot-chest-image');
+        if (chestImage) {
+            chestImage.style.animation = 'none';
+            chestImage.style.filter = 'none';
+        }
+
+        // Create helmet element
+        const helmet = document.createElement('img');
+        helmet.src = '/images/Loot Items/Loot_helmet_test.png';
+        helmet.className = 'loot-helmet';
+        helmet.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            width: 200px;
+            height: 200px;
+            object-fit: contain;
+            opacity: 0;
+            transition: all 0.5s ease;
+            filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
+            animation: helmetWiggle 1s ease-in-out infinite, helmetGlow 2s ease-in-out infinite;
+            z-index: 100;
+        `;
+
+        popupLootBox.appendChild(helmet);
+
+        // Animate helmet reveal
+        setTimeout(() => {
+            helmet.style.transform = 'translate(-50%, -50%) scale(1)';
+            helmet.style.opacity = '1';
+        }, 100);
+
+        // Fade out chest
+        if (chestImage) {
+            chestImage.style.transition = 'opacity 0.5s ease';
+            chestImage.style.opacity = '0';
+        }
+
+        // Add feedback message
+        this.chatSystem.addAnnouncerMessage('✨ LEGENDARY HELMET OBTAINED! ✨');
+        this.chatSystem.addChatMessage('A rare treasure!');
     }
 
     // ===== Tournament Flow =====
@@ -582,11 +678,27 @@ export class RNGArena {
             this.showVictoryAnimation(winner);
 
             // Show claim loot button if tournament is complete (hero has lost or won)
-            // Only show if in hero-only mode
-            if (this.heroLootOnlyMode) {
-                this.heroEliminated = true; // Mark as eligible for loot claim
-                this.showClaimLootButton();
-            }
+            this.heroEliminated = true; // Mark as eligible for loot claim
+
+            // Update loot box to recreate button with correct visibility
+            const roundInfo = this.tournament.getRoundInfo();
+            this.lootSystem.updateLootBox(roundInfo);
+
+            // Always show button when tournament completes (after a delay to ensure loot system updates first)
+            setTimeout(() => {
+                const claimBtn = document.getElementById('claim-loot-btn');
+                const lootBox = document.getElementById('loot-box');
+
+                if (claimBtn) {
+                    claimBtn.classList.remove('hidden');
+                    console.log('Claim button shown after tournament completion');
+                }
+
+                if (lootBox) {
+                    lootBox.classList.add('claimable');
+                    this.lootSystem.addVictoryGlow();
+                }
+            }, 500);
         } else {
             const roundInfo = this.tournament.getRoundInfo();
             this.startButton.textContent = `CONTINUE ${roundInfo.name.toUpperCase()}`;
@@ -915,14 +1027,6 @@ export class RNGArena {
         // Upgrade chest to legendary (chest_01) with glow
         this.lootSystem.setMaxTier();
 
-        // Crown
-        setTimeout(() => {
-            const crown = document.createElement('div');
-            crown.className = 'victory-crown';
-            crown.textContent = '👑';
-            winnerFighter.appendChild(crown);
-        }, 1000);
-
         // Victor text
         setTimeout(() => {
             const victorText = document.createElement('div');
@@ -931,19 +1035,29 @@ export class RNGArena {
             this.arenaViewport.appendChild(victorText);
         }, 2000);
 
-        // Nameplate
+        // Hide loser nameplate and VS
         setTimeout(() => {
-            const nameplate = document.createElement('div');
-            nameplate.className = 'victory-nameplate';
+            const loserNameplate = winnerSide === 'left' ? document.querySelector('.right-nameplate') : document.querySelector('.left-nameplate');
+            const vsDisplay = document.querySelector('.vs-display');
+            const winnerNameplate = winnerSide === 'left' ? document.querySelector('.left-nameplate') : document.querySelector('.right-nameplate');
 
-            const winnerTitles = this.tournament.getCharacterTitles(winner);
-            nameplate.innerHTML = `
-                <div class="victory-name">${this.tournament.getCharacterName(winner)}</div>
-                <div class="victory-title">${winnerTitles.join(' • ')}</div>
-            `;
+            if (loserNameplate) {
+                loserNameplate.style.opacity = '0';
+                loserNameplate.style.transition = 'opacity 0.5s ease';
+            }
+            if (vsDisplay) {
+                vsDisplay.style.opacity = '0';
+                vsDisplay.style.transition = 'opacity 0.5s ease';
+            }
 
-            winnerFighter.appendChild(nameplate);
-        }, 2500);
+            // Center and enlarge winner's nameplate
+            if (winnerNameplate) {
+                winnerNameplate.style.transition = 'all 0.8s ease';
+                winnerNameplate.style.left = '50%';
+                winnerNameplate.style.transform = 'translateX(-50%) scale(1.3)';
+                winnerNameplate.style.textAlign = 'center';
+            }
+        }, 1000);
 
         this.battleStatus.style.opacity = '0';
     }

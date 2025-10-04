@@ -224,7 +224,8 @@ export class ChatSystem {
      * Add message to chat mode view
      */
     addToChatMode(message, username, type) {
-        const chatModeMessages = document.getElementById('chat-mode-messages');
+        // Try both overlay and dev frame
+        const chatModeMessages = document.getElementById('chat-mode-messages-overlay') || document.getElementById('chat-mode-messages');
         if (!chatModeMessages) return;
 
         const messageElement = document.createElement('div');

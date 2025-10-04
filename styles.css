@@ -35,23 +35,22 @@ body {
     transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 }
 
-/* Rotate dev-frame when chat mode is active */
+/* Rotate dev-frame when chat mode overlay is active */
 .dev-frame.chat-mode-active {
-    transform: rotate(-90deg);
-    width: 390px;
-    height: 844px;
+    transform: rotate(-90deg) !important;
+    width: 844px !important;
+    height: 390px !important;
+    margin-top: 250px !important;
+    /* Adjust top margin to keep rotated frame centered vertically */
 }
 
-.dev-frame.chat-mode-active::before,
-.dev-frame.chat-mode-active::after {
-    display: none;
-}
 
-/* Hide other frames and tabs when chat mode is active */
-body:has(.chat-mode-dev-frame.active) .bracket-dev-frame,
-body:has(.chat-mode-dev-frame.active) .loot-claim-dev-frame,
-body:has(.chat-mode-dev-frame.active) .dev-tabs-container {
-    display: none;
+/* Hide tabs and dev frames when chat mode is active */
+.dev-frame.chat-mode-active ~ .dev-tabs-container,
+.dev-frame.chat-mode-active ~ .bracket-dev-frame,
+.dev-frame.chat-mode-active ~ .loot-claim-dev-frame,
+.dev-frame.chat-mode-active ~ .chat-mode-dev-frame {
+    display: none !important;
 }
 
 /* Dev Frame Tabs */
@@ -452,90 +451,108 @@ body:has(.chat-mode-dev-frame.active) .dev-tabs-container {
 
 /* No background overlay needed for chat mode */
 
-/* Chat mode as overlay - phone starts in landscape (844×390) */
-.chat-mode-dev-frame.active {
-    position: fixed;
+/* Live Chat Overlay - fills container */
+.chat-mode-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background: #0a0a0a;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.chat-mode-overlay.hidden {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* Content fills naturally */
+.chat-mode-overlay-content {
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border-radius: 18px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+/* Counter-rotate content and use portrait dimensions for correct layout */
+.dev-frame.chat-mode-active .chat-mode-overlay-content {
+    width: 374px;   /* portrait width (390 - 16px padding) */
+    height: 828px;  /* portrait height (844 - 16px padding) */
+    transform: rotate(90deg);
+    transform-origin: center center;
+    position: absolute;
     top: 50%;
     left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 9998;
-    margin: 0;
-    box-shadow:
-        0 0 100px rgba(0,0,0,0.9),
-        inset 0 0 0 3px #ffd700;
-    width: 844px;
-    height: 390px;
-    border-radius: 25px;
-    padding: 8px;
-    transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    margin-top: -414px;  /* -828/2 */
+    margin-left: -187px; /* -374/2 */
 }
 
-/* After 1 second, no changes needed - dev-frame will rotate */
-.chat-mode-dev-frame.active.upright {
-    /* Phone stays same, just rides along with dev-frame rotation */
-}
-
-.chat-mode-dev-frame.active .chat-mode-container-dev {
-    width: 828px;
-    height: 374px;
-    border-radius: 18px;
-}
-
-.chat-mode-dev-frame.active .chat-mode-viewport-dev {
-    flex-direction: row;
-}
-
-.chat-mode-dev-frame.active .chat-mode-battlefield {
-    width: 828px;
-    height: 374px;
-    flex-shrink: 0;
-}
-
-.chat-mode-dev-frame.active .chat-mode-messages {
-    display: none;
-}
-
-.chat-mode-dev-frame.active .chat-mode-input-container {
-    display: none;
-}
-
-.chat-mode-dev-frame.active::before {
-    content: "📱 iPhone Landscape 844×390";
-    position: absolute;
-    top: -35px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 12px;
-    color: #ffd700;
-    font-weight: bold;
-    white-space: nowrap;
-}
-
-.chat-mode-dev-frame.active.upright::before {
-    display: none;
-}
-
-/* When upright, show chat UI and restore portrait layout */
-.chat-mode-dev-frame.active.upright .chat-mode-container-dev {
-    width: 374px;
-    height: 828px;
-}
-
-.chat-mode-dev-frame.active.upright .chat-mode-messages {
-    display: block;
-}
-
-.chat-mode-dev-frame.active.upright .chat-mode-input-container {
-    display: flex;
-}
-
-.chat-mode-dev-frame.active.upright .chat-mode-viewport-dev {
-    flex-direction: column;
-}
-
-.chat-mode-dev-frame.active.upright .chat-mode-battlefield {
+.chat-mode-battlefield-overlay {
     width: 100%;
-    height: 300px;
+    height: 160px;
+    flex-shrink: 0;
+    background: #1a1a1a;
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chat-mode-separator {
+    width: 100%;
+    height: 50px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+    border-top: 2px solid rgba(255, 215, 0, 0.5);
+    border-bottom: 2px solid rgba(255, 215, 0, 0.5);
+    margin: 8px 0;
+}
+
+.chat-mode-exit-btn {
+    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ffa500);
+    background-size: 300% 100%;
+    color: #000;
+    border: 2px solid #ffa500;
+    border-radius: 8px;
+    padding: 8px 20px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.chat-mode-exit-btn:hover {
+    background-position: 100% 0;
+    transform: scale(1.05);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.chat-mode-messages-overlay {
+    flex: 1;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+.chat-mode-input-container-overlay {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
 }
 
 .chat-mode-close-btn {

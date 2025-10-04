@@ -976,7 +976,7 @@ export class RNGArena {
             width: 100%;
             height: 100%;
             background: rgba(0, 0, 0, 0.5);
-            z-index: 50;
+            z-index: 5;
             opacity: 0;
             transition: opacity 1s ease-in-out;
             pointer-events: none;
@@ -1059,7 +1059,7 @@ export class RNGArena {
                 winnerNameplate.style.top = '50%';
                 winnerNameplate.style.transform = 'translate(-50%, -50%) scale(1.3)';
                 winnerNameplate.style.textAlign = 'center';
-                winnerNameplate.style.zIndex = '20';
+                winnerNameplate.style.zIndex = '100';
 
                 // Force center alignment on child elements
                 const nameName = winnerNameplate.querySelector('.nameplate-name');
@@ -1490,10 +1490,14 @@ export class RNGArena {
         }
 
         if (chatModeBtn) {
-            const chatModeFrame = document.getElementById('chat-mode-frame');
-            const closeChatMode = document.getElementById('close-chat-mode');
+            const chatModeOverlay = document.getElementById('chat-mode-overlay');
+            const closeChatModeBtn = document.getElementById('close-chat-mode-overlay');
+            const exitChatBtn = document.getElementById('chat-mode-exit-btn');
+            const devFrame = document.querySelector('.dev-frame');
 
             const openChatMode = () => {
+                console.log('Opening chat mode...');
+
                 // Hide bracket overlay if open
                 if (bracketOverlay) {
                     bracketOverlay.classList.add('hidden');
@@ -1506,54 +1510,75 @@ export class RNGArena {
                     chatTab.click(); // This will switch the tab
                 }
 
-                // Step 1: Open chat mode overlay in landscape (844×390)
-                if (chatModeFrame) {
-                    chatModeFrame.classList.remove('hidden');
-                    chatModeFrame.classList.add('active');
+                // Hide tabs and other dev frames
+                const tabsContainer = document.querySelector('.dev-tabs-container');
+                const bracketDevFrame = document.querySelector('.bracket-dev-frame');
+                const lootDevFrame = document.querySelector('.loot-claim-dev-frame');
+                const chatDevFrame = document.querySelector('.chat-mode-dev-frame');
+
+                if (tabsContainer) tabsContainer.style.display = 'none';
+                if (bracketDevFrame) bracketDevFrame.style.display = 'none';
+                if (lootDevFrame) lootDevFrame.style.display = 'none';
+                if (chatDevFrame) chatDevFrame.style.display = 'none';
+
+                // Rotate dev-frame counter-clockwise
+                if (devFrame) {
+                    console.log('Adding chat-mode-active class to dev-frame');
+                    devFrame.classList.add('chat-mode-active');
+                    // Force the rotation with inline styles (keep original dimensions)
+                    devFrame.style.transform = 'rotate(-90deg)';
+                    console.log('Dev-frame classes:', devFrame.className);
+                    console.log('Dev-frame transform:', devFrame.style.transform);
+                } else {
+                    console.log('Dev-frame not found!');
+                }
+
+                // Open chat mode overlay
+                if (chatModeOverlay) {
+                    chatModeOverlay.classList.remove('hidden');
                     // Init battlefield clone and start syncing immediately
                     this.initChatModeBattlefield();
                     this.initChatModeInput();
                 }
-
-                // Step 2: After 1 second, rotate BOTH dev-frame and phone to vertical
-                setTimeout(() => {
-                    const devFrame = document.querySelector('.dev-frame');
-                    if (devFrame) {
-                        devFrame.classList.add('chat-mode-active');
-                    }
-                    if (chatModeFrame) {
-                        chatModeFrame.classList.add('upright');
-                    }
-                }, 1000);
             };
 
             const closeChatModeOverlay = () => {
-                // Rotate everything back
-                const devFrame = document.querySelector('.dev-frame');
+                // Rotate dev-frame back
                 if (devFrame) {
                     devFrame.classList.remove('chat-mode-active');
+                    devFrame.style.transform = '';
                 }
 
-                if (chatModeFrame) {
-                    chatModeFrame.classList.remove('upright');
-                    chatModeFrame.classList.remove('active');
+                // Show tabs and other dev frames again
+                const tabsContainer = document.querySelector('.dev-tabs-container');
+                const bracketDevFrame = document.querySelector('.bracket-dev-frame');
+                const lootDevFrame = document.querySelector('.loot-claim-dev-frame');
+                const chatDevFrame = document.querySelector('.chat-mode-dev-frame');
 
-                    setTimeout(() => {
-                        chatModeFrame.classList.add('hidden');
+                if (tabsContainer) tabsContainer.style.display = '';
+                if (bracketDevFrame) bracketDevFrame.style.display = '';
+                if (lootDevFrame) lootDevFrame.style.display = '';
+                if (chatDevFrame) chatDevFrame.style.display = '';
 
-                        // Stop syncing to save performance
-                        if (this.syncChatModeBattlefield) {
-                            clearInterval(this.syncChatModeBattlefield);
-                            this.syncChatModeBattlefield = null;
-                        }
-                    }, 1000); // Wait for animation to complete
+                if (chatModeOverlay) {
+                    chatModeOverlay.classList.add('hidden');
+
+                    // Stop syncing to save performance
+                    if (this.syncChatModeBattlefield) {
+                        clearInterval(this.syncChatModeBattlefield);
+                        this.syncChatModeBattlefield = null;
+                    }
                 }
             };
 
             chatModeBtn.addEventListener('click', openChatMode);
 
-            if (closeChatMode) {
-                closeChatMode.addEventListener('click', closeChatModeOverlay);
+            if (closeChatModeBtn) {
+                closeChatModeBtn.addEventListener('click', closeChatModeOverlay);
+            }
+
+            if (exitChatBtn) {
+                exitChatBtn.addEventListener('click', closeChatModeOverlay);
             }
         }
 
@@ -1601,7 +1626,7 @@ export class RNGArena {
     // ===== Chat Mode Battlefield =====
 
     initChatModeBattlefield() {
-        const chatModeBattlefield = document.getElementById('chat-mode-battlefield');
+        const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
         const arenaViewport = document.querySelector('.arena-viewport');
 
         if (!chatModeBattlefield || !arenaViewport) {
@@ -1631,17 +1656,19 @@ export class RNGArena {
         // Calculate scale to fit container
         // Arena viewport is 588px wide × 280px tall
         // Default container: 374px wide × 300px tall (portrait mode in dev)
-        // Active container: 828px wide × 374px tall (landscape when overlay is active)
+        // Overlay container: 160px tall
 
-        // Check if chat mode is active to use different scaling
-        const chatModeFrame = document.getElementById('chat-mode-frame');
-        const isActive = chatModeFrame && chatModeFrame.classList.contains('active');
+        // Check if chat mode overlay is active
+        const chatModeOverlay = document.getElementById('chat-mode-overlay');
+        const isActive = chatModeOverlay && !chatModeOverlay.classList.contains('hidden');
 
         let scale, leftOffset;
         if (isActive) {
-            // Active mode: scale to fit landscape (828×374)
-            scale = 828 / 588; // 1.408
-            leftOffset = 0;
+            // Overlay mode: scale to fit 160px height
+            scale = 160 / 280; // 0.571
+            const scaledWidth = 588 * scale;
+            // Center horizontally in the container
+            leftOffset = 0; // Let it be centered naturally
         } else {
             // Dev mode: scale to fit 300px height
             scale = 300 / 280; // 1.071
@@ -1669,7 +1696,7 @@ export class RNGArena {
     }
 
     updateChatModeBattlefield() {
-        const chatModeBattlefield = document.getElementById('chat-mode-battlefield');
+        const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
         const arenaViewport = document.querySelector('.arena-viewport');
 
         if (!chatModeBattlefield || !arenaViewport) return;
@@ -1748,8 +1775,8 @@ export class RNGArena {
     }
 
     initChatModeInput() {
-        const chatModeInput = document.getElementById('chat-mode-input');
-        const chatModeSendBtn = document.getElementById('chat-mode-send-btn');
+        const chatModeInput = document.getElementById('chat-mode-input-overlay');
+        const chatModeSendBtn = document.getElementById('chat-mode-send-btn-overlay');
 
         console.log('Initializing chat mode input:', { chatModeInput, chatModeSendBtn });
 

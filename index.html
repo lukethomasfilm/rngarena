@@ -190,6 +190,28 @@
                 </div>
             </div>
         </div>
+
+        <!-- Live Chat Overlay -->
+        <div id="chat-mode-overlay" class="chat-mode-overlay hidden">
+            <button class="chat-mode-close-btn" id="close-chat-mode-overlay">✕</button>
+            <div class="chat-mode-overlay-content">
+                <div class="chat-mode-battlefield-overlay" id="chat-mode-battlefield-overlay">
+                    <!-- Battlefield will be cloned here -->
+                </div>
+                <!-- Separator bar between battlefield and chat -->
+                <div class="chat-mode-separator">
+                    <button class="chat-mode-exit-btn" id="chat-mode-exit-btn">EXIT CHAT</button>
+                </div>
+                <div class="chat-mode-messages-overlay" id="chat-mode-messages-overlay">
+                    <div class="chat-mode-message system">Welcome to Live Chat!</div>
+                    <div class="chat-mode-message system">Messages will appear here during battles...</div>
+                </div>
+                <div class="chat-mode-input-container-overlay">
+                    <input type="text" class="chat-mode-input" id="chat-mode-input-overlay" placeholder="Type a message...">
+                    <button class="chat-mode-send-btn" id="chat-mode-send-btn-overlay">SEND</button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Dev Frame Tabs -->

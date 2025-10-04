@@ -1729,13 +1729,17 @@ export class RNGArena {
             cloneStatus.style.opacity = originalStatus.style.opacity;
         }
 
-        // Sync fighters
+        // Sync fighters (excluding animation classes to prevent repeating)
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const cloneLeftFighter = clone.querySelector('.fighter-left');
         if (originalLeftFighter && cloneLeftFighter) {
             cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
             cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
-            cloneLeftFighter.className = originalLeftFighter.className;
+            // Copy className but exclude animation classes
+            const leftClasses = originalLeftFighter.className.split(' ').filter(c =>
+                !c.includes('entrance') && !c.includes('attack') && !c.includes('block')
+            ).join(' ');
+            cloneLeftFighter.className = leftClasses;
         }
 
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
@@ -1743,7 +1747,11 @@ export class RNGArena {
         if (originalRightFighter && cloneRightFighter) {
             cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
             cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
-            cloneRightFighter.className = originalRightFighter.className;
+            // Copy className but exclude animation classes
+            const rightClasses = originalRightFighter.className.split(' ').filter(c =>
+                !c.includes('entrance') && !c.includes('attack') && !c.includes('block')
+            ).join(' ');
+            cloneRightFighter.className = rightClasses;
         }
 
         // Sync nameplates

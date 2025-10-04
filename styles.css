@@ -506,6 +506,14 @@ body {
     justify-content: center;
 }
 
+/* Disable all animations in chat mode battlefield */
+.chat-mode-battlefield-overlay *,
+.chat-mode-battlefield-overlay *::before,
+.chat-mode-battlefield-overlay *::after {
+    animation: none !important;
+    transition: none !important;
+}
+
 /* Adjust battlefield elements for larger chat mode view */
 .chat-mode-battlefield-overlay .top-progress {
     transform: translateY(20px);

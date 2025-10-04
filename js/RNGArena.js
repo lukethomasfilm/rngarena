@@ -1729,14 +1729,16 @@ export class RNGArena {
             cloneStatus.style.opacity = originalStatus.style.opacity;
         }
 
-        // Sync fighters (only innerHTML and opacity, no animation classes)
+        // Sync fighters with smart className syncing to show animations without repeating
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const cloneLeftFighter = clone.querySelector('.fighter-left');
         if (originalLeftFighter && cloneLeftFighter) {
             cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
             cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
-            // Don't sync className - keep only base class to avoid animations
-            cloneLeftFighter.className = 'fighter-left';
+            // Only update className if it changed to prevent animation restart
+            if (cloneLeftFighter.className !== originalLeftFighter.className) {
+                cloneLeftFighter.className = originalLeftFighter.className;
+            }
         }
 
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
@@ -1744,8 +1746,10 @@ export class RNGArena {
         if (originalRightFighter && cloneRightFighter) {
             cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
             cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
-            // Don't sync className - keep only base class to avoid animations
-            cloneRightFighter.className = 'fighter-right';
+            // Only update className if it changed to prevent animation restart
+            if (cloneRightFighter.className !== originalRightFighter.className) {
+                cloneRightFighter.className = originalRightFighter.className;
+            }
         }
 
         // Sync nameplates

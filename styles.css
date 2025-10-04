@@ -511,13 +511,6 @@ body {
     display: none !important;
 }
 
-/* Disable all animations in chat mode to prevent repeating */
-.chat-mode-battlefield-overlay *,
-.chat-mode-battlefield-overlay *::before,
-.chat-mode-battlefield-overlay *::after {
-    animation: none !important;
-}
-
 /* Adjust battlefield elements for larger chat mode view */
 .chat-mode-battlefield-overlay .top-progress {
     position: absolute !important;
@@ -537,34 +530,36 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-hp {
-    left: 40px !important;
+    left: 60px !important;
 }
 
 .chat-mode-battlefield-overlay .right-hp {
-    right: 40px !important;
+    right: 60px !important;
 }
 
 .chat-mode-battlefield-overlay .vs-display {
     position: absolute !important;
-    bottom: 2px !important;
+    bottom: 8px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 15 !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate {
-    top: 45% !important;
-    transform: translateY(-50%) !important;
+    top: auto !important;
+    bottom: 10px !important;
+    transform: translateX(-50%) !important;
     max-width: 140px !important;
     font-size: 0.7rem !important;
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 70px !important;
+    left: 25% !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    right: 70px !important;
+    left: 75% !important;
+    right: auto !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate-name {
@@ -582,15 +577,15 @@ body {
 }
 
 .chat-mode-battlefield-overlay .fighter-left {
-    left: 80px !important;
+    left: 60px !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
-    right: 80px !important;
+    right: 60px !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-sprite {
-    transform: scale(1.15) !important;
+    transform: scale(1.0) !important;
 }
 
 .chat-mode-separator {

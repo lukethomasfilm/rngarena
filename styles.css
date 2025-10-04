@@ -506,35 +506,58 @@ body {
     justify-content: center;
 }
 
-/* Disable all animations in chat mode battlefield */
-.chat-mode-battlefield-overlay *,
-.chat-mode-battlefield-overlay *::before,
-.chat-mode-battlefield-overlay *::after {
+/* Disable only entrance/attack/block animations to prevent repeating */
+.chat-mode-battlefield-overlay .fighter-entrance-left,
+.chat-mode-battlefield-overlay .fighter-entrance-right,
+.chat-mode-battlefield-overlay .attack-left,
+.chat-mode-battlefield-overlay .attack-right,
+.chat-mode-battlefield-overlay .block-left,
+.chat-mode-battlefield-overlay .block-right {
     animation: none !important;
-    transition: none !important;
 }
 
 /* Adjust battlefield elements for larger chat mode view */
 .chat-mode-battlefield-overlay .top-progress {
-    transform: translateY(20px);
+    transform: translateY(15px) translateX(0) !important;
+}
+
+.chat-mode-battlefield-overlay .progress-container {
+    transform: translateY(25px) !important;
 }
 
 .chat-mode-battlefield-overlay .hp-bar {
-    transform: translateY(-15px) scale(0.9);
+    transform: translateY(-10px) scale(0.9) !important;
+}
+
+.chat-mode-battlefield-overlay .left-hp {
+    left: 10px !important;
+}
+
+.chat-mode-battlefield-overlay .right-hp {
+    right: 10px !important;
 }
 
 .chat-mode-battlefield-overlay .vs-display {
     position: absolute !important;
-    bottom: 10px !important;
+    bottom: 5px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 15 !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate {
-    top: 35% !important;
+    top: 40% !important;
+    transform: translateY(-50%) !important;
     max-width: 180px !important;
     font-size: 0.75rem !important;
+}
+
+.chat-mode-battlefield-overlay .left-nameplate {
+    left: 15% !important;
+}
+
+.chat-mode-battlefield-overlay .right-nameplate {
+    right: 15% !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate-name {
@@ -553,7 +576,7 @@ body {
 
 .chat-mode-battlefield-overlay .fighter-left,
 .chat-mode-battlefield-overlay .fighter-right {
-    transform: scale(1.15);
+    transform: scale(1.15) !important;
 }
 
 .chat-mode-separator {

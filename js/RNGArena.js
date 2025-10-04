@@ -1700,6 +1700,10 @@ export class RNGArena {
 
         console.log('Chat mode battlefield initialized with scale:', scale);
 
+        // Initialize tracking for className changes
+        this.chatModeLastLeftClass = '';
+        this.chatModeLastRightClass = '';
+
         // Set up continuous sync at 500ms to reduce lag
         if (this.syncChatModeBattlefield) {
             clearInterval(this.syncChatModeBattlefield);
@@ -1729,14 +1733,15 @@ export class RNGArena {
             cloneStatus.style.opacity = originalStatus.style.opacity;
         }
 
-        // Sync fighters with smart className syncing to show animations without repeating
+        // Sync fighters with tracked className to prevent animation restarts
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const cloneLeftFighter = clone.querySelector('.fighter-left');
         if (originalLeftFighter && cloneLeftFighter) {
             cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
             cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
-            // Only update className if it changed to prevent animation restart
-            if (cloneLeftFighter.className !== originalLeftFighter.className) {
+            // Only update className if it actually changed from last sync
+            if (this.chatModeLastLeftClass !== originalLeftFighter.className) {
+                this.chatModeLastLeftClass = originalLeftFighter.className;
                 cloneLeftFighter.className = originalLeftFighter.className;
             }
         }
@@ -1746,8 +1751,9 @@ export class RNGArena {
         if (originalRightFighter && cloneRightFighter) {
             cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
             cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
-            // Only update className if it changed to prevent animation restart
-            if (cloneRightFighter.className !== originalRightFighter.className) {
+            // Only update className if it actually changed from last sync
+            if (this.chatModeLastRightClass !== originalRightFighter.className) {
+                this.chatModeLastRightClass = originalRightFighter.className;
                 cloneRightFighter.className = originalRightFighter.className;
             }
         }

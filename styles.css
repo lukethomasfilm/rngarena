@@ -515,13 +515,19 @@ body {
 .chat-mode-battlefield-overlay .top-progress {
     position: absolute !important;
     top: 5px !important;
-    left: 50% !important;
+    left: calc(50% - 5px) !important;
     transform: translateX(-50%) !important;
     width: 100% !important;
 }
 
 .chat-mode-battlefield-overlay .progress-container {
-    transform: translateY(35px) !important;
+    transform: translateY(25px) !important;
+}
+
+.chat-mode-battlefield-overlay .top-odds {
+    top: 60px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
 }
 
 .chat-mode-battlefield-overlay .hp-bar {
@@ -530,11 +536,11 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-hp {
-    left: 60px !important;
+    left: 55px !important;
 }
 
 .chat-mode-battlefield-overlay .right-hp {
-    right: 60px !important;
+    right: 55px !important;
 }
 
 .chat-mode-battlefield-overlay .vs-display {
@@ -554,11 +560,11 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 25% !important;
+    left: 35% !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    left: 75% !important;
+    left: 65% !important;
     right: auto !important;
 }
 
@@ -577,11 +583,11 @@ body {
 }
 
 .chat-mode-battlefield-overlay .fighter-left {
-    left: 60px !important;
+    left: 30px !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
-    right: 60px !important;
+    right: 30px !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-sprite {

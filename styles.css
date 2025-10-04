@@ -511,9 +511,10 @@ body {
     display: none !important;
 }
 
-/* Prevent only fighter animations from showing (they're handled via sync) */
-.chat-mode-battlefield-overlay .fighter-left,
-.chat-mode-battlefield-overlay .fighter-right {
+/* Disable all animations in chat mode to prevent repeating */
+.chat-mode-battlefield-overlay *,
+.chat-mode-battlefield-overlay *::before,
+.chat-mode-battlefield-overlay *::after {
     animation: none !important;
 }
 
@@ -536,11 +537,11 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-hp {
-    left: 5px !important;
+    left: 40px !important;
 }
 
 .chat-mode-battlefield-overlay .right-hp {
-    right: 5px !important;
+    right: 40px !important;
 }
 
 .chat-mode-battlefield-overlay .vs-display {
@@ -554,30 +555,38 @@ body {
 .chat-mode-battlefield-overlay .nameplate {
     top: 45% !important;
     transform: translateY(-50%) !important;
-    max-width: 160px !important;
+    max-width: 140px !important;
     font-size: 0.7rem !important;
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 50px !important;
+    left: 70px !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    right: 50px !important;
+    right: 70px !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate-name {
-    font-size: 0.9rem !important;
+    font-size: 0.85rem !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate-titles {
-    font-size: 0.65rem !important;
+    font-size: 0.6rem !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
+}
+
+.chat-mode-battlefield-overlay .fighter-left {
+    left: 80px !important;
+}
+
+.chat-mode-battlefield-overlay .fighter-right {
+    right: 80px !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-sprite {

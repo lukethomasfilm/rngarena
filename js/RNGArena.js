@@ -1664,8 +1664,8 @@ export class RNGArena {
 
         let scale, leftOffset;
         if (isActive) {
-            // Overlay mode: scale to fit 160px height
-            scale = 160 / 280; // 0.571
+            // Overlay mode: scale to fit 216px height (35% bigger)
+            scale = 216 / 280; // 0.771
             const scaledWidth = 588 * scale;
             // Center horizontally in the container
             leftOffset = 0; // Let it be centered naturally

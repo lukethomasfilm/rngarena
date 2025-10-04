@@ -495,7 +495,7 @@ body {
 
 .chat-mode-battlefield-overlay {
     width: 100%;
-    height: 160px;
+    height: 216px;  /* 35% bigger: 160 * 1.35 = 216px */
     flex-shrink: 0;
     background: #1a1a1a;
     border-radius: 10px;
@@ -504,6 +504,32 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
+}
+
+/* Adjust battlefield elements for larger chat mode view */
+.chat-mode-battlefield-overlay .top-progress {
+    transform: translateY(20px);
+}
+
+.chat-mode-battlefield-overlay .hp-bar {
+    transform: translateY(-15px) scale(0.9);
+}
+
+.chat-mode-battlefield-overlay .vs-display {
+    position: absolute !important;
+    top: 45% !important;
+    left: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    z-index: 15 !important;
+}
+
+.chat-mode-battlefield-overlay .nameplate {
+    top: 50% !important;
+}
+
+.chat-mode-battlefield-overlay .fighter-left,
+.chat-mode-battlefield-overlay .fighter-right {
+    transform: scale(1.15);
 }
 
 .chat-mode-separator {

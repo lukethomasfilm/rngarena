@@ -3746,6 +3746,7 @@ body {
     opacity: 0;
     animation: nameplateAppear 2s ease-out forwards;
     animation-delay: 2.5s;
+    z-index: 100;
 }
 
 .victory-name {

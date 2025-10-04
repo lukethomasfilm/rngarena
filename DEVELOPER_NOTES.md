@@ -268,6 +268,15 @@ const maxHP = 5;
 
 ## 🔧 Development Workflow
 
+### Testing & Running Locally
+```bash
+# IMPORTANT: Use npm run dev (Vite dev server)
+npm run dev
+
+# Vite will automatically open browser to:
+# http://localhost:8000
+```
+
 ### Starting Development
 ```bash
 # 1. Pull latest from main
@@ -279,7 +288,8 @@ git checkout -b feature/home-screen
 # 3. Make changes (follow architecture principles)
 
 # 4. Test thoroughly
-# Open index.html in browser, test all features
+# Run dev server: npm run dev
+# Vite opens browser automatically, test all features
 
 # 5. Commit with descriptive message
 git add -A

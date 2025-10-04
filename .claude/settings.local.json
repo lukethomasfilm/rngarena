@@ -32,7 +32,11 @@
       "Bash(start \"\" \"C:\\Users\\Luke\\rngarena\\images\\Loot\")",
       "Bash(start http://localhost:8000/images/UX%20Images/stone_texture_1.png)",
       "Bash(start http://localhost:8000/images/UX%20Images/stone_texture_3.png)",
-      "Bash(git checkout:*)"
+      "Bash(git checkout:*)",
+      "Bash(start http://localhost:8081)",
+      "Bash(cmd /c:*)",
+      "Bash(npx kill-port:*)",
+      "Bash(npm start)"
     ],
     "deny": [],
     "ask": []

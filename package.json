@@ -4,11 +4,12 @@
   "description": "Epic medieval tournament battles with turn-based combat and RNG mechanics",
   "type": "module",
   "scripts": {
+    "start": "vite",
     "dev": "vite",
     "build": "vite build",
     "preview": "vite preview",
-    "lint": "eslint src --ext .js,.ts",
-    "format": "prettier --write src/**/*.{js,ts,css,html}"
+    "lint": "eslint . --ext .js",
+    "format": "prettier --write **/*.{js,css,html}"
   },
   "keywords": ["game", "tournament", "medieval", "mobile", "responsive"],
   "author": "Luke",

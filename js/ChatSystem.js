@@ -35,6 +35,9 @@ export class ChatSystem {
         chatEl.appendChild(messageElement);
         this.scrollToBottom(chatEl);
         this.limitMessages(chatEl);
+
+        // Also add to chat mode view
+        this.addToChatMode(message, username, 'user');
     }
 
     /**
@@ -80,6 +83,9 @@ export class ChatSystem {
                 });
 
                 this.limitMessages(chatEl);
+
+                // Also add to chat mode view
+                this.addToChatMode(message, null, 'announcer');
             }
 
             // Wait 250ms before next message
@@ -212,5 +218,36 @@ export class ChatSystem {
         chatEl.appendChild(messageElement);
         this.scrollToBottom(chatEl);
         this.limitMessages(chatEl);
+    }
+
+    /**
+     * Add message to chat mode view
+     */
+    addToChatMode(message, username, type) {
+        const chatModeMessages = document.getElementById('chat-mode-messages');
+        if (!chatModeMessages) return;
+
+        const messageElement = document.createElement('div');
+        messageElement.className = `chat-mode-message ${type}`;
+
+        if (type === 'announcer') {
+            messageElement.textContent = message;
+        } else if (type === 'user') {
+            messageElement.textContent = `${username}: ${message}`;
+        } else {
+            messageElement.textContent = message;
+        }
+
+        chatModeMessages.appendChild(messageElement);
+
+        // Auto-scroll to bottom
+        requestAnimationFrame(() => {
+            chatModeMessages.scrollTop = chatModeMessages.scrollHeight;
+        });
+
+        // Limit messages
+        while (chatModeMessages.children.length > 100) {
+            chatModeMessages.removeChild(chatModeMessages.firstChild);
+        }
     }
 }

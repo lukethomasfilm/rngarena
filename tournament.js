@@ -488,7 +488,7 @@ class TournamentBracket {
 
     getRoundInfo() {
         const totalRounds = this.bracket.length; // Include the final round
-        const roundNames = ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Round 5', 'Round 6', 'Quarterfinals', 'Semifinals', 'Final'];
+        const roundNames = ['Round 1', 'Round 2', 'Round 3', 'Round 4', 'Quarterfinals', 'Semifinals', 'Final', 'Champion'];
 
         return {
             current: this.currentRound,

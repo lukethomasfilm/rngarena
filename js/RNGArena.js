@@ -126,6 +126,7 @@ export class RNGArena {
         this.initTestModeToggle();
         this.initLootClaimDevFrame();
         this.initClaimLootButton();
+        this.initDevTabs();
     }
 
     initTestModeToggle() {
@@ -1053,9 +1054,18 @@ export class RNGArena {
             // Center and enlarge winner's nameplate
             if (winnerNameplate) {
                 winnerNameplate.style.transition = 'all 0.8s ease';
+                winnerNameplate.style.position = 'absolute';
                 winnerNameplate.style.left = '50%';
-                winnerNameplate.style.transform = 'translateX(-50%) scale(1.3)';
+                winnerNameplate.style.top = '50%';
+                winnerNameplate.style.transform = 'translate(-50%, -50%) scale(1.3)';
                 winnerNameplate.style.textAlign = 'center';
+                winnerNameplate.style.zIndex = '20';
+
+                // Force center alignment on child elements
+                const nameName = winnerNameplate.querySelector('.nameplate-name');
+                const nameTitles = winnerNameplate.querySelector('.nameplate-titles');
+                if (nameName) nameName.style.textAlign = 'center';
+                if (nameTitles) nameTitles.style.textAlign = 'center';
             }
         }, 1000);
 
@@ -1479,11 +1489,72 @@ export class RNGArena {
             });
         }
 
-        if (chatModeBtn && bracketOverlay) {
-            chatModeBtn.addEventListener('click', () => {
-                bracketOverlay.classList.add('hidden');
-                bracketOverlay.classList.remove('active');
-            });
+        if (chatModeBtn) {
+            const chatModeFrame = document.getElementById('chat-mode-frame');
+            const closeChatMode = document.getElementById('close-chat-mode');
+
+            const openChatMode = () => {
+                // Hide bracket overlay if open
+                if (bracketOverlay) {
+                    bracketOverlay.classList.add('hidden');
+                    bracketOverlay.classList.remove('active');
+                }
+
+                // Switch to chat tab
+                const chatTab = document.querySelector('.dev-tab[data-tab="chat"]');
+                if (chatTab) {
+                    chatTab.click(); // This will switch the tab
+                }
+
+                // Step 1: Open chat mode overlay in landscape (844×390)
+                if (chatModeFrame) {
+                    chatModeFrame.classList.remove('hidden');
+                    chatModeFrame.classList.add('active');
+                    // Init battlefield clone and start syncing immediately
+                    this.initChatModeBattlefield();
+                    this.initChatModeInput();
+                }
+
+                // Step 2: After 1 second, rotate BOTH dev-frame and phone to vertical
+                setTimeout(() => {
+                    const devFrame = document.querySelector('.dev-frame');
+                    if (devFrame) {
+                        devFrame.classList.add('chat-mode-active');
+                    }
+                    if (chatModeFrame) {
+                        chatModeFrame.classList.add('upright');
+                    }
+                }, 1000);
+            };
+
+            const closeChatModeOverlay = () => {
+                // Rotate everything back
+                const devFrame = document.querySelector('.dev-frame');
+                if (devFrame) {
+                    devFrame.classList.remove('chat-mode-active');
+                }
+
+                if (chatModeFrame) {
+                    chatModeFrame.classList.remove('upright');
+                    chatModeFrame.classList.remove('active');
+
+                    setTimeout(() => {
+                        chatModeFrame.classList.add('hidden');
+
+                        // Stop syncing to save performance
+                        if (this.syncChatModeBattlefield) {
+                            clearInterval(this.syncChatModeBattlefield);
+                            this.syncChatModeBattlefield = null;
+                        }
+                    }, 1000); // Wait for animation to complete
+                }
+            };
+
+            chatModeBtn.addEventListener('click', openChatMode);
+
+            if (closeChatMode) {
+                closeChatMode.addEventListener('click', closeChatModeOverlay);
+            }
         }
 
         if (closeBracket && bracketOverlay) {
@@ -1525,5 +1596,216 @@ export class RNGArena {
                 // TODO: Open settings panel
             });
         }
+    }
+
+    // ===== Chat Mode Battlefield =====
+
+    initChatModeBattlefield() {
+        const chatModeBattlefield = document.getElementById('chat-mode-battlefield');
+        const arenaViewport = document.querySelector('.arena-viewport');
+
+        if (!chatModeBattlefield || !arenaViewport) {
+            console.log('Chat mode battlefield elements not found:', { chatModeBattlefield, arenaViewport });
+            return;
+        }
+
+        // Clone the arena viewport
+        const clone = arenaViewport.cloneNode(true);
+
+        // Clear the chat mode battlefield and append clone
+        chatModeBattlefield.innerHTML = '';
+        chatModeBattlefield.appendChild(clone);
+
+        // Clean up cloned elements
+        const startBtn = clone.querySelector('#start-battle');
+        if (startBtn) startBtn.style.display = 'none';
+
+        // Disable all animations in clone
+        clone.style.animation = 'none';
+        const allElements = clone.querySelectorAll('*');
+        allElements.forEach(el => {
+            el.style.animation = 'none';
+            el.style.transition = 'none';
+        });
+
+        // Calculate scale to fit container
+        // Arena viewport is 588px wide × 280px tall
+        // Default container: 374px wide × 300px tall (portrait mode in dev)
+        // Active container: 828px wide × 374px tall (landscape when overlay is active)
+
+        // Check if chat mode is active to use different scaling
+        const chatModeFrame = document.getElementById('chat-mode-frame');
+        const isActive = chatModeFrame && chatModeFrame.classList.contains('active');
+
+        let scale, leftOffset;
+        if (isActive) {
+            // Active mode: scale to fit landscape (828×374)
+            scale = 828 / 588; // 1.408
+            leftOffset = 0;
+        } else {
+            // Dev mode: scale to fit 300px height
+            scale = 300 / 280; // 1.071
+            const scaledWidth = 588 * scale;
+            leftOffset = (374 - scaledWidth) / 2;
+        }
+
+        clone.style.transform = `scale(${scale})`;
+        clone.style.transformOrigin = 'top left';
+        clone.style.width = '588px';
+        clone.style.height = '280px';
+        clone.style.position = 'absolute';
+        clone.style.top = '0';
+        clone.style.left = `${leftOffset}px`;
+
+        console.log('Chat mode battlefield initialized with scale:', scale);
+
+        // Set up continuous sync at 500ms to reduce lag
+        if (this.syncChatModeBattlefield) {
+            clearInterval(this.syncChatModeBattlefield);
+        }
+        this.syncChatModeBattlefield = setInterval(() => {
+            this.updateChatModeBattlefield();
+        }, 500);
+    }
+
+    updateChatModeBattlefield() {
+        const chatModeBattlefield = document.getElementById('chat-mode-battlefield');
+        const arenaViewport = document.querySelector('.arena-viewport');
+
+        if (!chatModeBattlefield || !arenaViewport) return;
+
+        const clone = chatModeBattlefield.querySelector('.arena-viewport');
+        if (!clone) return;
+
+        // Sync classes (for background changes)
+        clone.className = arenaViewport.className;
+
+        // Sync battle status
+        const originalStatus = arenaViewport.querySelector('.battle-status');
+        const cloneStatus = clone.querySelector('.battle-status');
+        if (originalStatus && cloneStatus) {
+            cloneStatus.innerHTML = originalStatus.innerHTML;
+            cloneStatus.style.opacity = originalStatus.style.opacity;
+        }
+
+        // Sync fighters
+        const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
+        const cloneLeftFighter = clone.querySelector('.fighter-left');
+        if (originalLeftFighter && cloneLeftFighter) {
+            cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
+            cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
+            cloneLeftFighter.className = originalLeftFighter.className;
+        }
+
+        const originalRightFighter = arenaViewport.querySelector('.fighter-right');
+        const cloneRightFighter = clone.querySelector('.fighter-right');
+        if (originalRightFighter && cloneRightFighter) {
+            cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
+            cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
+            cloneRightFighter.className = originalRightFighter.className;
+        }
+
+        // Sync nameplates
+        const originalNameplates = arenaViewport.querySelector('.nameplate-vs-container');
+        const cloneNameplates = clone.querySelector('.nameplate-vs-container');
+        if (originalNameplates && cloneNameplates) {
+            cloneNameplates.innerHTML = originalNameplates.innerHTML;
+            cloneNameplates.className = originalNameplates.className;
+        }
+
+        // Sync HP bars
+        const originalLeftHP = arenaViewport.querySelector('#left-hp-fill');
+        const cloneLeftHP = clone.querySelector('#left-hp-fill');
+        if (originalLeftHP && cloneLeftHP) {
+            cloneLeftHP.style.width = originalLeftHP.style.width;
+        }
+
+        const originalRightHP = arenaViewport.querySelector('#right-hp-fill');
+        const cloneRightHP = clone.querySelector('#right-hp-fill');
+        if (originalRightHP && cloneRightHP) {
+            cloneRightHP.style.width = originalRightHP.style.width;
+        }
+
+        const originalLeftHPText = arenaViewport.querySelector('#left-hp-text');
+        const cloneLeftHPText = clone.querySelector('#left-hp-text');
+        if (originalLeftHPText && cloneLeftHPText) {
+            cloneLeftHPText.textContent = originalLeftHPText.textContent;
+        }
+
+        const originalRightHPText = arenaViewport.querySelector('#right-hp-text');
+        const cloneRightHPText = clone.querySelector('#right-hp-text');
+        if (originalRightHPText && cloneRightHPText) {
+            cloneRightHPText.textContent = originalRightHPText.textContent;
+        }
+
+        // Sync round announcement
+        const originalAnnouncement = arenaViewport.querySelector('.round-announcement');
+        const cloneAnnouncement = clone.querySelector('.round-announcement');
+        if (originalAnnouncement && cloneAnnouncement) {
+            cloneAnnouncement.innerHTML = originalAnnouncement.innerHTML;
+            cloneAnnouncement.className = originalAnnouncement.className;
+        }
+    }
+
+    initChatModeInput() {
+        const chatModeInput = document.getElementById('chat-mode-input');
+        const chatModeSendBtn = document.getElementById('chat-mode-send-btn');
+
+        console.log('Initializing chat mode input:', { chatModeInput, chatModeSendBtn });
+
+        if (!chatModeInput || !chatModeSendBtn) {
+            console.log('Chat mode input elements not found!');
+            return;
+        }
+
+        const sendMessage = () => {
+            const message = chatModeInput.value.trim();
+            console.log('Sending message from chat mode:', message);
+            if (message) {
+                this.chatSystem.addChatMessage(message);
+                chatModeInput.value = '';
+            }
+        };
+
+        // Remove any existing listeners first
+        const newSendBtn = chatModeSendBtn.cloneNode(true);
+        chatModeSendBtn.parentNode.replaceChild(newSendBtn, chatModeSendBtn);
+
+        newSendBtn.addEventListener('click', sendMessage);
+        console.log('Send button listener added');
+
+        chatModeInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+        console.log('Input keypress listener added');
+    }
+
+    // ===== Dev Tabs =====
+
+    initDevTabs() {
+        const tabs = document.querySelectorAll('.dev-tab');
+        const frames = document.querySelectorAll('.dev-frame-tab');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                const targetFrame = tab.dataset.tab;
+
+                // Update active tab
+                tabs.forEach(t => t.classList.remove('active'));
+                tab.classList.add('active');
+
+                // Show/hide frames
+                frames.forEach(frame => {
+                    if (frame.dataset.frame === targetFrame) {
+                        frame.classList.remove('hidden');
+                    } else {
+                        frame.classList.add('hidden');
+                    }
+                });
+            });
+        });
     }
 }

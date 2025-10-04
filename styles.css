@@ -14,6 +14,11 @@ body {
     overflow-y: auto;
 }
 
+/* Utility Classes */
+.hidden {
+    display: none !important;
+}
+
 /* Development Mobile Frame */
 .dev-frame {
     width: 844px;  /* iPhone 14/15 landscape width */
@@ -27,6 +32,67 @@ body {
         inset 0 0 0 2px #333;
     position: relative;
     overflow: visible;
+    transition: all 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* Rotate dev-frame when chat mode is active */
+.dev-frame.chat-mode-active {
+    transform: rotate(-90deg);
+    width: 390px;
+    height: 844px;
+}
+
+.dev-frame.chat-mode-active::before,
+.dev-frame.chat-mode-active::after {
+    display: none;
+}
+
+/* Hide other frames and tabs when chat mode is active */
+body:has(.chat-mode-dev-frame.active) .bracket-dev-frame,
+body:has(.chat-mode-dev-frame.active) .loot-claim-dev-frame,
+body:has(.chat-mode-dev-frame.active) .dev-tabs-container {
+    display: none;
+}
+
+/* Dev Frame Tabs */
+.dev-tabs-container {
+    max-width: 844px;
+    margin: 20px auto 0;
+    display: flex;
+    gap: 10px;
+    padding: 0 10px;
+}
+
+.dev-tab {
+    flex: 1;
+    padding: 12px 20px;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border: 2px solid #333;
+    border-bottom: none;
+    border-radius: 8px 8px 0 0;
+    color: #888;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 -2px 8px rgba(0,0,0,0.3);
+}
+
+.dev-tab:hover {
+    background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
+    color: #aaa;
+    border-color: #444;
+}
+
+.dev-tab.active {
+    background: linear-gradient(135deg, #ffd700, #ffed4a, #daa520);
+    color: #1a1a1a;
+    border-color: #ffa500;
+    box-shadow: 0 -4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.dev-frame-tab.hidden {
+    display: none;
 }
 
 /* Bracket Development Frame - Match iPhone dimensions */
@@ -367,6 +433,319 @@ body {
     background: linear-gradient(135deg, #808080, #a0a0a0, #606060);
 }
 
+/* ===== Live Chat Mode Dev Frame ===== */
+.chat-mode-dev-frame {
+    width: 390px;
+    height: 844px;
+    background: #0a0a0a;
+    border-radius: 25px;
+    padding: 8px;
+    margin: 20px auto;
+    box-shadow:
+        0 0 30px rgba(0,0,0,0.8),
+        inset 0 0 0 2px #555;
+    position: relative;
+    overflow: visible;
+    display: block;
+    transition: all 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* No background overlay needed for chat mode */
+
+/* Chat mode as overlay - phone starts in landscape (844×390) */
+.chat-mode-dev-frame.active {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 9998;
+    margin: 0;
+    box-shadow:
+        0 0 100px rgba(0,0,0,0.9),
+        inset 0 0 0 3px #ffd700;
+    width: 844px;
+    height: 390px;
+    border-radius: 25px;
+    padding: 8px;
+    transition: all 1s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+}
+
+/* After 1 second, no changes needed - dev-frame will rotate */
+.chat-mode-dev-frame.active.upright {
+    /* Phone stays same, just rides along with dev-frame rotation */
+}
+
+.chat-mode-dev-frame.active .chat-mode-container-dev {
+    width: 828px;
+    height: 374px;
+    border-radius: 18px;
+}
+
+.chat-mode-dev-frame.active .chat-mode-viewport-dev {
+    flex-direction: row;
+}
+
+.chat-mode-dev-frame.active .chat-mode-battlefield {
+    width: 828px;
+    height: 374px;
+    flex-shrink: 0;
+}
+
+.chat-mode-dev-frame.active .chat-mode-messages {
+    display: none;
+}
+
+.chat-mode-dev-frame.active .chat-mode-input-container {
+    display: none;
+}
+
+.chat-mode-dev-frame.active::before {
+    content: "📱 iPhone Landscape 844×390";
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #ffd700;
+    font-weight: bold;
+    white-space: nowrap;
+}
+
+.chat-mode-dev-frame.active.upright::before {
+    display: none;
+}
+
+/* When upright, show chat UI and restore portrait layout */
+.chat-mode-dev-frame.active.upright .chat-mode-container-dev {
+    width: 374px;
+    height: 828px;
+}
+
+.chat-mode-dev-frame.active.upright .chat-mode-messages {
+    display: block;
+}
+
+.chat-mode-dev-frame.active.upright .chat-mode-input-container {
+    display: flex;
+}
+
+.chat-mode-dev-frame.active.upright .chat-mode-viewport-dev {
+    flex-direction: column;
+}
+
+.chat-mode-dev-frame.active.upright .chat-mode-battlefield {
+    width: 100%;
+    height: 300px;
+}
+
+.chat-mode-close-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 10000;
+    background: linear-gradient(135deg, #ffd700, #ffed4a, #daa520);
+    border: 2px solid #ffa500;
+    color: #1a1a1a;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.chat-mode-dev-frame.active .chat-mode-close-btn {
+    display: flex;
+}
+
+.chat-mode-close-btn:hover {
+    transform: scale(1.1) rotate(90deg);
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
+    background: linear-gradient(135deg, #ffed4a, #ffd700, #ffed4a);
+}
+
+.chat-mode-dev-frame::before {
+    content: "📱 Live Chat Mode - iPhone Portrait 390×844";
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #888;
+    white-space: nowrap;
+}
+
+.chat-mode-container-dev {
+    height: 828px;
+    width: 374px;
+    margin: 0;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border-radius: 18px;
+    overflow: hidden;
+    padding: 0;
+}
+
+.chat-mode-viewport-dev {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    background: #1a1a1a;
+}
+
+.chat-mode-battlefield {
+    width: 100%;
+    height: 300px;
+    background: #000;
+    border-bottom: 2px solid #444;
+    flex-shrink: 0;
+    overflow: hidden;
+    position: relative;
+    display: block;
+}
+
+.chat-mode-battlefield .arena-viewport {
+    pointer-events: none;
+    display: block !important;
+    visibility: visible !important;
+}
+
+.chat-mode-battlefield * {
+    animation: none !important;
+    transition: none !important;
+}
+
+.chat-mode-battlefield .battle-btn {
+    display: none !important;
+}
+
+.chat-mode-battlefield .battle-status {
+    opacity: 1 !important;
+}
+
+.chat-mode-battlefield .round-announcement {
+    opacity: 1 !important;
+}
+
+/* Scale down all UI elements except fighters in chat mode (30% smaller = 0.7 scale) */
+.chat-mode-battlefield .hp-bar {
+    transform: scale(0.7) !important;
+    transform-origin: center !important;
+}
+
+.chat-mode-battlefield .nameplate {
+    transform: scale(0.7) translateX(-50%) !important;
+    transform-origin: center !important;
+}
+
+.chat-mode-battlefield .vs-display {
+    transform: scale(0.7) !important;
+    transform-origin: center !important;
+}
+
+.chat-mode-battlefield .progress-container {
+    transform: scale(0.7) !important;
+    transform-origin: top center !important;
+}
+
+.chat-mode-battlefield .battle-status {
+    font-size: 0.7rem !important;
+}
+
+.chat-mode-battlefield .round-announcement {
+    font-size: 1.4rem !important;
+}
+
+.chat-mode-battlefield .top-odds {
+    transform: scale(0.7) !important;
+    transform-origin: top center !important;
+}
+
+.chat-mode-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background: linear-gradient(135deg, #1a1a2e, #16213e);
+}
+
+.chat-mode-message {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.chat-mode-message.system {
+    background: rgba(255, 255, 255, 0.1);
+    color: #aaa;
+    font-style: italic;
+}
+
+.chat-mode-message.user {
+    background: rgba(0, 123, 255, 0.2);
+    color: #4da6ff;
+    text-align: right;
+}
+
+.chat-mode-message.announcer {
+    background: rgba(255, 215, 0, 0.2);
+    color: #ffd700;
+    text-align: center;
+    font-weight: bold;
+}
+
+.chat-mode-input-container {
+    display: flex;
+    gap: 8px;
+    padding: 10px;
+    background: #0f0f0f;
+    border-top: 2px solid #444;
+    flex-shrink: 0;
+}
+
+.chat-mode-input {
+    flex: 1;
+    padding: 10px 12px;
+    background: #2a2a2a;
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #fff;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.chat-mode-input:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3);
+}
+
+.chat-mode-send-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    font-weight: bold;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chat-mode-send-btn:hover {
+    background: linear-gradient(135deg, #ffed4e, #ffd700);
+    transform: scale(1.05);
+}
+
+.chat-mode-send-btn:active {
+    transform: scale(0.98);
+}
+
 .container {
     display: grid;
     grid-template-columns: 120px 1fr 120px;
@@ -465,6 +844,12 @@ body {
 
 .battlefield-section.fullscreen .fighter-right {
     left: 81% !important;
+    transform: translateX(-50%) scale(1.35) !important;
+}
+
+/* Ensure victory center stays centered in fullscreen */
+.battlefield-section.fullscreen .victory-center {
+    left: 50% !important;
     transform: translateX(-50%) scale(1.35) !important;
 }
 
@@ -3211,7 +3596,7 @@ body {
     right: auto !important;
     bottom: 0 !important;
     transform: translateX(-50%) !important;
-    z-index: 100 !important;
+    z-index: 30 !important;
     animation: moveToCenter 2s ease-in-out forwards !important;
 }
 
@@ -3240,7 +3625,7 @@ body {
     opacity: 0;
     animation: victorTextAppear 2s ease-out forwards;
     animation-delay: 2s;
-    z-index: 50;
+    z-index: 10;
 }
 
 .victory-nameplate {

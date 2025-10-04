@@ -9,7 +9,7 @@ Epic medieval tournament battles with turn-based combat and RNG mechanics.
 npm install
 
 # Start development server
-npm run dev
+npm start
 
 # Build for production
 npm run build
@@ -32,26 +32,26 @@ npm run preview
 ### Project Structure
 
 ```
-src/
-├── main.js              # Application entry point
+rngarena/
 ├── index.html           # Main HTML template
-├── styles/              # Modular CSS architecture
-│   ├── main.css         # CSS entry point
-│   ├── base.css         # Reset & variables
-│   ├── layout.css       # Grid & layout
-│   ├── animations.css   # Keyframes & effects
-│   ├── responsive.css   # Media queries
-│   └── components/      # Component-specific styles
-├── game/                # Core game logic
-│   ├── RNGArena.js     # Main game controller
-│   ├── Tournament.js    # Tournament bracket system
-│   └── CombatSystem.js  # Battle mechanics
-├── components/          # UI components
-└── utils/               # Helper utilities
+├── styles.css           # Main stylesheet
+├── js/                  # Core game modules
+│   ├── RNGArena.js      # Main game controller
+│   ├── BracketSystem.js # Tournament bracket system
+│   ├── CombatSystem.js  # Battle mechanics
+│   ├── ChatSystem.js    # Chat commentary system
+│   ├── EmojiSystem.js   # Floating emoji reactions
+│   ├── LootSystem.js    # Reward/loot mechanics
+│   └── constants.js     # Game constants & config
+├── tournament.js        # Tournament initialization
+├── public/              # Static assets
+│   └── images/          # Game images & backgrounds
+└── vite.config.js       # Vite configuration
 ```
 
 ### Available Scripts
 
+- `npm start` - Start development server with hot reload (alias for `npm run dev`)
 - `npm run dev` - Start development server with hot reload
 - `npm run build` - Build optimized production bundle
 - `npm run preview` - Preview production build locally
@@ -74,15 +74,15 @@ src/
 ## 🎨 Customization
 
 ### Adding New Characters
-Add character data to `src/game/Tournament.js`:
+Add character data to `js/constants.js`:
 
 ```javascript
-this.heroNames = [
+export const HERO_NAMES = [
     'Your Hero Name',
     // ... existing names
 ]
 
-this.heroTitles = {
+export const HERO_TITLES = {
     'Your Hero Name': ['Title One', 'Title Two']
 }
 ```
@@ -127,4 +127,4 @@ MIT License - feel free to use this project for learning or commercial purposes.
 
 ---
 
-**Ready for battle?** Run `npm run dev` and start your tournament! ⚔️
+**Ready for battle?** Run `npm start` and start your tournament! ⚔️

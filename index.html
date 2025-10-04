@@ -192,8 +192,15 @@
         </div>
     </div>
 
+    <!-- Dev Frame Tabs -->
+    <div class="dev-tabs-container">
+        <button class="dev-tab active" data-tab="bracket">📊 Bracket</button>
+        <button class="dev-tab" data-tab="loot">🎁 Loot</button>
+        <button class="dev-tab" data-tab="chat">💬 Live Chat</button>
+    </div>
+
     <!-- Bracket Development Frame -->
-    <div class="bracket-dev-frame">
+    <div class="bracket-dev-frame dev-frame-tab" data-frame="bracket">
         <div class="bracket-container-dev">
             <div class="bracket-container">
                 <div class="bracket-header" id="bracket-toggle">
@@ -220,7 +227,7 @@
     </div>
 
     <!-- Loot Claim Preview Frame -->
-    <div class="loot-claim-dev-frame">
+    <div class="loot-claim-dev-frame dev-frame-tab hidden" data-frame="loot">
         <div class="loot-claim-container-dev">
             <div class="loot-claim-viewport-dev">
                 <div class="dev-loot-container">
@@ -231,6 +238,31 @@
                         </div>
                     </div>
                     <div class="dev-loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Chat Preview Frame -->
+    <div class="chat-mode-dev-frame dev-frame-tab hidden" id="chat-mode-frame" data-frame="chat">
+        <button class="chat-mode-close-btn" id="close-chat-mode">✕</button>
+        <div class="chat-mode-container-dev">
+            <div class="chat-mode-viewport-dev">
+                <!-- Top: Battlefield Clone -->
+                <div class="chat-mode-battlefield" id="chat-mode-battlefield">
+                    <!-- Battlefield will be cloned here -->
+                </div>
+
+                <!-- Middle: Chat Messages -->
+                <div class="chat-mode-messages" id="chat-mode-messages">
+                    <div class="chat-mode-message system">Welcome to Live Chat!</div>
+                    <div class="chat-mode-message system">Messages will appear here during battles...</div>
+                </div>
+
+                <!-- Bottom: Chat Input -->
+                <div class="chat-mode-input-container">
+                    <input type="text" class="chat-mode-input" id="chat-mode-input" placeholder="Type a message...">
+                    <button class="chat-mode-send-btn" id="chat-mode-send-btn">SEND</button>
                 </div>
             </div>
         </div>

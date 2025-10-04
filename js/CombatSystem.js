@@ -188,13 +188,6 @@ export class CombatSystem {
         this.initHealthDisplays();
         this.initializeHPBars();
 
-        this.battleStatus.textContent = 'COMBAT BEGINS!';
-        this.battleStatus.style.opacity = '1';
-
-        setTimeout(() => {
-            this.battleStatus.style.opacity = '0';
-        }, 1000);
-
         setTimeout(() => this.executeCombatBeat(), 1000);
     }
 
@@ -435,13 +428,6 @@ export class CombatSystem {
 
         const logEntry = `${winner} defeats ${loser} with ${leftWins ? this.leftFighterHP : this.rightFighterHP} HP remaining!`;
         this.addCombatLog(logEntry);
-
-        this.battleStatus.textContent = `${winner.toUpperCase()} WINS!`;
-        this.battleStatus.style.opacity = '1';
-
-        setTimeout(() => {
-            this.battleStatus.style.opacity = '0';
-        }, 1000);
 
         // Call end callback
         if (this.onCombatEnd) {

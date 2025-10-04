@@ -174,7 +174,17 @@ export const CHAT_MESSAGES = {
         "PERIODT NO PRINTER",
         "CLUTCH OR KICK",
         "EZ CLAP",
-        "GG NO RE"
+        "GG NO RE",
+        "I've been watching this tournament for 3 hours straight and I have no regrets",
+        "My entire family is gathered around the screen watching this epic battle unfold",
+        "This RNG tournament has more plot twists than my favorite TV show",
+        "Just put my life savings on the next fighter, wish me luck!",
+        "I told my boss I was sick so I could watch this tournament and honestly worth it",
+        "The way these knights are swinging their swords is pure poetry in motion",
+        "I'm literally on the edge of my seat and I can't feel my legs anymore",
+        "This tournament is the most exciting thing that's happened to me all year",
+        "Can we get a slow motion replay of that last hit? That was INSANE",
+        "My heart can't take this level of excitement, someone send help"
     ],
 
     // Win messages
@@ -188,7 +198,12 @@ export const CHAT_MESSAGES = {
         "DOMINANCE!",
         "FLAWLESS!",
         "UNSTOPPABLE!",
-        "GODLIKE!"
+        "GODLIKE!",
+        "That was the most epic comeback I've ever witnessed in tournament history!",
+        "I literally screamed so loud my neighbors came over to check if I was okay",
+        "Someone needs to put that victory in the hall of fame RIGHT NOW",
+        "That knight just wrote their name in the history books with that performance",
+        "I'm gonna tell my grandchildren about the day I watched this legendary victory"
     ],
 
     // Combat messages
@@ -202,7 +217,11 @@ export const CHAT_MESSAGES = {
         "SAVAGE!",
         "CLEAN HIT!",
         "NICE SHOT!",
-        "DIRECT HIT!"
+        "DIRECT HIT!",
+        "Did you SEE that hit?! I had to rewind just to make sure it actually happened",
+        "That strike was so powerful I felt it through my screen",
+        "My jaw is literally on the floor after seeing that critical blow",
+        "That's the kind of combat move that gets replayed in highlight reels forever"
     ],
 
     // Arena welcomes
@@ -236,9 +255,8 @@ export const ROUND_NAMES = {
     2: "Round 2",
     3: "Round 3",
     4: "Round 4",
-    5: "Round 5",
-    6: "Round 6",
-    7: "Quarterfinals",
-    8: "Semifinals",
-    9: "Finals"
+    5: "Quarterfinals",
+    6: "Semifinals",
+    7: "Final",
+    8: "Champion"
 };

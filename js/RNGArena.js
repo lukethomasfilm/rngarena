@@ -1729,17 +1729,14 @@ export class RNGArena {
             cloneStatus.style.opacity = originalStatus.style.opacity;
         }
 
-        // Sync fighters (excluding animation classes to prevent repeating)
+        // Sync fighters (only innerHTML and opacity, no animation classes)
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const cloneLeftFighter = clone.querySelector('.fighter-left');
         if (originalLeftFighter && cloneLeftFighter) {
             cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
             cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
-            // Copy className but exclude animation classes
-            const leftClasses = originalLeftFighter.className.split(' ').filter(c =>
-                !c.includes('entrance') && !c.includes('attack') && !c.includes('block')
-            ).join(' ');
-            cloneLeftFighter.className = leftClasses;
+            // Don't sync className - keep only base class to avoid animations
+            cloneLeftFighter.className = 'fighter-left';
         }
 
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
@@ -1747,11 +1744,8 @@ export class RNGArena {
         if (originalRightFighter && cloneRightFighter) {
             cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
             cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
-            // Copy className but exclude animation classes
-            const rightClasses = originalRightFighter.className.split(' ').filter(c =>
-                !c.includes('entrance') && !c.includes('attack') && !c.includes('block')
-            ).join(' ');
-            cloneRightFighter.className = rightClasses;
+            // Don't sync className - keep only base class to avoid animations
+            cloneRightFighter.className = 'fighter-right';
         }
 
         // Sync nameplates

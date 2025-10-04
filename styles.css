@@ -506,14 +506,14 @@ body {
     justify-content: center;
 }
 
-/* Disable only entrance/attack/block animations to prevent repeating */
-.chat-mode-battlefield-overlay .fighter-entrance-left,
-.chat-mode-battlefield-overlay .fighter-entrance-right,
-.chat-mode-battlefield-overlay .attack-left,
-.chat-mode-battlefield-overlay .attack-right,
-.chat-mode-battlefield-overlay .block-left,
-.chat-mode-battlefield-overlay .block-right {
+/* Disable animations and hide health diamonds in chat mode */
+.chat-mode-battlefield-overlay .health-diamond {
+    display: none !important;
+}
+
+.chat-mode-battlefield-overlay * {
     animation: none !important;
+    transition: opacity 0.15s ease !important;
 }
 
 /* Adjust battlefield elements for larger chat mode view */

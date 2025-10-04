@@ -652,5 +652,106 @@ Before merging any PR:
 
 **Remember:** This architecture took us from prototype to production-ready. Maintain these standards as the game grows.
 
-**Last Updated:** 2025-09-30
+---
+
+## 🆕 Recent Additions (2025-10-03)
+
+### Live Chat Mode System
+**Purpose:** Mobile vertical preview with real-time battlefield syncing for demo purposes
+
+**Architecture:**
+```javascript
+// Chat mode lifecycle:
+1. Click LIVE CHAT button
+2. Phone frame (844×390 landscape) appears over dev-frame
+3. Battlefield clones and syncs every 500ms
+4. After 1s: Dev-frame rotates -90°, phone layout switches to portrait
+5. User can type messages, view live battle
+6. Click X: Everything rotates back, syncing stops
+```
+
+**Key Files:**
+- `js/RNGArena.js` - `initChatModeBattlefield()`, `updateChatModeBattlefield()`, `initDevTabs()`
+- `js/ChatSystem.js` - `addToChatMode()` for message syncing
+- `styles.css` - Phone rotation animations, tab navigation
+- `index.html` - Chat mode frame structure, dev tabs
+
+**Performance Optimizations:**
+- ✅ Only syncs when chat mode is visible (no background syncing)
+- ✅ 500ms sync interval (was 100ms initially - reduced lag)
+- ✅ All animations disabled on cloned battlefield
+- ✅ Stops syncing immediately on close
+
+**Important Constants:**
+```javascript
+// Battlefield scaling in chat mode
+Active mode: scale = 828 / 588 = 1.408 (landscape)
+Dev tab mode: scale = 300 / 280 = 1.071 (portrait)
+
+// Phone dimensions
+Landscape: 844×390 (initial state)
+Portrait: 390×844 (after rotation)
+```
+
+### Tabbed Dev Frame Navigation
+**Purpose:** Organize development preview windows (Bracket, Loot, Chat)
+
+**Features:**
+- Golden tab styling with active state
+- Click to switch between preview frames
+- Only one frame visible at a time
+- Auto-switches to chat tab when opening live chat mode
+
+**CSS Classes:**
+```css
+.dev-tab - Tab button styling
+.dev-tab.active - Active tab (golden gradient)
+.dev-frame-tab - Any tabbable frame
+.dev-frame-tab.hidden - Hidden frames
+```
+
+### Victory Screen Fixes
+**Z-Index Hierarchy (from back to front):**
+1. Overlay background (z-index: 50)
+2. VICTOR text (z-index: 10)
+3. Victory nameplate (z-index: 20)
+4. Winning knight (z-index: 30)
+
+**Positioning:**
+- Nameplate centered with `translate(-50%, -50%)`
+- Victory screen works correctly in fullscreen mode
+- All child elements forced to center alignment
+
+### Chat Message Improvements
+**Added 10 new long-form hype messages:**
+- "I've been watching this tournament for 3 hours straight..."
+- "My entire family is gathered around the screen..."
+- More engaging, humorous chat atmosphere
+
+**Added 5 new win messages and 4 combat messages**
+- Builds excitement and immersion
+- Located in `js/constants.js` - `CHAT_MESSAGES`
+
+---
+
+## 📝 Next Session TODO
+
+### Known Issues
+- [ ] None currently
+
+### Potential Enhancements
+- [ ] Add smooth transitions when switching dev tabs
+- [ ] Consider adding chat history persistence
+- [ ] Add ability to toggle auto-scroll in chat mode
+- [ ] Optimize battlefield clone (use canvas instead of DOM clone?)
+
+### Future Systems to Consider
+- [ ] Replay System (record/playback tournament)
+- [ ] Share/Screenshot feature for chat mode
+- [ ] Mobile-specific optimizations
+- [ ] PWA setup for installability
+
+---
+
+**Last Updated:** 2025-10-03
 **Next Review:** When adding 3+ new systems or before major feature

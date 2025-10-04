@@ -1521,6 +1521,13 @@ export class RNGArena {
                 if (lootDevFrame) lootDevFrame.style.display = 'none';
                 if (chatDevFrame) chatDevFrame.style.display = 'none';
 
+                // Pause main battlefield to prevent performance issues
+                const mainBattlefield = document.querySelector('.battlefield-section');
+                if (mainBattlefield) {
+                    mainBattlefield.style.visibility = 'hidden';
+                    mainBattlefield.style.pointerEvents = 'none';
+                }
+
                 // Rotate dev-frame counter-clockwise
                 if (devFrame) {
                     console.log('Adding chat-mode-active class to dev-frame');
@@ -1547,6 +1554,13 @@ export class RNGArena {
                 if (devFrame) {
                     devFrame.classList.remove('chat-mode-active');
                     devFrame.style.transform = '';
+                }
+
+                // Resume main battlefield
+                const mainBattlefield = document.querySelector('.battlefield-section');
+                if (mainBattlefield) {
+                    mainBattlefield.style.visibility = '';
+                    mainBattlefield.style.pointerEvents = '';
                 }
 
                 // Show tabs and other dev frames again

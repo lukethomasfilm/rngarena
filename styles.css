@@ -517,14 +517,30 @@ body {
 
 .chat-mode-battlefield-overlay .vs-display {
     position: absolute !important;
-    top: 45% !important;
+    bottom: 10px !important;
     left: 50% !important;
-    transform: translate(-50%, -50%) !important;
+    transform: translateX(-50%) !important;
     z-index: 15 !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate {
-    top: 50% !important;
+    top: 35% !important;
+    max-width: 180px !important;
+    font-size: 0.75rem !important;
+}
+
+.chat-mode-battlefield-overlay .nameplate-name {
+    font-size: 0.9rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.chat-mode-battlefield-overlay .nameplate-titles {
+    font-size: 0.65rem !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-left,

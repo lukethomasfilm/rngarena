@@ -1729,31 +1729,25 @@ export class RNGArena {
             cloneStatus.style.opacity = originalStatus.style.opacity;
         }
 
-        // Sync fighters - only sync sprite, not innerHTML (to avoid copying damage text)
+        // Sync fighters - sync innerHTML then remove damage elements
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const cloneLeftFighter = clone.querySelector('.fighter-left');
         if (originalLeftFighter && cloneLeftFighter) {
-            // Only sync the sprite innerHTML, not the whole fighter
-            const originalLeftSprite = originalLeftFighter.querySelector('.fighter-sprite');
-            const cloneLeftSprite = cloneLeftFighter.querySelector('.fighter-sprite');
-            if (originalLeftSprite && cloneLeftSprite) {
-                cloneLeftSprite.innerHTML = originalLeftSprite.innerHTML;
-            }
+            cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
             cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
             cloneLeftFighter.className = originalLeftFighter.className;
+            // Remove all damage text elements after sync
+            cloneLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
         }
 
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
         const cloneRightFighter = clone.querySelector('.fighter-right');
         if (originalRightFighter && cloneRightFighter) {
-            // Only sync the sprite innerHTML, not the whole fighter
-            const originalRightSprite = originalRightFighter.querySelector('.fighter-sprite');
-            const cloneRightSprite = cloneRightFighter.querySelector('.fighter-sprite');
-            if (originalRightSprite && cloneRightSprite) {
-                cloneRightSprite.innerHTML = originalRightSprite.innerHTML;
-            }
+            cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
             cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
             cloneRightFighter.className = originalRightFighter.className;
+            // Remove all damage text elements after sync
+            cloneRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
         }
 
         // Sync nameplates

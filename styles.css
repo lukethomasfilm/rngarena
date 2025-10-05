@@ -482,15 +482,15 @@ body {
 
 /* Counter-rotate content and use portrait dimensions for correct layout */
 .dev-frame.chat-mode-active .chat-mode-overlay-content {
-    width: 374px;   /* portrait width (390 - 16px padding) */
-    height: 828px;  /* portrait height (844 - 16px padding) */
+    width: 390px;   /* portrait width (fill phone) */
+    height: 844px;  /* portrait height (fill phone) */
     transform: rotate(90deg);
     transform-origin: center center;
     position: absolute;
     top: 50%;
     left: 50%;
-    margin-top: -414px;  /* -828/2 */
-    margin-left: -187px; /* -374/2 */
+    margin-top: -422px;  /* -844/2 */
+    margin-left: -195px; /* -390/2 */
 }
 
 .chat-mode-battlefield-overlay {
@@ -560,11 +560,11 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 38% !important;
+    left: 35% !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    left: 62% !important;
+    left: 65% !important;
     right: auto !important;
 }
 

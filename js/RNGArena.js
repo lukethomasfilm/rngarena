@@ -1729,22 +1729,30 @@ export class RNGArena {
             cloneStatus.style.opacity = originalStatus.style.opacity;
         }
 
-        // Sync fighters - always update className to show attack/block animations
+        // Sync fighters - only sync sprite, not innerHTML (to avoid copying damage text)
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const cloneLeftFighter = clone.querySelector('.fighter-left');
         if (originalLeftFighter && cloneLeftFighter) {
-            cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
+            // Only sync the sprite innerHTML, not the whole fighter
+            const originalLeftSprite = originalLeftFighter.querySelector('.fighter-sprite');
+            const cloneLeftSprite = cloneLeftFighter.querySelector('.fighter-sprite');
+            if (originalLeftSprite && cloneLeftSprite) {
+                cloneLeftSprite.innerHTML = originalLeftSprite.innerHTML;
+            }
             cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
-            // Always sync className to catch attack/block animations
             cloneLeftFighter.className = originalLeftFighter.className;
         }
 
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
         const cloneRightFighter = clone.querySelector('.fighter-right');
         if (originalRightFighter && cloneRightFighter) {
-            cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
+            // Only sync the sprite innerHTML, not the whole fighter
+            const originalRightSprite = originalRightFighter.querySelector('.fighter-sprite');
+            const cloneRightSprite = cloneRightFighter.querySelector('.fighter-sprite');
+            if (originalRightSprite && cloneRightSprite) {
+                cloneRightSprite.innerHTML = originalRightSprite.innerHTML;
+            }
             cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
-            // Always sync className to catch attack/block animations
             cloneRightFighter.className = originalRightFighter.className;
         }
 

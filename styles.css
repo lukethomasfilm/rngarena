@@ -540,7 +540,7 @@ body {
 }
 
 .chat-mode-battlefield-overlay .right-hp {
-    right: 49px !important;
+    right: 47px !important;
 }
 
 .chat-mode-battlefield-overlay .vs-display {
@@ -564,7 +564,7 @@ body {
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    left: 78% !important;
+    left: 62% !important;
     right: auto !important;
 }
 
@@ -584,21 +584,27 @@ body {
 
 .chat-mode-battlefield-overlay .fighter-left {
     left: 50% !important;
-    transform: translateX(-200px) !important;
+    transform: translateX(-220px) !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
     right: auto !important;
     left: 50% !important;
-    transform: translateX(80px) !important;
+    transform: translateX(60px) !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-sprite {
     transform: scale(0.85) !important;
 }
 
-/* Disable damage number animations in chat mode to prevent repeating */
-.chat-mode-battlefield-overlay .damage-number {
+/* Disable ALL damage/combat text in chat mode to prevent repeating */
+.chat-mode-battlefield-overlay .damage-number,
+.chat-mode-battlefield-overlay .attacker-damage-number,
+.chat-mode-battlefield-overlay .crit-number,
+.chat-mode-battlefield-overlay .attacker-crit-number,
+.chat-mode-battlefield-overlay .block-text,
+.chat-mode-battlefield-overlay .parry-text,
+.chat-mode-battlefield-overlay .miss-text {
     display: none !important;
 }
 

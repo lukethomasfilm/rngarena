@@ -515,7 +515,7 @@ body {
 .chat-mode-battlefield-overlay .top-progress {
     position: absolute !important;
     top: 5px !important;
-    left: calc(50% - 8px) !important;
+    left: calc(50% - 9px) !important;
     transform: translateX(-50%) !important;
     width: 100% !important;
 }
@@ -526,7 +526,7 @@ body {
 
 .chat-mode-battlefield-overlay .top-odds {
     top: 54px !important;
-    left: 50% !important;
+    left: calc(50% - 5px) !important;
     transform: translateX(-50%) !important;
 }
 
@@ -540,7 +540,7 @@ body {
 }
 
 .chat-mode-battlefield-overlay .right-hp {
-    right: 52px !important;
+    right: 49px !important;
 }
 
 .chat-mode-battlefield-overlay .vs-display {
@@ -560,11 +560,11 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 30% !important;
+    left: 38% !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    left: 70% !important;
+    left: 78% !important;
     right: auto !important;
 }
 
@@ -584,17 +584,22 @@ body {
 
 .chat-mode-battlefield-overlay .fighter-left {
     left: 50% !important;
-    transform: translateX(-180px) !important;
+    transform: translateX(-200px) !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
     right: auto !important;
     left: 50% !important;
-    transform: translateX(100px) !important;
+    transform: translateX(80px) !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-sprite {
-    transform: scale(1.0) !important;
+    transform: scale(0.85) !important;
+}
+
+/* Disable damage number animations in chat mode to prevent repeating */
+.chat-mode-battlefield-overlay .damage-number {
+    display: none !important;
 }
 
 .chat-mode-separator {

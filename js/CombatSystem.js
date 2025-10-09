@@ -34,6 +34,55 @@ export class CombatSystem {
         // Callbacks
         this.onCombatEnd = null;
         this.onCombatMessage = null;
+
+        // Sound effect paths
+        this.hitSoundPaths = [
+            '/sfx/fighting_game_hit_fl-1759992821197.mp3',
+            '/sfx/fighting_game_hit_fl_1-1759992838415.mp3'
+        ];
+        // Parry sounds - use sword strike on metal for clang sound
+        this.parrySoundPaths = [
+            '/sfx/sword_strike_on_meta_1-1759991794457.mp3',
+            '/sfx/sword_strike_on_meta_2-1759991788146.mp3',
+            '/sfx/sword_strike_on_meta-1759991794456.mp3'
+        ];
+        // Block sounds - load all available sword strike variations
+        this.blockSoundPaths = [
+            '/sfx/sword_strike_on_meta_1-1759991794457.mp3',
+            '/sfx/sword_strike_on_meta_1-1759992443256.mp3',
+            '/sfx/sword_strike_on_meta_1-1759992520369.mp3',
+            '/sfx/sword_strike_on_meta_2-1759991788146.mp3',
+            '/sfx/sword_strike_on_meta_2-1759992443258.mp3',
+            '/sfx/sword_strike_on_meta_3-1759992443259.mp3',
+            '/sfx/sword_strike_on_meta-1759991794456.mp3',
+            '/sfx/sword_strike_on_meta-1759992449662.mp3',
+            '/sfx/sword_strike_on_meta-1759992514238.mp3'
+        ];
+        this.criticalSoundPath = '/sfx/Critical!_fighter_ga-1760028020390.mp3'; // ! is safe in URLs
+
+        // Attack voice sound paths (1, 2, 4, 5 for normal attacks)
+        this.normalAttackVoicePaths = [
+            '/sfx/Voice_1.mp3',
+            '/sfx/Voice_2.mp3',
+            '/sfx/Voice_4.mp3',
+            '/sfx/Voice_5.mp3'
+        ];
+
+        // Critical attack voice paths (3 and 6 for criticals only)
+        this.criticalAttackVoicePaths = [
+            '/sfx/Voice_3.mp3',
+            '/sfx/Voice_6.mp3'
+        ];
+
+        // Mute state
+        this.muted = false;
+    }
+
+    /**
+     * Set mute state for sound effects
+     */
+    setMuted(muted) {
+        this.muted = muted;
     }
 
     /**
@@ -208,6 +257,9 @@ export class CombatSystem {
         const attackRoll = this.rollDie(6);
         const isCrit = attackRoll === 5;
 
+        // Play attack voice when attacker starts their attack
+        this.playAttackVoice(isCrit);
+
         this.addCombatAnimation(attackerFighter, 'fighter-attacking');
         if (isCrit) {
             this.addCombatAnimation(attackerFighter, 'fighter-crit-attack');
@@ -228,57 +280,51 @@ export class CombatSystem {
 
                 if (defenderStance === 'block') {
                     this.addCombatAnimation(defenderFighter, 'fighter-defending');
-                    setTimeout(() => {
-                        this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit, defender);
-                        if (defender === 'left') {
-                            this.leftDefenseStance = null;
-                        } else {
-                            this.rightDefenseStance = null;
-                        }
-                    }, 500);
+                    this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit, defender);
+                    if (defender === 'left') {
+                        this.leftDefenseStance = null;
+                    } else {
+                        this.rightDefenseStance = null;
+                    }
                 } else if (defenderStance === 'parry') {
                     this.addCombatAnimation(defenderFighter, 'fighter-defending');
-                    setTimeout(() => {
-                        this.handleParry(attackerFighter, defenderFighter, attackerName, defenderName, attackRoll, isCrit);
-                        if (defender === 'left') {
-                            this.leftDefenseStance = null;
-                        } else {
-                            this.rightDefenseStance = null;
-                        }
-                    }, 500);
+                    this.handleParry(attackerFighter, defenderFighter, attackerName, defenderName, attackRoll, isCrit);
+                    if (defender === 'left') {
+                        this.leftDefenseStance = null;
+                    } else {
+                        this.rightDefenseStance = null;
+                    }
                 } else {
                     // Normal damage resolution
                     const defendRoll = this.rollDie(7) + 1; // 2-8
                     this.addCombatAnimation(defenderFighter, 'fighter-defending');
 
-                    setTimeout(() => {
-                        if (defendRoll === 7) {
-                            // Random block
-                            this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit, defender);
-                            if (defender === 'left') {
-                                this.leftDefenseStance = 'block';
-                            } else {
-                                this.rightDefenseStance = 'block';
-                            }
-                            this.sendCombatMessage(`🛡️ ${defenderName} prepares to block the next attack!`);
-                        } else if (defendRoll === 8) {
-                            // Random parry
-                            this.handleParry(attackerFighter, defenderFighter, attackerName, defenderName, attackRoll, isCrit);
-                            if (defender === 'left') {
-                                this.leftDefenseStance = 'parry';
-                            } else {
-                                this.rightDefenseStance = 'parry';
-                            }
-                            this.sendCombatMessage(`⚔️ ${defenderName} prepares to parry the next attack!`);
+                    if (defendRoll === 7) {
+                        // Random block
+                        this.handleBlock(defenderFighter, defenderName, attackRoll, isCrit, defender);
+                        if (defender === 'left') {
+                            this.leftDefenseStance = 'block';
                         } else {
-                            // Hit lands!
-                            const damage = isCrit ? GAME_CONFIG.DAMAGE.CRITICAL : attackRoll;
-                            this.handleHit(defenderFighter, defenderName, damage, defender, isCrit);
+                            this.rightDefenseStance = 'block';
                         }
-                    }, 500);
+                        this.sendCombatMessage(`🛡️ ${defenderName} prepares to block the next attack!`);
+                    } else if (defendRoll === 8) {
+                        // Random parry
+                        this.handleParry(attackerFighter, defenderFighter, attackerName, defenderName, attackRoll, isCrit);
+                        if (defender === 'left') {
+                            this.leftDefenseStance = 'parry';
+                        } else {
+                            this.rightDefenseStance = 'parry';
+                        }
+                        this.sendCombatMessage(`⚔️ ${defenderName} prepares to parry the next attack!`);
+                    } else {
+                        // Hit lands!
+                        const damage = isCrit ? GAME_CONFIG.DAMAGE.CRITICAL : attackRoll;
+                        this.handleHit(defenderFighter, defenderName, damage, defender, isCrit);
+                    }
                 }
             }
-        }, 800);
+        }, 200);
     }
 
     /**
@@ -299,10 +345,16 @@ export class CombatSystem {
      * Handle block
      */
     handleBlock(defenderFighter, defenderName, damage, isCrit, defenderSide) {
+        console.log('🛡️ handleBlock() called - should play block sound');
         this.addCombatAnimation(defenderFighter, 'fighter-block');
         this.showCombatText(defenderFighter, 'BLOCK!', 'block-text');
+        this.showBlockEffect(defenderFighter);
+        this.playBlockSound();
 
         if (isCrit) {
+            // Play critical sound for blocked crits
+            this.playCriticalSound();
+
             // Critical hits deal 3 damage even when blocked
             const critBlockDamage = 3;
 
@@ -341,12 +393,20 @@ export class CombatSystem {
      * Handle parry (reflect damage)
      */
     handleParry(attackerFighter, defenderFighter, attackerName, defenderName, damage, isCrit) {
+        console.log('⚔️ handleParry() called - should play parry sound');
         this.addCombatAnimation(defenderFighter, 'fighter-parry');
         this.showCombatText(defenderFighter, 'PARRY!', 'parry-text');
+        this.showParryEffect(defenderFighter);
+        this.playParrySound();
 
         setTimeout(() => {
             this.addCombatAnimation(attackerFighter, 'fighter-hit');
+            if (isCrit) {
+                this.showCriticalScreenFlash();
+            }
             this.showDamageNumber(attackerFighter, damage, isCrit);
+            this.showSlashEffect(attackerFighter);
+            this.playHitSound(); // Play hit sound when parry damage reflects
 
             const attackerSide = attackerFighter === this.leftFighter ? 'left' : 'right';
             if (attackerSide === 'left') {
@@ -367,13 +427,14 @@ export class CombatSystem {
             } else {
                 this.nextTurn();
             }
-        }, 800);
+        }, 100);
     }
 
     /**
      * Handle hit
      */
     handleHit(defenderFighter, defenderName, damage, defenderSide, isCrit) {
+        console.log('💥 handleHit() called - should play hit sound, damage:', damage);
         const attackerFighter = defenderSide === 'left' ? this.rightFighter : this.leftFighter;
         const attackerName = defenderSide === 'left' ? this.rightFighterNameEl.textContent : this.leftFighterNameEl.textContent;
 
@@ -381,8 +442,12 @@ export class CombatSystem {
             this.addCombatAnimation(defenderFighter, 'fighter-hit');
             if (isCrit) {
                 this.addCombatAnimation(defenderFighter, 'fighter-crit-glow');
+                this.showCriticalScreenFlash();
+                this.playCriticalSound();
             }
             this.showDamageNumber(defenderFighter, damage, isCrit);
+            this.showSlashEffect(defenderFighter);
+            this.playHitSound();
 
             if (defenderSide === 'left') {
                 this.leftFighterHP -= damage;
@@ -402,7 +467,7 @@ export class CombatSystem {
             } else {
                 this.nextTurn();
             }
-        }, 800);
+        }, 100);
     }
 
     /**
@@ -442,7 +507,32 @@ export class CombatSystem {
      */
     addCombatAnimation(fighter, animationClass) {
         fighter.classList.add(animationClass);
-        setTimeout(() => fighter.classList.remove(animationClass), 1000);
+
+        // Update fighter pose based on animation type
+        if (window.arena && window.arena.updateFighterPose) {
+            const fighterName = fighter === this.leftFighter ?
+                this.leftFighterNameEl.textContent :
+                this.rightFighterNameEl.textContent;
+
+            // Set pose based on animation
+            if (animationClass === 'fighter-attacking' || animationClass === 'fighter-parry') {
+                window.arena.updateFighterPose(fighter, fighterName, 'attack');
+            } else if (animationClass === 'fighter-defending' || animationClass === 'fighter-block') {
+                window.arena.updateFighterPose(fighter, fighterName, 'defense');
+            }
+        }
+
+        setTimeout(() => {
+            fighter.classList.remove(animationClass);
+
+            // Reset to ready pose after animation
+            if (window.arena && window.arena.updateFighterPose) {
+                const fighterName = fighter === this.leftFighter ?
+                    this.leftFighterNameEl.textContent :
+                    this.rightFighterNameEl.textContent;
+                window.arena.updateFighterPose(fighter, fighterName, 'ready');
+            }
+        }, 400);
     }
 
     /**
@@ -481,6 +571,269 @@ export class CombatSystem {
         fighter.appendChild(textEl);
 
         setTimeout(() => textEl.remove(), 1200);
+    }
+
+    /**
+     * Show block visual effect
+     */
+    showBlockEffect(fighter) {
+        const blockImg = document.createElement('img');
+        blockImg.src = '/images/effects/block.png';
+        blockImg.className = 'block-effect';
+
+        // Determine if we need to flip based on knight position
+        // Shield is mirrored horizontally when on the RIGHT side
+        const isLeftFighter = fighter.classList.contains('fighter-left');
+        const flipTransform = isLeftFighter ? 'scaleX(-1)' : 'scaleX(1)';
+
+        blockImg.style.cssText = `
+            position: absolute;
+            width: auto;
+            height: 120px;
+            max-width: 150px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) ${flipTransform};
+            z-index: 10;
+            opacity: 0;
+            object-fit: contain;
+            filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.6));
+            pointer-events: none;
+            animation: blockEffectFade 0.8s ease-out forwards;
+        `;
+
+        fighter.appendChild(blockImg);
+
+        setTimeout(() => blockImg.remove(), 800);
+    }
+
+    /**
+     * Show slash visual effect (for damage)
+     */
+    showSlashEffect(fighter) {
+        const slashImg = document.createElement('img');
+        slashImg.src = '/images/effects/slash.png';
+        slashImg.className = 'slash-effect';
+
+        // Random angle between -15 and 15 degrees
+        const randomAngle = (Math.random() * 30) - 15;
+
+        // Determine direction based on which fighter
+        const isLeftFighter = fighter.classList.contains('fighter-left');
+        const flipTransform = isLeftFighter ? 'scaleX(-1)' : 'scaleX(1)';
+
+        slashImg.style.cssText = `
+            position: absolute;
+            width: 150px;
+            height: 150px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(${randomAngle}deg) ${flipTransform};
+            z-index: 15;
+            opacity: 0;
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));
+            pointer-events: none;
+            animation: slashEffectSwipe 0.4s ease-out forwards;
+        `;
+
+        fighter.appendChild(slashImg);
+
+        setTimeout(() => slashImg.remove(), 400);
+    }
+
+    /**
+     * Show parry visual effect (sparks)
+     */
+    showParryEffect(fighter) {
+        const sparkImg = document.createElement('img');
+        sparkImg.src = '/images/effects/spark.png';
+        sparkImg.className = 'parry-effect';
+
+        // Spark.png is facing left, so we need to flip it for right fighter
+        // Position adjusted: move closer to center (15px towards middle) and up 15px
+        const isLeftFighter = fighter.classList.contains('fighter-left');
+        const flipTransform = isLeftFighter ? 'scaleX(-1)' : 'scaleX(1)';
+        const horizontalOffset = isLeftFighter ? 'calc(50% + 15px)' : 'calc(50% - 15px)';
+
+        sparkImg.style.cssText = `
+            position: absolute;
+            width: 140px;
+            height: 140px;
+            top: calc(50% - 15px);
+            left: ${horizontalOffset};
+            transform: translate(-50%, -50%) ${flipTransform};
+            z-index: 20;
+            opacity: 0;
+            filter: drop-shadow(0 0 12px rgba(255, 255, 255, 1)) drop-shadow(0 0 24px rgba(255, 215, 0, 0.8));
+            pointer-events: none;
+            animation: parryEffectBurst 0.6s ease-out forwards;
+        `;
+
+        fighter.appendChild(sparkImg);
+
+        setTimeout(() => sparkImg.remove(), 600);
+    }
+
+    /**
+     * Show critical hit screen flash
+     */
+    showCriticalScreenFlash() {
+        const arenaViewport = document.querySelector('.arena-viewport');
+        if (!arenaViewport) return;
+
+        const flashOverlay = document.createElement('div');
+        flashOverlay.className = 'crit-screen-flash';
+        flashOverlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle, rgba(255, 0, 0, 0.4) 0%, rgba(255, 0, 0, 0.15) 50%, transparent 100%);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            animation: critScreenFlash 0.5s ease-out forwards;
+        `;
+
+        arenaViewport.appendChild(flashOverlay);
+
+        setTimeout(() => flashOverlay.remove(), 500);
+    }
+
+    /**
+     * Play a random hit sound (first second only)
+     */
+    playHitSound() {
+        if (this.muted) {
+            console.log('Hit sound muted');
+            return;
+        }
+
+        console.log('🔊 Playing HIT sound');
+        const randomIndex = Math.floor(Math.random() * this.hitSoundPaths.length);
+        const soundPath = this.hitSoundPaths[randomIndex];
+
+        // Create a fresh Audio instance using the path directly
+        const sound = new Audio(soundPath);
+        sound.volume = 0.5;
+
+        sound.play().then(() => {
+            console.log('✅ Hit sound playing');
+        }).catch(err => {
+            console.error('❌ Hit sound failed:', err);
+        });
+
+        // Stop after 1 second
+        setTimeout(() => {
+            sound.pause();
+            sound.currentTime = 0;
+        }, 1000);
+    }
+
+    /**
+     * Play parry sound (first second only)
+     */
+    playParrySound() {
+        if (this.muted) {
+            console.log('Parry sound muted');
+            return;
+        }
+
+        console.log('🔊 Playing PARRY sound');
+        const randomIndex = Math.floor(Math.random() * this.parrySoundPaths.length);
+        const soundPath = this.parrySoundPaths[randomIndex];
+
+        // Create a fresh Audio instance using the path directly
+        const sound = new Audio(soundPath);
+        sound.volume = 0.5;
+
+        sound.play().then(() => {
+            console.log('✅ Parry sound playing');
+        }).catch(err => {
+            console.error('❌ Parry sound failed:', err);
+        });
+
+        // Stop after 1 second
+        setTimeout(() => {
+            sound.pause();
+            sound.currentTime = 0;
+        }, 1000);
+    }
+
+    /**
+     * Play a random block sound (first second only)
+     */
+    playBlockSound() {
+        if (this.muted) {
+            console.log('Block sound muted');
+            return;
+        }
+
+        console.log('🔊 Playing BLOCK sound');
+        const randomIndex = Math.floor(Math.random() * this.blockSoundPaths.length);
+        const soundPath = this.blockSoundPaths[randomIndex];
+
+        // Create a fresh Audio instance using the path directly
+        const sound = new Audio(soundPath);
+        sound.volume = 0.5;
+
+        sound.play().then(() => {
+            console.log('✅ Block sound playing');
+        }).catch(err => {
+            console.error('❌ Block sound failed:', err);
+        });
+
+        // Stop after 1 second
+        setTimeout(() => {
+            sound.pause();
+            sound.currentTime = 0;
+        }, 1000);
+    }
+
+    /**
+     * Play critical strike sound (first second only)
+     */
+    playCriticalSound() {
+        if (this.muted) return;
+
+        // Create a fresh Audio instance using the path directly
+        const sound = new Audio(this.criticalSoundPath);
+        sound.volume = 0.5;
+
+        sound.play().catch(err => console.log('Critical sound play failed:', err));
+
+        // Stop after 1 second
+        setTimeout(() => {
+            sound.pause();
+            sound.currentTime = 0;
+        }, 1000);
+    }
+
+    /**
+     * Play attack voice sound (full duration)
+     * @param {boolean} isCrit - Whether this is a critical attack
+     */
+    playAttackVoice(isCrit) {
+        if (this.muted) return;
+
+        let soundPath;
+        if (isCrit) {
+            // Use voices 3 or 6 for criticals
+            const randomIndex = Math.floor(Math.random() * this.criticalAttackVoicePaths.length);
+            soundPath = this.criticalAttackVoicePaths[randomIndex];
+        } else {
+            // Use voices 1, 2, 4, 5 for normal attacks
+            const randomIndex = Math.floor(Math.random() * this.normalAttackVoicePaths.length);
+            soundPath = this.normalAttackVoicePaths[randomIndex];
+        }
+
+        // Create a fresh Audio instance using the path directly
+        const sound = new Audio(soundPath);
+        sound.volume = 0.5;
+
+        sound.play().catch(err => console.log('Attack voice play failed:', err));
+        // Play full sound - no timeout to stop it
     }
 
     /**

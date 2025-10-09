@@ -515,13 +515,13 @@ body {
 .chat-mode-battlefield-overlay .top-progress {
     position: absolute !important;
     top: 5px !important;
-    left: calc(50% - 9px) !important;
+    left: calc(50% - 5px) !important;
     transform: translateX(-50%) !important;
     width: 100% !important;
 }
 
 .chat-mode-battlefield-overlay .progress-container {
-    transform: translateY(13px) !important;
+    transform: translateY(11px) !important;
 }
 
 .chat-mode-battlefield-overlay .top-odds {
@@ -536,35 +536,37 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-hp {
-    left: 52px !important;
+    left: 50px !important;
 }
 
 .chat-mode-battlefield-overlay .right-hp {
-    right: 47px !important;
+    right: 45px !important;
 }
 
 .chat-mode-battlefield-overlay .vs-display {
     position: absolute !important;
-    bottom: 8px !important;
+    bottom: -1px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
     z-index: 15 !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate {
+    position: absolute !important;
     top: auto !important;
-    bottom: 10px !important;
+    bottom: 0px !important;
     transform: translateX(-50%) !important;
-    max-width: 140px !important;
+    max-width: none !important;
+    width: 40% !important;
     font-size: 0.7rem !important;
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 35% !important;
+    left: 30% !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    left: 65% !important;
+    left: 70% !important;
     right: auto !important;
 }
 
@@ -584,29 +586,40 @@ body {
 
 .chat-mode-battlefield-overlay .fighter-left {
     left: 50% !important;
-    transform: translateX(-220px) !important;
+    transform: translateX(-220px) scale(0.75) !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
     right: auto !important;
     left: 50% !important;
-    transform: translateX(60px) !important;
+    transform: translateX(60px) scale(0.75) !important;
+}
+
+/* Override fighter positioning for victory animation in chat mode */
+.chat-mode-battlefield-overlay .victory-center {
+    left: 50% !important;
+    transform: translateX(-50%) scale(1.5) !important; /* 50% bigger than normal */
+}
+
+/* Ensure victory nameplate is centered and highest z-index in chat mode */
+.chat-mode-battlefield-overlay .victory-nameplate {
+    position: absolute !important;
+    top: 10% !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    z-index: 99999 !important;
+    pointer-events: none;
+}
+
+/* Ensure nameplate container is properly positioned in chat mode */
+.chat-mode-battlefield-overlay .nameplate {
+    z-index: 99999 !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-sprite {
-    transform: scale(0.85) !important;
+    /* Transform removed - animations target this element */
 }
 
-/* Disable ALL damage/combat text in chat mode to prevent repeating */
-.chat-mode-battlefield-overlay .damage-number,
-.chat-mode-battlefield-overlay .attacker-damage-number,
-.chat-mode-battlefield-overlay .crit-number,
-.chat-mode-battlefield-overlay .attacker-crit-number,
-.chat-mode-battlefield-overlay .block-text,
-.chat-mode-battlefield-overlay .parry-text,
-.chat-mode-battlefield-overlay .miss-text {
-    display: none !important;
-}
 
 .chat-mode-separator {
     width: 100%;
@@ -2363,6 +2376,73 @@ body {
     background-repeat: no-repeat !important;
 }
 
+/* Countdown Overlay */
+.countdown-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(180deg,
+        #000814 0%,
+        #001d3d 15%,
+        #003566 35%,
+        #001d3d 65%,
+        #000814 100%);
+    box-shadow: inset 0 0 90px 30px rgba(0, 0, 0, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 500;
+    opacity: 1;
+    transition: opacity 0.5s ease-in-out;
+}
+
+.countdown-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.countdown-timer {
+    font-size: 4.5rem;
+    font-weight: 900;
+    font-family: 'Arial', 'Helvetica', sans-serif;
+    color: #ffffff;
+    text-align: center;
+    letter-spacing: 0.1em;
+    text-shadow:
+        0 0 20px rgba(0, 153, 255, 0.9),
+        0 0 40px rgba(0, 102, 255, 0.7),
+        0 0 60px rgba(0, 51, 255, 0.5),
+        0 0 80px rgba(0, 0, 255, 0.3),
+        0 5px 15px rgba(0, 0, 0, 0.9);
+    animation: countdownGlowPulse 1s ease-in-out infinite;
+}
+
+/* Larger timer in fullscreen mode */
+.battlefield-section.fullscreen .countdown-timer {
+    font-size: 8rem;
+}
+
+@keyframes countdownGlowPulse {
+    0%, 100% {
+        text-shadow:
+            0 0 20px rgba(0, 153, 255, 0.9),
+            0 0 40px rgba(0, 102, 255, 0.7),
+            0 0 60px rgba(0, 51, 255, 0.5),
+            0 0 80px rgba(0, 0, 255, 0.3),
+            0 5px 15px rgba(0, 0, 0, 0.9);
+    }
+    50% {
+        text-shadow:
+            0 0 30px rgba(0, 204, 255, 1),
+            0 0 60px rgba(0, 153, 255, 0.9),
+            0 0 90px rgba(0, 102, 255, 0.7),
+            0 0 120px rgba(0, 51, 255, 0.5),
+            0 5px 20px rgba(0, 0, 0, 1);
+    }
+}
+
 /* Dirt floor removed - backgrounds now extend to bottom */
 
 /* Fighter positioning - aligned with name plates */
@@ -2528,7 +2608,7 @@ body {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    z-index: 100;
+    z-index: 600;
     background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ff8c00);
     background-size: 400% 400%;
     border: 3px solid #fff700;
@@ -3761,7 +3841,8 @@ body {
     opacity: 0;
     animation: nameplateAppear 2s ease-out forwards;
     animation-delay: 2.5s;
-    z-index: 100;
+    z-index: 9999 !important;
+    pointer-events: none;
 }
 
 .victory-name {
@@ -4559,6 +4640,68 @@ body {
     }
     100% {
         transform: translateY(120vh);
+        opacity: 0;
+    }
+}
+
+/* Combat Visual Effects Animations */
+@keyframes blockEffectFade {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.1);
+    }
+}
+
+@keyframes slashEffectSwipe {
+    0% {
+        opacity: 0;
+        transform: translate(-70%, -50%) rotate(var(--rotation, 0deg)) scale(0.7);
+    }
+    30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(var(--rotation, 0deg)) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-30%, -50%) rotate(var(--rotation, 0deg)) scale(1.1);
+    }
+}
+
+@keyframes parryEffectBurst {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(0.5) rotate(0deg);
+    }
+    40% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
+    }
+    70% {
+        opacity: 0.8;
+        transform: translate(-50%, -50%) scale(1) rotate(-3deg);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1.2) rotate(0deg);
+    }
+}
+
+@keyframes critScreenFlash {
+    0% {
+        opacity: 0;
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
         opacity: 0;
     }
 }

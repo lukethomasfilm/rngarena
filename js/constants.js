@@ -6,15 +6,15 @@ export const GAME_CONFIG = {
 
     // HP Scaling by Round
     HP_BY_ROUND: {
-        1: 5,
-        2: 5,
-        3: 8,
-        4: 8,
-        5: 12,
-        6: 12,
-        7: 20,  // Quarterfinals
-        8: 20,  // Semifinals
-        9: 20   // Finals
+        1: 10,
+        2: 10,
+        3: 16,
+        4: 16,
+        5: 24,
+        6: 24,
+        7: 40,  // Quarterfinals
+        8: 40,  // Semifinals
+        9: 40   // Finals
     },
 
     // Damage Values
@@ -118,8 +118,10 @@ export const CHARACTER_CONFIG = {
     // Knight image files
     KNIGHT_IMAGES: ['Knight_01.png', 'Knight_02.png', 'Knight_03.png', 'knight_04.png', 'knight_05.png'],
 
-    // Hero image
-    HERO_IMAGE: 'Daring_hero.png',
+    // Hero images (3-pose system)
+    HERO_READY: 'daring_hero_ready.png',
+    HERO_ATTACK: 'daring_hero_attack.png',
+    HERO_DEFENSE: 'daring_hero_defense.png',
 
     // Image paths
     CHARACTER_PATH: 'images/Characters/',

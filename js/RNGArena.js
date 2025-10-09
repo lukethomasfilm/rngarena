@@ -49,6 +49,8 @@ export class RNGArena {
         this.heroProgressIndicator = document.getElementById('hero-progress-indicator');
         this.leftFighterNameEl = document.getElementById('left-nameplate-name');
         this.rightFighterNameEl = document.getElementById('right-nameplate-name');
+        this.countdownOverlay = document.getElementById('countdown-overlay');
+        this.countdownTimer = document.getElementById('countdown-timer');
         this.leftFighterTitlesEl = document.getElementById('left-nameplate-titles');
         this.rightFighterTitlesEl = document.getElementById('right-nameplate-titles');
         this.leftFighterCard = document.querySelector('.left-fighter-card');
@@ -86,10 +88,36 @@ export class RNGArena {
         this.currentScrollX = 0;
         this.currentScrollY = 0;
 
+        // Background music
+        this.backgroundMusic = new Audio('/sfx/RNG Arena.mp3');
+        this.backgroundMusic.loop = true;
+        this.backgroundMusic.volume = 0.60;
+        this.backgroundMusic.preload = 'auto';
+
+
+        // Sound paths - URL encode special characters like #
+        this.fightEntranceSoundPaths = [
+            '/sfx/Fight!_fighter_game_-1760024915376.mp3',
+            '/sfx/Fight!_fighter_game_-1760027803039.mp3',
+            '/sfx/Fight_fighter_game_1-1760027804743.mp3',
+            '/sfx/Fight_fighter_game_2-1760027804744.mp3',
+            '/sfx/Fight_fighter_game_3-1760027804744.mp3'
+        ];
+
+        // Special round sounds
+        this.semifinalsSoundPath = '/sfx/Semifinals_fighter_g_3-1760030125624.mp3';
+        this.finalBattleSoundPath = '/sfx/Final_Battle_fighter_3-1760028925425.mp3';
+        this.victorySoundPath = '/sfx/You_are_the_victorio_1-1760029102157.mp3';
+        this.byeSoundPath = '/sfx/game_female_soft_com_3-1760029620130.mp3';
+        this.chestOpenSoundPath = '/sfx/old_creaky_chest_ope_1-1759992997491.mp3';
+
         this.init();
     }
 
     async init() {
+        // Start background music
+        this.startBackgroundMusic();
+
         // Add start button functionality
         if (this.startButton) {
             this.startButton.addEventListener('click', () => {
@@ -127,6 +155,32 @@ export class RNGArena {
         this.initLootClaimDevFrame();
         this.initClaimLootButton();
         this.initDevTabs();
+        this.initAudioToggle();
+    }
+
+    initAudioToggle() {
+        const muteBtn = document.getElementById('mute-audio');
+        if (!muteBtn) return;
+
+        this.audioMuted = false;
+
+        muteBtn.addEventListener('click', () => {
+            this.audioMuted = !this.audioMuted;
+
+            // Toggle background music
+            if (this.audioMuted) {
+                this.backgroundMusic.pause();
+                muteBtn.textContent = '🔇';
+            } else {
+                this.backgroundMusic.play().catch(e => console.log('Music play failed:', e));
+                muteBtn.textContent = '🔊';
+            }
+
+            // Mute/unmute all sound effects in combat system
+            if (this.combatSystem) {
+                this.combatSystem.setMuted(this.audioMuted);
+            }
+        });
     }
 
     initTestModeToggle() {
@@ -200,14 +254,29 @@ export class RNGArena {
                 if (e.target === lootClaimOverlay || e.target.classList.contains('loot-claim-viewport')) {
                     lootClaimOverlay.classList.add('hidden');
 
-                    // If loot was claimed in current mode, hide the sidebar elements
+                    // If loot was claimed in current mode, replace chest with glowing helmet
                     const isLootClaimedInCurrentMode = this.heroLootOnlyMode ? this.heroLootClaimed : this.tournamentLootClaimed;
                     if (isLootClaimedInCurrentMode) {
                         const claimBtn = document.getElementById('claim-loot-btn');
                         const lootBox = document.getElementById('loot-box');
 
                         if (claimBtn) claimBtn.style.display = 'none';
-                        if (lootBox) lootBox.style.display = 'none';
+
+                        // Replace chest with glowing helmet
+                        if (lootBox) {
+                            lootBox.innerHTML = `
+                                <img src="/images/Loot Items/Loot_helmet_test.png"
+                                     alt="Legendary Helmet"
+                                     class="loot-helmet-claimed"
+                                     style="
+                                         width: 100%;
+                                         height: 100%;
+                                         object-fit: contain;
+                                         filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
+                                         animation: helmetWiggle 1s ease-in-out infinite, helmetGlow 2s ease-in-out infinite;
+                                     ">
+                            `;
+                        }
                     }
                 }
             });
@@ -280,11 +349,31 @@ export class RNGArena {
     }
 
     revealHelmet() {
+        console.log('revealHelmet() called');
         const popupLootBox = document.getElementById('popup-loot-box');
 
         // Check if loot already claimed in current mode
         const isAlreadyClaimed = this.heroLootOnlyMode ? this.heroLootClaimed : this.tournamentLootClaimed;
-        if (!popupLootBox || isAlreadyClaimed) return;
+        console.log('Loot claim check:', { popupLootBox, isAlreadyClaimed, audioMuted: this.audioMuted });
+        if (!popupLootBox || isAlreadyClaimed) {
+            console.log('Exiting early - popupLootBox missing or already claimed');
+            return;
+        }
+
+        // Play chest opening sound
+        if (!this.audioMuted) {
+            console.log('Attempting to play chest sound...');
+            // Create a fresh audio instance using the path directly
+            const chestSound = new Audio(this.chestOpenSoundPath);
+            chestSound.volume = 0.5;
+            chestSound.play().then(() => {
+                console.log('Chest sound playing successfully!');
+            }).catch(err => {
+                console.error('Chest sound failed:', err);
+            });
+        } else {
+            console.log('Audio is muted, skipping chest sound');
+        }
 
         // Set the appropriate claim flag based on current mode
         if (this.heroLootOnlyMode) {
@@ -339,7 +428,101 @@ export class RNGArena {
         this.chatSystem.addChatMessage('A rare treasure!');
     }
 
+    // ===== Background Music =====
+
+    startBackgroundMusic() {
+        // Try to play background music
+        // Note: browsers may block autoplay, so we handle the error gracefully
+        this.backgroundMusic.play().catch(err => {
+            console.log('Background music autoplay blocked:', err);
+            // Add user interaction listener to start music
+            const startMusic = () => {
+                this.backgroundMusic.play().catch(e => console.log('Music play failed:', e));
+                document.removeEventListener('click', startMusic);
+            };
+            document.addEventListener('click', startMusic);
+        });
+    }
+
     // ===== Tournament Flow =====
+
+    /**
+     * Start the countdown timer
+     */
+    startCountdown() {
+        let timeRemaining = 10; // 10 seconds
+
+        // Update timer display
+        const updateTimer = () => {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            const formattedTime = `00:00:${seconds.toString().padStart(2, '0')}`;
+            if (this.countdownTimer) {
+                this.countdownTimer.textContent = formattedTime;
+            }
+        };
+
+        // Initial display
+        updateTimer();
+
+        // Countdown interval
+        const countdownInterval = setInterval(() => {
+            timeRemaining--;
+            updateTimer();
+
+            if (timeRemaining <= 0) {
+                clearInterval(countdownInterval);
+                // Hide countdown overlay
+                if (this.countdownOverlay) {
+                    this.countdownOverlay.classList.add('hidden');
+                }
+                // Proceed with tournament start
+                this.proceedWithTournamentStart();
+            }
+        }, 1000);
+    }
+
+    /**
+     * Proceed with the actual tournament start (after countdown)
+     */
+    proceedWithTournamentStart() {
+        // Check if first round is a bye - if so, skip initial nameplate animation
+        const firstBye = this.tournament.hasFollowedCharacterBye();
+
+        if (!firstBye) {
+            // Get the first match and populate names BEFORE animation
+            const firstMatch = this.tournament.getCurrentMatch();
+            if (firstMatch) {
+                // Make sure fighters are hidden before updating display
+                if (this.leftFighter) this.leftFighter.style.opacity = '0';
+                if (this.rightFighter) this.rightFighter.style.opacity = '0';
+
+                this.updateMatchDisplay(firstMatch);
+            }
+
+            // Animate nameplates into view with names already on them
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
+            if (nameplateContainer) {
+                setTimeout(() => {
+                    nameplateContainer.classList.add('visible');
+                }, 100);
+            }
+        } else {
+            // First round is a bye - keep nameplates hidden, let handleByeRound animate them
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
+            if (nameplateContainer) {
+                nameplateContainer.classList.remove('visible');
+            }
+        }
+
+        this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.TOURNAMENT_START);
+        this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.DARING_HERO_START);
+        this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.BATTLE_COMMENCE);
+
+        setTimeout(() => {
+            this.startBattle();
+        }, GAME_CONFIG.TIMING.BATTLE_START_DELAY);
+    }
 
     startTournament() {
         if (!this.tournamentStarted) {
@@ -351,42 +534,8 @@ export class RNGArena {
                 this.startButton.style.display = 'none';
             }
 
-            // Check if first round is a bye - if so, skip initial nameplate animation
-            const firstBye = this.tournament.hasFollowedCharacterBye();
-
-            if (!firstBye) {
-                // Get the first match and populate names BEFORE animation
-                const firstMatch = this.tournament.getCurrentMatch();
-                if (firstMatch) {
-                    // Make sure fighters are hidden before updating display
-                    if (this.leftFighter) this.leftFighter.style.opacity = '0';
-                    if (this.rightFighter) this.rightFighter.style.opacity = '0';
-
-                    this.updateMatchDisplay(firstMatch);
-                }
-
-                // Animate nameplates into view with names already on them
-                const nameplateContainer = document.querySelector('.nameplate-vs-container');
-                if (nameplateContainer) {
-                    setTimeout(() => {
-                        nameplateContainer.classList.add('visible');
-                    }, 100);
-                }
-            } else {
-                // First round is a bye - keep nameplates hidden, let handleByeRound animate them
-                const nameplateContainer = document.querySelector('.nameplate-vs-container');
-                if (nameplateContainer) {
-                    nameplateContainer.classList.remove('visible');
-                }
-            }
-
-            this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.TOURNAMENT_START);
-            this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.DARING_HERO_START);
-            this.chatSystem.addAnnouncerMessage(ANNOUNCER_MESSAGES.BATTLE_COMMENCE);
-
-            setTimeout(() => {
-                this.startBattle();
-            }, GAME_CONFIG.TIMING.BATTLE_START_DELAY);
+            // Start the countdown
+            this.startCountdown();
         } else {
             this.startBattle();
         }
@@ -410,6 +559,29 @@ export class RNGArena {
         const roundInfo = this.tournament.getRoundInfo();
         this.emojiSystem.updateEmojiSpawnRate(roundInfo.current);
         this.emojiSystem.startEmojiReactions(roundInfo.current);
+
+        // Play special round sounds
+        if (!this.audioMuted) {
+            if (roundInfo.current === 7) {
+                // Semifinals - play first 1.5 seconds
+                const sound = new Audio(this.semifinalsSoundPath);
+                sound.volume = 0.5;
+                sound.play().catch(err => console.log('Semifinals sound failed:', err));
+                setTimeout(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }, 1500);
+            } else if (roundInfo.current === 8) {
+                // Final Battle - play first 2 seconds
+                const sound = new Audio(this.finalBattleSoundPath);
+                sound.volume = 0.5;
+                sound.play().catch(err => console.log('Final Battle sound failed:', err));
+                setTimeout(() => {
+                    sound.pause();
+                    sound.currentTime = 0;
+                }, 2000);
+            }
+        }
 
         // Update chat rate based on round
         this.updateChatRate(roundInfo.current);
@@ -455,6 +627,25 @@ export class RNGArena {
     }
 
     fighterEntrance() {
+        // Play random fight entrance sound (first second only)
+        if (!this.audioMuted) {
+            // Randomly select one of the fight entrance sounds
+            const randomIndex = Math.floor(Math.random() * this.fightEntranceSoundPaths.length);
+            const soundPath = this.fightEntranceSoundPaths[randomIndex];
+
+            // Create a fresh Audio instance using the path directly
+            const sound = new Audio(soundPath);
+            sound.volume = 0.5;
+
+            sound.play().catch(err => console.log('Fight entrance sound failed:', err));
+
+            // Stop after 1 second
+            setTimeout(() => {
+                sound.pause();
+                sound.currentTime = 0;
+            }, 1000);
+        }
+
         if (this.leftFighter) {
             this.leftFighter.style.opacity = '1';
             this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
@@ -478,6 +669,11 @@ export class RNGArena {
             this.rightFighterNameEl,
             this.battleStatus
         );
+
+        // Apply current mute state
+        if (this.audioMuted) {
+            this.combatSystem.setMuted(true);
+        }
 
         // Set combat callbacks
         this.combatSystem.onCombatEnd = (leftWins) => {
@@ -564,6 +760,17 @@ export class RNGArena {
     }
 
     handleByeRound(byeInfo) {
+        // Play bye round sound (first 2 seconds at 75% volume)
+        if (!this.audioMuted) {
+            const sound = new Audio(this.byeSoundPath);
+            sound.volume = 0.75;
+            sound.play().catch(err => console.log('Bye sound failed:', err));
+            setTimeout(() => {
+                sound.pause();
+                sound.currentTime = 0;
+            }, 2000);
+        }
+
         this.battleStatus.innerHTML = '✨ LADY LUCK VISITS YOU! ✨<br><span style="font-size: 0.6em;">You get a bye and a free loot tier - lucky you!</span>';
         this.battleStatus.style.opacity = '0'; // Start hidden
 
@@ -848,9 +1055,12 @@ export class RNGArena {
         }
     }
 
-    getCharacterImage(characterName) {
+    getCharacterImage(characterName, pose = 'ready') {
         if (characterName === 'Daring Hero') {
-            return CHARACTER_CONFIG.HERO_IMAGE;
+            // Return appropriate pose for Daring Hero
+            if (pose === 'attack') return CHARACTER_CONFIG.HERO_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.HERO_DEFENSE;
+            return CHARACTER_CONFIG.HERO_READY;
         }
 
         if (characterName === 'Lady Luck') {
@@ -865,11 +1075,11 @@ export class RNGArena {
         return this.characterImageCache.get(characterName);
     }
 
-    updateFighterSprite(fighterElement, characterName) {
+    updateFighterSprite(fighterElement, characterName, pose = 'ready') {
         const spriteElement = fighterElement.querySelector('.fighter-sprite');
         if (!spriteElement) return;
 
-        const imageName = this.getCharacterImage(characterName);
+        const imageName = this.getCharacterImage(characterName, pose);
         const imagePath = `${CHARACTER_CONFIG.CHARACTER_PATH}${imageName}`;
 
         const isLeftFighter = fighterElement.classList.contains('fighter-left');
@@ -885,6 +1095,16 @@ export class RNGArena {
 
         const flipStyle = needsFlip ? 'transform: scale(0.8) scaleX(-1);' : 'transform: scale(0.8);';
         spriteElement.innerHTML = `<img src="${imagePath}" alt="${characterName}" class="character-image" style="${flipStyle}">`;
+    }
+
+    updateFighterPose(fighterElement, characterName, pose) {
+        // Quick pose update without rebuilding the sprite
+        const img = fighterElement.querySelector('.fighter-sprite img');
+        if (!img) return;
+
+        const imageName = this.getCharacterImage(characterName, pose);
+        const imagePath = `${CHARACTER_CONFIG.CHARACTER_PATH}${imageName}`;
+        img.src = imagePath;
     }
 
     // ===== Round Announcement =====
@@ -966,6 +1186,13 @@ export class RNGArena {
     showVictoryAnimation(winner) {
         this.emojiSystem.setMaxSpawnRate();
 
+        // Play victory sound (full duration)
+        if (!this.audioMuted) {
+            const sound = new Audio(this.victorySoundPath);
+            sound.volume = 0.5;
+            sound.play().catch(err => console.log('Victory sound failed:', err));
+        }
+
         // Dark overlay
         const overlay = document.createElement('div');
         overlay.className = 'victory-overlay';
@@ -1017,6 +1244,7 @@ export class RNGArena {
         winnerFighter.style.setProperty('--start-position', startPosition);
         winnerFighter.style.setProperty('--start-transform', startTransform);
         winnerFighter.classList.add('victory-center');
+        winnerFighter.style.zIndex = '1'; // Keep fighter behind nameplate
 
         // Winner glow
         const winnerSprite = winnerFighter.querySelector('.fighter-sprite img');
@@ -1059,7 +1287,7 @@ export class RNGArena {
                 winnerNameplate.style.top = '50%';
                 winnerNameplate.style.transform = 'translate(-50%, -50%) scale(1.3)';
                 winnerNameplate.style.textAlign = 'center';
-                winnerNameplate.style.zIndex = '100';
+                winnerNameplate.style.zIndex = '200';
 
                 // Force center alignment on child elements
                 const nameName = winnerNameplate.querySelector('.nameplate-name');
@@ -1582,6 +1810,12 @@ export class RNGArena {
                         clearInterval(this.syncChatModeBattlefield);
                         this.syncChatModeBattlefield = null;
                     }
+
+                    // Disconnect mutation observers
+                    if (this.chatModeObservers) {
+                        this.chatModeObservers.forEach(observer => observer.disconnect());
+                        this.chatModeObservers = null;
+                    }
                 }
             };
 
@@ -1659,14 +1893,6 @@ export class RNGArena {
         const startBtn = clone.querySelector('#start-battle');
         if (startBtn) startBtn.style.display = 'none';
 
-        // Disable all animations in clone
-        clone.style.animation = 'none';
-        const allElements = clone.querySelectorAll('*');
-        allElements.forEach(el => {
-            el.style.animation = 'none';
-            el.style.transition = 'none';
-        });
-
         // Calculate scale to fit container
         // Arena viewport is 588px wide × 280px tall
         // Default container: 374px wide × 300px tall (portrait mode in dev)
@@ -1707,6 +1933,94 @@ export class RNGArena {
         this.syncChatModeBattlefield = setInterval(() => {
             this.updateChatModeBattlefield();
         }, 500);
+
+        // Set up MutationObservers for real-time animation class syncing
+        this.setupAnimationObservers();
+    }
+
+    setupAnimationObservers() {
+        const arenaViewport = document.querySelector('.arena-viewport');
+        const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
+
+        if (!arenaViewport || !chatModeBattlefield) return;
+
+        const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
+        const originalRightFighter = arenaViewport.querySelector('.fighter-right');
+        const cloneLeftFighter = chatModeBattlefield.querySelector('.fighter-left');
+        const cloneRightFighter = chatModeBattlefield.querySelector('.fighter-right');
+
+        if (!originalLeftFighter || !originalRightFighter || !cloneLeftFighter || !cloneRightFighter) return;
+
+        const animClasses = ['fighter-attacking', 'fighter-crit-attack', 'fighter-defending', 'fighter-miss', 'fighter-block', 'fighter-parry', 'fighter-hit', 'fighter-crit-glow', 'fighter-entrance-left', 'fighter-entrance-right'];
+
+        // Observer for left fighter
+        const leftObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const originalClasses = originalLeftFighter.className.split(' ');
+                    const newAnimClasses = originalClasses.filter(c => animClasses.includes(c));
+
+                    console.log('[LEFT FIGHTER] Class changed:', {
+                        allClasses: originalClasses,
+                        animClasses: newAnimClasses,
+                        cloneBefore: cloneLeftFighter.className
+                    });
+
+                    // Remove all animation classes from clone
+                    animClasses.forEach(c => cloneLeftFighter.classList.remove(c));
+
+                    // Add current animation classes
+                    newAnimClasses.forEach(c => {
+                        console.log('[LEFT FIGHTER] Adding animation class to clone:', c);
+                        cloneLeftFighter.classList.add(c);
+                    });
+
+                    console.log('[LEFT FIGHTER] Clone after:', cloneLeftFighter.className);
+                }
+            });
+        });
+
+        // Observer for right fighter
+        const rightObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    const originalClasses = originalRightFighter.className.split(' ');
+                    const newAnimClasses = originalClasses.filter(c => animClasses.includes(c));
+
+                    console.log('[RIGHT FIGHTER] Class changed:', {
+                        allClasses: originalClasses,
+                        animClasses: newAnimClasses,
+                        cloneBefore: cloneRightFighter.className
+                    });
+
+                    // Remove all animation classes from clone
+                    animClasses.forEach(c => cloneRightFighter.classList.remove(c));
+
+                    // Add current animation classes
+                    newAnimClasses.forEach(c => {
+                        console.log('[RIGHT FIGHTER] Adding animation class to clone:', c);
+                        cloneRightFighter.classList.add(c);
+                    });
+
+                    console.log('[RIGHT FIGHTER] Clone after:', cloneRightFighter.className);
+                }
+            });
+        });
+
+        // Start observing
+        console.log('[ANIMATION OBSERVERS] Setting up observers for:', {
+            originalLeft: originalLeftFighter,
+            originalRight: originalRightFighter,
+            cloneLeft: cloneLeftFighter,
+            cloneRight: cloneRightFighter
+        });
+        leftObserver.observe(originalLeftFighter, { attributes: true, attributeFilter: ['class'] });
+        rightObserver.observe(originalRightFighter, { attributes: true, attributeFilter: ['class'] });
+
+        console.log('[ANIMATION OBSERVERS] Observers active');
+
+        // Store observers so we can disconnect them later
+        this.chatModeObservers = [leftObserver, rightObserver];
     }
 
     updateChatModeBattlefield() {
@@ -1721,6 +2035,22 @@ export class RNGArena {
         // Sync classes (for background changes)
         clone.className = arenaViewport.className;
 
+        // Sync opacity and transition for smooth background fades
+        if (arenaViewport.style.opacity !== '') clone.style.opacity = arenaViewport.style.opacity;
+        if (arenaViewport.style.transition) clone.style.transition = arenaViewport.style.transition;
+
+        // Sync countdown overlay
+        const originalCountdown = arenaViewport.querySelector('.countdown-overlay');
+        const cloneCountdown = clone.querySelector('.countdown-overlay');
+        if (originalCountdown && cloneCountdown) {
+            cloneCountdown.className = originalCountdown.className;
+            const originalTimer = originalCountdown.querySelector('.countdown-timer');
+            const cloneTimer = cloneCountdown.querySelector('.countdown-timer');
+            if (originalTimer && cloneTimer) {
+                cloneTimer.textContent = originalTimer.textContent;
+            }
+        }
+
         // Sync battle status
         const originalStatus = arenaViewport.querySelector('.battle-status');
         const cloneStatus = clone.querySelector('.battle-status');
@@ -1729,25 +2059,146 @@ export class RNGArena {
             cloneStatus.style.opacity = originalStatus.style.opacity;
         }
 
-        // Sync fighters - sync innerHTML then remove damage elements
+        // Sync fighters - sync sprite innerHTML and className
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const cloneLeftFighter = clone.querySelector('.fighter-left');
         if (originalLeftFighter && cloneLeftFighter) {
-            cloneLeftFighter.innerHTML = originalLeftFighter.innerHTML;
-            cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
-            cloneLeftFighter.className = originalLeftFighter.className;
-            // Remove all damage text elements after sync
-            cloneLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
+            // Sync sprite innerHTML for knight image changes
+            const originalLeftSprite = originalLeftFighter.querySelector('.fighter-sprite');
+            const cloneLeftSprite = cloneLeftFighter.querySelector('.fighter-sprite');
+            if (originalLeftSprite && cloneLeftSprite) {
+                // Only update innerHTML if it changed to avoid resetting animations
+                if (cloneLeftSprite.innerHTML !== originalLeftSprite.innerHTML) {
+                    cloneLeftSprite.innerHTML = originalLeftSprite.innerHTML;
+                }
+            }
+
+            // Sync opacity and other inline styles (for victory animations)
+            if (originalLeftFighter.style.opacity !== '') {
+                cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
+            }
+
+            // Only sync transform/position if they have explicit inline values (for victory animations)
+            if (originalLeftFighter.style.left) {
+                cloneLeftFighter.style.left = originalLeftFighter.style.left;
+            }
+            if (originalLeftFighter.style.transform) {
+                cloneLeftFighter.style.transform = originalLeftFighter.style.transform;
+            }
+            if (originalLeftFighter.style.transition) {
+                cloneLeftFighter.style.transition = originalLeftFighter.style.transition;
+            }
+
+            // Sync sprite filter (for victory glow)
+            const originalLeftSpriteImg = originalLeftFighter.querySelector('.fighter-sprite img');
+            const cloneLeftSpriteImg = cloneLeftFighter.querySelector('.fighter-sprite img');
+            if (originalLeftSpriteImg && cloneLeftSpriteImg) {
+                cloneLeftSpriteImg.style.filter = originalLeftSpriteImg.style.filter;
+                cloneLeftSpriteImg.style.animation = originalLeftSpriteImg.style.animation;
+            }
+
+            // Sync damage elements - find all in original
+            const originalDamageEls = originalLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
+            const cloneDamageEls = cloneLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
+
+            // Remove damage from clone that doesn't exist in original
+            cloneDamageEls.forEach(cloneEl => {
+                let found = false;
+                originalDamageEls.forEach(origEl => {
+                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    cloneEl.remove();
+                }
+            });
+
+            // Add damage to clone that exists in original but not in clone
+            originalDamageEls.forEach(origEl => {
+                let found = false;
+                const newCloneDamageEls = cloneLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
+                newCloneDamageEls.forEach(cloneEl => {
+                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    cloneLeftFighter.appendChild(origEl.cloneNode(true));
+                }
+            });
         }
 
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
         const cloneRightFighter = clone.querySelector('.fighter-right');
         if (originalRightFighter && cloneRightFighter) {
-            cloneRightFighter.innerHTML = originalRightFighter.innerHTML;
-            cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
-            cloneRightFighter.className = originalRightFighter.className;
-            // Remove all damage text elements after sync
-            cloneRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
+            // Sync sprite innerHTML for knight image changes
+            const originalRightSprite = originalRightFighter.querySelector('.fighter-sprite');
+            const cloneRightSprite = cloneRightFighter.querySelector('.fighter-sprite');
+            if (originalRightSprite && cloneRightSprite) {
+                // Only update innerHTML if it changed to avoid resetting animations
+                if (cloneRightSprite.innerHTML !== originalRightSprite.innerHTML) {
+                    cloneRightSprite.innerHTML = originalRightSprite.innerHTML;
+                }
+            }
+
+            // Sync opacity and other inline styles (for victory animations)
+            if (originalRightFighter.style.opacity !== '') {
+                cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
+            }
+
+            // Only sync transform/position if they have explicit inline values (for victory animations)
+            if (originalRightFighter.style.left) {
+                cloneRightFighter.style.left = originalRightFighter.style.left;
+            }
+            if (originalRightFighter.style.right) {
+                cloneRightFighter.style.right = originalRightFighter.style.right;
+            }
+            if (originalRightFighter.style.transform) {
+                cloneRightFighter.style.transform = originalRightFighter.style.transform;
+            }
+            if (originalRightFighter.style.transition) {
+                cloneRightFighter.style.transition = originalRightFighter.style.transition;
+            }
+
+            // Sync sprite filter (for victory glow)
+            const originalRightSpriteImg = originalRightFighter.querySelector('.fighter-sprite img');
+            const cloneRightSpriteImg = cloneRightFighter.querySelector('.fighter-sprite img');
+            if (originalRightSpriteImg && cloneRightSpriteImg) {
+                cloneRightSpriteImg.style.filter = originalRightSpriteImg.style.filter;
+                cloneRightSpriteImg.style.animation = originalRightSpriteImg.style.animation;
+            }
+
+            // Sync damage elements - find all in original
+            const originalDamageEls = originalRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
+            const cloneDamageEls = cloneRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
+
+            // Remove damage from clone that doesn't exist in original
+            cloneDamageEls.forEach(cloneEl => {
+                let found = false;
+                originalDamageEls.forEach(origEl => {
+                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    cloneEl.remove();
+                }
+            });
+
+            // Add damage to clone that exists in original but not in clone
+            originalDamageEls.forEach(origEl => {
+                let found = false;
+                const newCloneDamageEls = cloneRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
+                newCloneDamageEls.forEach(cloneEl => {
+                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
+                        found = true;
+                    }
+                });
+                if (!found) {
+                    cloneRightFighter.appendChild(origEl.cloneNode(true));
+                }
+            });
         }
 
         // Sync nameplates
@@ -1756,6 +2207,41 @@ export class RNGArena {
         if (originalNameplates && cloneNameplates) {
             cloneNameplates.innerHTML = originalNameplates.innerHTML;
             cloneNameplates.className = originalNameplates.className;
+        }
+
+        // Sync individual nameplate styles (for victory animations)
+        const originalLeftNameplate = arenaViewport.querySelector('.left-nameplate');
+        const cloneLeftNameplate = clone.querySelector('.left-nameplate');
+        if (originalLeftNameplate && cloneLeftNameplate) {
+            if (originalLeftNameplate.style.opacity !== '') cloneLeftNameplate.style.opacity = originalLeftNameplate.style.opacity;
+            if (originalLeftNameplate.style.transition) cloneLeftNameplate.style.transition = originalLeftNameplate.style.transition;
+            if (originalLeftNameplate.style.position) cloneLeftNameplate.style.position = originalLeftNameplate.style.position;
+            if (originalLeftNameplate.style.left) cloneLeftNameplate.style.left = originalLeftNameplate.style.left;
+            if (originalLeftNameplate.style.top) cloneLeftNameplate.style.top = originalLeftNameplate.style.top;
+            if (originalLeftNameplate.style.transform) cloneLeftNameplate.style.transform = originalLeftNameplate.style.transform;
+            if (originalLeftNameplate.style.textAlign) cloneLeftNameplate.style.textAlign = originalLeftNameplate.style.textAlign;
+            if (originalLeftNameplate.style.zIndex) cloneLeftNameplate.style.zIndex = originalLeftNameplate.style.zIndex;
+        }
+
+        const originalRightNameplate = arenaViewport.querySelector('.right-nameplate');
+        const cloneRightNameplate = clone.querySelector('.right-nameplate');
+        if (originalRightNameplate && cloneRightNameplate) {
+            if (originalRightNameplate.style.opacity !== '') cloneRightNameplate.style.opacity = originalRightNameplate.style.opacity;
+            if (originalRightNameplate.style.transition) cloneRightNameplate.style.transition = originalRightNameplate.style.transition;
+            if (originalRightNameplate.style.position) cloneRightNameplate.style.position = originalRightNameplate.style.position;
+            if (originalRightNameplate.style.left) cloneRightNameplate.style.left = originalRightNameplate.style.left;
+            if (originalRightNameplate.style.top) cloneRightNameplate.style.top = originalRightNameplate.style.top;
+            if (originalRightNameplate.style.transform) cloneRightNameplate.style.transform = originalRightNameplate.style.transform;
+            if (originalRightNameplate.style.textAlign) cloneRightNameplate.style.textAlign = originalRightNameplate.style.textAlign;
+            if (originalRightNameplate.style.zIndex) cloneRightNameplate.style.zIndex = originalRightNameplate.style.zIndex;
+        }
+
+        // Sync VS display opacity
+        const originalVS = arenaViewport.querySelector('.vs-display');
+        const cloneVS = clone.querySelector('.vs-display');
+        if (originalVS && cloneVS) {
+            if (originalVS.style.opacity !== '') cloneVS.style.opacity = originalVS.style.opacity;
+            if (originalVS.style.transition) cloneVS.style.transition = originalVS.style.transition;
         }
 
         // Sync HP bars
@@ -1789,6 +2275,89 @@ export class RNGArena {
         if (originalAnnouncement && cloneAnnouncement) {
             cloneAnnouncement.innerHTML = originalAnnouncement.innerHTML;
             cloneAnnouncement.className = originalAnnouncement.className;
+        }
+
+        // Sync tournament progress segments
+        const originalProgressSegments = arenaViewport.querySelector('#progress-segments');
+        const cloneProgressSegments = clone.querySelector('#progress-segments');
+        if (originalProgressSegments && cloneProgressSegments) {
+            cloneProgressSegments.innerHTML = originalProgressSegments.innerHTML;
+        }
+
+        // Sync hero progress indicator
+        const originalHeroIndicator = arenaViewport.querySelector('#hero-progress-indicator');
+        const cloneHeroIndicator = clone.querySelector('#hero-progress-indicator');
+        if (originalHeroIndicator && cloneHeroIndicator) {
+            cloneHeroIndicator.style.left = originalHeroIndicator.style.left;
+        }
+
+        // Sync victory overlay
+        const originalVictoryOverlay = arenaViewport.querySelector('.victory-overlay');
+        let cloneVictoryOverlay = clone.querySelector('.victory-overlay');
+
+        if (originalVictoryOverlay && !cloneVictoryOverlay) {
+            // Victory overlay exists in original but not in clone - create it
+            cloneVictoryOverlay = originalVictoryOverlay.cloneNode(true);
+            clone.appendChild(cloneVictoryOverlay);
+        } else if (!originalVictoryOverlay && cloneVictoryOverlay) {
+            // Victory overlay removed from original - remove from clone
+            cloneVictoryOverlay.remove();
+        } else if (originalVictoryOverlay && cloneVictoryOverlay) {
+            // Sync opacity
+            if (originalVictoryOverlay.style.opacity !== '') {
+                cloneVictoryOverlay.style.opacity = originalVictoryOverlay.style.opacity;
+            }
+        }
+
+        // Sync victor text
+        const originalVictorText = arenaViewport.querySelector('.victor-text');
+        let cloneVictorText = clone.querySelector('.victor-text');
+
+        if (originalVictorText && !cloneVictorText) {
+            // Victor text exists in original but not in clone - create it
+            cloneVictorText = originalVictorText.cloneNode(true);
+            clone.appendChild(cloneVictorText);
+        } else if (!originalVictorText && cloneVictorText) {
+            // Victor text removed from original - remove from clone
+            cloneVictorText.remove();
+        }
+
+        // Sync victory crown
+        const originalLeftCrown = arenaViewport.querySelector('.fighter-left .victory-crown');
+        const originalRightCrown = arenaViewport.querySelector('.fighter-right .victory-crown');
+        let cloneLeftCrown = clone.querySelector('.fighter-left .victory-crown');
+        let cloneRightCrown = clone.querySelector('.fighter-right .victory-crown');
+
+        if (originalLeftCrown && !cloneLeftCrown) {
+            const cloneLeftFighter = clone.querySelector('.fighter-left');
+            if (cloneLeftFighter) {
+                cloneLeftFighter.appendChild(originalLeftCrown.cloneNode(true));
+            }
+        }
+        if (originalRightCrown && !cloneRightCrown) {
+            const cloneRightFighter = clone.querySelector('.fighter-right');
+            if (cloneRightFighter) {
+                cloneRightFighter.appendChild(originalRightCrown.cloneNode(true));
+            }
+        }
+
+        // Sync victory nameplate
+        const originalLeftVictoryNameplate = arenaViewport.querySelector('.fighter-left .victory-nameplate');
+        const originalRightVictoryNameplate = arenaViewport.querySelector('.fighter-right .victory-nameplate');
+        let cloneLeftVictoryNameplate = clone.querySelector('.fighter-left .victory-nameplate');
+        let cloneRightVictoryNameplate = clone.querySelector('.fighter-right .victory-nameplate');
+
+        if (originalLeftVictoryNameplate && !cloneLeftVictoryNameplate) {
+            const cloneLeftFighter = clone.querySelector('.fighter-left');
+            if (cloneLeftFighter) {
+                cloneLeftFighter.appendChild(originalLeftVictoryNameplate.cloneNode(true));
+            }
+        }
+        if (originalRightVictoryNameplate && !cloneRightVictoryNameplate) {
+            const cloneRightFighter = clone.querySelector('.fighter-right');
+            if (cloneRightFighter) {
+                cloneRightFighter.appendChild(originalRightVictoryNameplate.cloneNode(true));
+            }
         }
     }
 

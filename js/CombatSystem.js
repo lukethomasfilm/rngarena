@@ -77,6 +77,10 @@ export class CombatSystem {
 
         // Mute state
         this.muted = false;
+
+        // Store full fighter names (not truncated) for proper skin lookups
+        this.leftFighterFullName = null;
+        this.rightFighterFullName = null;
     }
 
     /**
@@ -84,6 +88,21 @@ export class CombatSystem {
      */
     setMuted(muted) {
         this.muted = muted;
+    }
+
+    /**
+     * Get full fighter names from tournament
+     */
+    initializeFighterNames() {
+        const match = this.tournament.getCurrentMatch();
+        if (!match) return;
+
+        const displayOrder = this.tournament.getDisplayOrder();
+        if (!displayOrder) return;
+
+        // Store FULL names (not truncated) for proper character skin lookups
+        this.leftFighterFullName = displayOrder.leftFighter;
+        this.rightFighterFullName = displayOrder.rightFighter;
     }
 
     /**
@@ -236,6 +255,7 @@ export class CombatSystem {
      * Start combat
      */
     startCombat() {
+        this.initializeFighterNames(); // Get full names from tournament first!
         this.initHealthDisplays();
         this.initializeHPBars();
 
@@ -546,9 +566,10 @@ export class CombatSystem {
 
         // Update fighter pose based on animation type
         if (window.arena && window.arena.updateFighterPose) {
+            // Use FULL fighter name (not truncated) for proper skin lookups
             const fighterName = fighter === this.leftFighter ?
-                this.leftFighterNameEl.textContent :
-                this.rightFighterNameEl.textContent;
+                this.leftFighterFullName :
+                this.rightFighterFullName;
 
             // Set pose based on animation
             if (animationClass === 'fighter-attacking' || animationClass === 'fighter-parry') {
@@ -563,9 +584,10 @@ export class CombatSystem {
 
             // Reset to ready pose after animation (but not if combat has ended - don't interfere with fade)
             if (!this.combatEnded && window.arena && window.arena.updateFighterPose) {
+                // Use FULL fighter name (not truncated) for proper skin lookups
                 const fighterName = fighter === this.leftFighter ?
-                    this.leftFighterNameEl.textContent :
-                    this.rightFighterNameEl.textContent;
+                    this.leftFighterFullName :
+                    this.rightFighterFullName;
                 window.arena.updateFighterPose(fighter, fighterName, 'ready');
             }
         }, 400);
@@ -850,15 +872,19 @@ export class CombatSystem {
     /**
      * Play attack voice sound (full duration)
      * @param {boolean} isCrit - Whether this is a critical attack
-     * @param {string} attackerName - The name of the attacker
+     * @param {string} attackerName - The TRUNCATED display name of the attacker
      */
     playAttackVoice(isCrit, attackerName) {
         if (this.muted) return;
 
         let soundPath;
 
-        // Check if attacker is female (Athena or any female name)
-        const isFemale = CHARACTER_CONFIG.FEMALE_NAMES.includes(attackerName);
+        // Get the FULL name for proper character lookups (truncated display names won't match)
+        const attackerSide = attackerName === this.leftFighterNameEl.textContent ? 'left' : 'right';
+        const attackerFullName = attackerSide === 'left' ? this.leftFighterFullName : this.rightFighterFullName;
+
+        // Check if attacker is female using FULL name
+        const isFemale = CHARACTER_CONFIG.FEMALE_NAMES.includes(attackerFullName);
 
         if (isFemale) {
             // Use female attack sounds for female characters

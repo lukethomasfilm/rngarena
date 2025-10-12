@@ -1230,6 +1230,23 @@ export class RNGArena {
         return CHARACTER_CONFIG.GREEN_KNIGHT_NEUTRAL;
     }
 
+    // ===== View Detection =====
+
+    getCurrentView() {
+        // Check if fullscreen mode is active
+        if (this.battlefieldSection && this.battlefieldSection.classList.contains('fullscreen')) {
+            return 'fullscreen';
+        }
+        // Check if chat mode overlay is visible
+        if (this.chatModeOverlay && !this.chatModeOverlay.classList.contains('hidden')) {
+            return 'chat';
+        }
+        // Default to regular view
+        return 'regular';
+    }
+
+    // ===== Character Positioning System =====
+
     updateFighterSprite(fighterElement, characterName, pose = 'ready') {
         const spriteElement = fighterElement.querySelector('.fighter-sprite');
         if (!spriteElement) return;
@@ -1270,7 +1287,10 @@ export class RNGArena {
             needsFlip = !needsFlip;  // Invert the flip state
         }
 
-        // Character size adjustments
+        // Get current view and apply view-specific character settings
+        const view = this.getCurrentView();
+
+        // Character type detection
         const isRedCharacter = imageName.toLowerCase().includes('red_');
         const isBarbCharacter = imageName.toLowerCase().includes('barb_');
         const isGreenCharacter = imageName.toLowerCase().includes('green_');
@@ -1280,25 +1300,38 @@ export class RNGArena {
         const isNestaCharacter = imageName.toLowerCase().includes('nesta');
         const isAthenaCharacter = imageName.toLowerCase().includes('athena');
 
-        let baseScale = 0.8;
-        if (isRedCharacter) baseScale = 1.10; // 8% smaller from 1.196
-        else if (isBarbCharacter) baseScale = 0.92; // 15% larger
-        else if (isGreenCharacter) baseScale = 1.13; // 5% smaller from 1.188
-        else if (isBlackCharacter) baseScale = 0.95; // 8% bigger from 0.88
-        else if (isBrownCharacter) baseScale = 0.99; // 8% bigger from 0.92
-        else if (isBlueCharacter) baseScale = 0.92; // 15% bigger
-        else if (isNestaCharacter) baseScale = 1.01; // 8% smaller from 1.10
-        // Athena stays at 0.8 base
+        // CHARACTER POSITIONING CONFIG - Adjust each view independently
+        // Format: { regular: {scale, top}, fullscreen: {scale, top}, chat: {scale, top} }
+        // Fullscreen values = regular * 1.35 (old CSS scale), Chat values = regular * 0.5625 (old CSS scale)
+        const characterConfig = {
+            athena:  { regular: {scale: 0.80, top: 10},   fullscreen: {scale: 1.08, top: 14},   chat: {scale: 0.45, top: 6} },
+            nesta:   { regular: {scale: 1.01, top: 15},   fullscreen: {scale: 1.36, top: 20},   chat: {scale: 0.57, top: 8} },
+            barb:    { regular: {scale: 0.92, top: 0},    fullscreen: {scale: 1.24, top: 0},    chat: {scale: 0.52, top: 0} },
+            blue:    { regular: {scale: 0.92, top: -15},  fullscreen: {scale: 1.24, top: -20},  chat: {scale: 0.52, top: -8} },
+            black:   { regular: {scale: 0.95, top: 5},    fullscreen: {scale: 1.28, top: 7},    chat: {scale: 0.53, top: 3} },
+            brown:   { regular: {scale: 0.99, top: -15},  fullscreen: {scale: 1.34, top: 115},  chat: {scale: 0.56, top: 48} },
+            red:     { regular: {scale: 0.97, top: -20},  fullscreen: {scale: 1.31, top: -27},  chat: {scale: 0.55, top: -11} },
+            green:   { regular: {scale: 1.13, top: 10},   fullscreen: {scale: 1.53, top: 14},   chat: {scale: 0.64, top: 6} },
+            default: { regular: {scale: 0.80, top: 0},    fullscreen: {scale: 1.08, top: 0},    chat: {scale: 0.45, top: 0} }
+        };
 
-        // Vertical offsets with !important to override CSS
-        let verticalOffset = '';
-        if (isGreenCharacter) verticalOffset = 'margin-top: 120px !important;'; // Green down 120px
-        else if (isBlackCharacter) verticalOffset = 'margin-top: 65px !important;'; // Black down 65px (increased from 45px)
-        else if (isNestaCharacter) verticalOffset = 'margin-top: 25px !important;'; // Nesta down 25px
-        else if (isRedCharacter) verticalOffset = 'margin-top: -60px !important;'; // Red up 60px
-        else if (isBrownCharacter) verticalOffset = 'margin-top: 65px !important;'; // Brown down 65px (increased from 45px)
-        else if (isAthenaCharacter) verticalOffset = 'margin-top: 30px !important;'; // Athena down 30px
+        // Select character config based on type
+        let config;
+        if (isAthenaCharacter) config = characterConfig.athena;
+        else if (isNestaCharacter) config = characterConfig.nesta;
+        else if (isBarbCharacter) config = characterConfig.barb;
+        else if (isBlueCharacter) config = characterConfig.blue;
+        else if (isBlackCharacter) config = characterConfig.black;
+        else if (isBrownCharacter) config = characterConfig.brown;
+        else if (isRedCharacter) config = characterConfig.red;
+        else if (isGreenCharacter) config = characterConfig.green;
+        else config = characterConfig.default;
 
+        // Get view-specific values
+        const { scale: baseScale, top: topOffset } = config[view];
+
+        // Apply positioning
+        const verticalOffset = `position: relative !important; top: ${topOffset}px !important;`;
         const flipStyle = needsFlip ? `transform: scale(${baseScale}) scaleX(-1) !important;` : `transform: scale(${baseScale}) !important;`;
 
         spriteElement.innerHTML = `<img src="${imagePath}" alt="${characterName}" class="character-image" style="${flipStyle} ${verticalOffset}">`;
@@ -1345,7 +1378,10 @@ export class RNGArena {
             needsFlip = !needsFlip;  // Invert the flip state
         }
 
-        // Character size adjustments
+        // Get current view and apply view-specific character settings
+        const view = this.getCurrentView();
+
+        // Character type detection
         const isRedCharacter = imageName.toLowerCase().includes('red_');
         const isBarbCharacter = imageName.toLowerCase().includes('barb_');
         const isGreenCharacter = imageName.toLowerCase().includes('green_');
@@ -1355,25 +1391,39 @@ export class RNGArena {
         const isNestaCharacter = imageName.toLowerCase().includes('nesta');
         const isAthenaCharacter = imageName.toLowerCase().includes('athena');
 
-        let baseScale = 0.8;
-        if (isRedCharacter) baseScale = 1.10; // 8% smaller from 1.196
-        else if (isBarbCharacter) baseScale = 0.92; // 15% larger
-        else if (isGreenCharacter) baseScale = 1.13; // 5% smaller from 1.188
-        else if (isBlackCharacter) baseScale = 0.95; // 8% bigger from 0.88
-        else if (isBrownCharacter) baseScale = 0.99; // 8% bigger from 0.92
-        else if (isBlueCharacter) baseScale = 0.92; // 15% bigger
-        else if (isNestaCharacter) baseScale = 1.01; // 8% smaller from 1.10
-        // Athena stays at 0.8 base
+        // CHARACTER POSITIONING CONFIG - Adjust each view independently
+        // MUST MATCH the config in updateFighterSprite for consistency
+        // Fullscreen values = regular * 1.35 (old CSS scale), Chat values = regular * 0.5625 (old CSS scale)
+        const characterConfig = {
+            athena:  { regular: {scale: 0.80, top: 10},   fullscreen: {scale: 1.08, top: 14},   chat: {scale: 0.45, top: 6} },
+            nesta:   { regular: {scale: 1.01, top: 15},   fullscreen: {scale: 1.36, top: 20},   chat: {scale: 0.57, top: 8} },
+            barb:    { regular: {scale: 0.92, top: 0},    fullscreen: {scale: 1.24, top: 0},    chat: {scale: 0.52, top: 0} },
+            blue:    { regular: {scale: 0.92, top: -15},  fullscreen: {scale: 1.24, top: -20},  chat: {scale: 0.52, top: -8} },
+            black:   { regular: {scale: 0.95, top: 5},    fullscreen: {scale: 1.28, top: 7},    chat: {scale: 0.53, top: 3} },
+            brown:   { regular: {scale: 0.99, top: -15},  fullscreen: {scale: 1.34, top: 115},  chat: {scale: 0.56, top: 48} },
+            red:     { regular: {scale: 0.97, top: -20},  fullscreen: {scale: 1.31, top: -27},  chat: {scale: 0.55, top: -11} },
+            green:   { regular: {scale: 1.13, top: 10},   fullscreen: {scale: 1.53, top: 14},   chat: {scale: 0.64, top: 6} },
+            default: { regular: {scale: 0.80, top: 0},    fullscreen: {scale: 1.08, top: 0},    chat: {scale: 0.45, top: 0} }
+        };
 
-        // Vertical offsets - use setProperty with important flag
-        if (isGreenCharacter) img.style.setProperty('margin-top', '120px', 'important'); // Green down 120px
-        else if (isBlackCharacter) img.style.setProperty('margin-top', '65px', 'important'); // Black down 65px (increased from 45px)
-        else if (isNestaCharacter) img.style.setProperty('margin-top', '25px', 'important'); // Nesta down 25px
-        else if (isRedCharacter) img.style.setProperty('margin-top', '-60px', 'important'); // Red up 60px
-        else if (isBrownCharacter) img.style.setProperty('margin-top', '65px', 'important'); // Brown down 65px (increased from 45px)
-        else if (isAthenaCharacter) img.style.setProperty('margin-top', '30px', 'important'); // Athena down 30px
-        else img.style.setProperty('margin-top', '0px', 'important');
+        // Select character config based on type
+        let config;
+        if (isAthenaCharacter) config = characterConfig.athena;
+        else if (isNestaCharacter) config = characterConfig.nesta;
+        else if (isBarbCharacter) config = characterConfig.barb;
+        else if (isBlueCharacter) config = characterConfig.blue;
+        else if (isBlackCharacter) config = characterConfig.black;
+        else if (isBrownCharacter) config = characterConfig.brown;
+        else if (isRedCharacter) config = characterConfig.red;
+        else if (isGreenCharacter) config = characterConfig.green;
+        else config = characterConfig.default;
 
+        // Get view-specific values
+        const { scale: baseScale, top: topOffset } = config[view];
+
+        // Apply positioning
+        img.style.setProperty('position', 'relative', 'important');
+        img.style.setProperty('top', `${topOffset}px`, 'important');
         img.style.setProperty('transform', needsFlip ? `scale(${baseScale}) scaleX(-1)` : `scale(${baseScale})`, 'important');
     }
 

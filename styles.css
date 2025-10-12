@@ -588,19 +588,22 @@ body {
 
 .chat-mode-battlefield-overlay .fighter-left {
     left: 50% !important;
-    transform: translateX(-220px) scale(0.5625) !important;
+    transform: translateX(-220px) !important;
+    /* Scale removed - now controlled by JavaScript per-character */
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
     right: auto !important;
     left: 50% !important;
-    transform: translateX(60px) scale(0.5625) !important;
+    transform: translateX(60px) !important;
+    /* Scale removed - now controlled by JavaScript per-character */
 }
 
 /* Override fighter positioning for victory animation in chat mode */
 .chat-mode-battlefield-overlay .victory-center {
     left: 50% !important;
-    transform: translateX(-50%) scale(1.5) !important; /* 50% bigger than normal */
+    transform: translateX(-50%) !important;
+    /* Scale removed - now controlled by JavaScript per-character */
 }
 
 /* Ensure victory nameplate is centered and highest z-index in chat mode */
@@ -973,18 +976,21 @@ body {
 
 .battlefield-section.fullscreen .fighter-left {
     left: 19% !important;
-    transform: translateX(-50%) scale(1.35) !important;
+    transform: translateX(-50%) !important;
+    /* Scale removed - now controlled by JavaScript per-character */
 }
 
 .battlefield-section.fullscreen .fighter-right {
     left: 81% !important;
-    transform: translateX(-50%) scale(1.35) !important;
+    transform: translateX(-50%) !important;
+    /* Scale removed - now controlled by JavaScript per-character */
 }
 
 /* Ensure victory center stays centered in fullscreen */
 .battlefield-section.fullscreen .victory-center {
     left: 50% !important;
-    transform: translateX(-50%) scale(1.35) !important;
+    transform: translateX(-50%) !important;
+    /* Scale removed - now controlled by JavaScript per-character */
 }
 
 /* Scale the character images directly in fullscreen */
@@ -2472,7 +2478,7 @@ body {
 
 .fighter-sprite {
     margin-top: 2px;
-    transform: scale(0.8);
+    /* transform removed - all scaling now handled by JavaScript with !important */
     transition: transform 0.3s ease;
 }
 

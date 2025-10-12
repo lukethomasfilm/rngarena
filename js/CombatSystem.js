@@ -1,4 +1,4 @@
-import { GAME_CONFIG } from './constants.js';
+import { GAME_CONFIG, CHARACTER_CONFIG } from './constants.js';
 
 /**
  * CombatSystem - Handles turn-based combat mechanics
@@ -20,6 +20,7 @@ export class CombatSystem {
         this.leftDefenseStance = null;
         this.rightDefenseStance = null;
         this.combatRound = 1;
+        this.combatEnded = false;
 
         // HP bars
         this.leftHPFill = document.getElementById('left-hp-fill');
@@ -179,6 +180,7 @@ export class CombatSystem {
         this.leftDefenseStance = null;
         this.rightDefenseStance = null;
         this.combatRound = 1;
+        this.combatEnded = false;
 
         // Reset seed for this fight
         this.seed = this.generateSeed();
@@ -258,7 +260,7 @@ export class CombatSystem {
         const isCrit = attackRoll === 5;
 
         // Play attack voice when attacker starts their attack
-        this.playAttackVoice(isCrit);
+        this.playAttackVoice(isCrit, attackerName);
 
         this.addCombatAnimation(attackerFighter, 'fighter-attacking');
         if (isCrit) {
@@ -394,11 +396,18 @@ export class CombatSystem {
      */
     handleParry(attackerFighter, defenderFighter, attackerName, defenderName, damage, isCrit) {
         console.log('⚔️ handleParry() called - should play parry sound');
-        this.addCombatAnimation(defenderFighter, 'fighter-parry');
-        this.showCombatText(defenderFighter, 'PARRY!', 'parry-text');
-        this.showParryEffect(defenderFighter);
-        this.playParrySound();
 
+        // Step 1: Attack animation already happened in executeCombatBeat
+
+        // Step 2: Show parry animation (after 400ms delay)
+        setTimeout(() => {
+            this.addCombatAnimation(defenderFighter, 'fighter-parry');
+            this.showCombatText(defenderFighter, 'PARRY!', 'parry-text');
+            this.showParryEffect(defenderFighter);
+            this.playParrySound();
+        }, 400);
+
+        // Step 3: Show damage reflection (after 800ms total delay)
         setTimeout(() => {
             this.addCombatAnimation(attackerFighter, 'fighter-hit');
             if (isCrit) {
@@ -427,7 +436,7 @@ export class CombatSystem {
             } else {
                 this.nextTurn();
             }
-        }, 100);
+        }, 800);
     }
 
     /**
@@ -494,11 +503,38 @@ export class CombatSystem {
         const logEntry = `${winner} defeats ${loser} with ${leftWins ? this.leftFighterHP : this.rightFighterHP} HP remaining!`;
         this.addCombatLog(logEntry);
 
-        // Call end callback
+        // Mark combat as ended so pose resets stop interfering with fade
+        this.combatEnded = true;
+
+        // After 0.5 second beat, fade out loser over 2 seconds using CSS animation on sprite
+        const loserFighter = leftWins ? this.rightFighter : this.leftFighter;
+        setTimeout(() => {
+            console.log('🔍 Starting loser fade with CSS animation on sprite');
+
+            // Apply animation to the sprite element to avoid transform conflicts
+            const loserSprite = loserFighter.querySelector('.fighter-sprite');
+            if (loserSprite) {
+                loserSprite.style.animation = 'loser-fade-out 2s ease-out forwards';
+
+                // Check opacity during animation
+                setTimeout(() => {
+                    console.log('🔍 Opacity at 200ms:', window.getComputedStyle(loserSprite).opacity);
+                }, 200);
+                setTimeout(() => {
+                    console.log('🔍 Opacity at 500ms:', window.getComputedStyle(loserSprite).opacity);
+                }, 500);
+                setTimeout(() => {
+                    console.log('🔍 Opacity at 1000ms:', window.getComputedStyle(loserSprite).opacity);
+                }, 1000);
+                setTimeout(() => {
+                    console.log('🔍 Opacity at 2000ms (end):', window.getComputedStyle(loserSprite).opacity);
+                }, 2000);
+            }
+        }, 500);
+
+        // Call end callback immediately
         if (this.onCombatEnd) {
-            setTimeout(() => {
-                this.onCombatEnd(leftWins);
-            }, 2000);
+            this.onCombatEnd(leftWins);
         }
     }
 
@@ -525,8 +561,8 @@ export class CombatSystem {
         setTimeout(() => {
             fighter.classList.remove(animationClass);
 
-            // Reset to ready pose after animation
-            if (window.arena && window.arena.updateFighterPose) {
+            // Reset to ready pose after animation (but not if combat has ended - don't interfere with fade)
+            if (!this.combatEnded && window.arena && window.arena.updateFighterPose) {
                 const fighterName = fighter === this.leftFighter ?
                     this.leftFighterNameEl.textContent :
                     this.rightFighterNameEl.textContent;
@@ -581,10 +617,11 @@ export class CombatSystem {
         blockImg.src = '/images/effects/block.png';
         blockImg.className = 'block-effect';
 
-        // Determine if we need to flip based on knight position
-        // Shield is mirrored horizontally when on the RIGHT side
+        // Shield orientation - block.png naturally faces RIGHT (toward center)
+        // - LEFT fighter: NO flip needed (already facing center correctly)
+        // - RIGHT fighter: FLIP to face center (faces wrong way by default)
         const isLeftFighter = fighter.classList.contains('fighter-left');
-        const flipTransform = isLeftFighter ? 'scaleX(-1)' : 'scaleX(1)';
+        const flipTransform = isLeftFighter ? 'scaleX(1)' : 'scaleX(-1)';
 
         blockImg.style.cssText = `
             position: absolute;
@@ -593,7 +630,7 @@ export class CombatSystem {
             max-width: 150px;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) ${flipTransform};
+            transform: translate(-50%, -50%) ${flipTransform} !important;
             z-index: 10;
             opacity: 0;
             object-fit: contain;
@@ -813,12 +850,21 @@ export class CombatSystem {
     /**
      * Play attack voice sound (full duration)
      * @param {boolean} isCrit - Whether this is a critical attack
+     * @param {string} attackerName - The name of the attacker
      */
-    playAttackVoice(isCrit) {
+    playAttackVoice(isCrit, attackerName) {
         if (this.muted) return;
 
         let soundPath;
-        if (isCrit) {
+
+        // Check if attacker is female (Athena or any female name)
+        const isFemale = CHARACTER_CONFIG.FEMALE_NAMES.includes(attackerName);
+
+        if (isFemale) {
+            // Use female attack sounds for female characters
+            const randomIndex = Math.floor(Math.random() * CHARACTER_CONFIG.FEMALE_ATTACK_SOUNDS.length);
+            soundPath = CHARACTER_CONFIG.FEMALE_ATTACK_SOUNDS[randomIndex];
+        } else if (isCrit) {
             // Use voices 3 or 6 for criticals
             const randomIndex = Math.floor(Math.random() * this.criticalAttackVoicePaths.length);
             soundPath = this.criticalAttackVoicePaths[randomIndex];

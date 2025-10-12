@@ -20,6 +20,8 @@ import {
  */
 export class RNGArena {
     constructor() {
+        console.log('🎮 RNGArena v1.0.11 - Block shield with !important flag');
+
         // Core tournament
         this.tournament = new window.TournamentBracket();
         this.tournamentStarted = false;
@@ -36,6 +38,11 @@ export class RNGArena {
         this.characterImageCache = new Map();
         this.allImages = [];
         this.imagesLoaded = false;
+        this.previousWinnerName = null; // Track previous battle winner
+
+        // Lady Luck animation state
+        this.ladyLuckFrame = 1; // Current frame (1-4)
+        this.ladyLuckAnimationInterval = null; // Animation interval ID
 
         // DOM Elements
         this.leftFighter = document.querySelector('.fighter-left');
@@ -115,9 +122,6 @@ export class RNGArena {
     }
 
     async init() {
-        // Start background music
-        this.startBackgroundMusic();
-
         // Add start button functionality
         if (this.startButton) {
             this.startButton.addEventListener('click', () => {
@@ -262,16 +266,18 @@ export class RNGArena {
 
                         if (claimBtn) claimBtn.style.display = 'none';
 
-                        // Replace chest with glowing helmet
+                        // Replace chest with glowing helmet (3x bigger, 10px to the right)
                         if (lootBox) {
                             lootBox.innerHTML = `
                                 <img src="/images/Loot Items/Loot_helmet_test.png"
                                      alt="Legendary Helmet"
                                      class="loot-helmet-claimed"
                                      style="
-                                         width: 100%;
-                                         height: 100%;
+                                         width: 300%;
+                                         height: 300%;
                                          object-fit: contain;
+                                         position: relative;
+                                         left: 10px;
                                          filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
                                          animation: helmetWiggle 1s ease-in-out infinite, helmetGlow 2s ease-in-out infinite;
                                      ">
@@ -505,6 +511,13 @@ export class RNGArena {
             if (nameplateContainer) {
                 setTimeout(() => {
                     nameplateContainer.classList.add('visible');
+
+                    // Play slide sound when nameplates appear
+                    if (!this.audioMuted) {
+                        const slideSound = new Audio('/sfx/slide.mp3');
+                        slideSound.volume = 0.4;
+                        slideSound.play().catch(err => console.log('Slide sound failed:', err));
+                    }
                 }, 100);
             }
         } else {
@@ -530,6 +543,9 @@ export class RNGArena {
             this.autoContinue = true;
             this.heroEliminated = false; // Reset hero elimination status
 
+            // Start background music when tournament begins
+            this.startBackgroundMusic();
+
             if (this.startButton) {
                 this.startButton.style.display = 'none';
             }
@@ -542,6 +558,9 @@ export class RNGArena {
     }
 
     startBattle() {
+        // Stop any existing Lady Luck animation from previous battle
+        this.stopLadyLuckAnimation();
+
         // Check for bye round FIRST (before checking for match)
         const byeInfo = this.tournament.hasFollowedCharacterBye();
         if (byeInfo) {
@@ -612,8 +631,45 @@ export class RNGArena {
 
         this.battleStatus.style.opacity = '0';
 
-        // Switch background
-        this.switchBackground();
+        // If there's already a fade in progress, just switch the background without interfering
+        if (this.bgOverlay) {
+            // Switch background silently under the overlay
+            const roundInfo = this.tournament.getRoundInfo();
+            if (roundInfo.current === 7) {
+                this.backgrounds.forEach(bg => {
+                    this.arenaViewport.classList.remove(bg);
+                });
+                this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+                this.arenaViewport.classList.add(ARENA_CONFIG.GOLD_BACKGROUND);
+                this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(ARENA_CONFIG.GOLD_BACKGROUND));
+            } else {
+                this.backgrounds.forEach(bg => {
+                    this.arenaViewport.classList.remove(bg);
+                });
+                this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+                const newBg = this.backgrounds[this.currentBgIndex];
+                this.arenaViewport.classList.add(newBg);
+                this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+                this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
+            }
+
+            // Now fade out the overlay to reveal new fighters
+            setTimeout(() => {
+                if (this.bgOverlay) {
+                    this.bgOverlay.style.transition = 'opacity 0.5s ease-in-out';
+                    this.bgOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (this.bgOverlay) {
+                            this.bgOverlay.remove();
+                            this.bgOverlay = null;
+                        }
+                    }, 500);
+                }
+            }, 50);
+        } else {
+            // No overlay, do normal background switch
+            this.completeBackgroundSwitch();
+        }
 
         // Reset fighters
         this.resetFighters();
@@ -646,6 +702,7 @@ export class RNGArena {
             }, 1000);
         }
 
+        // SIMPLIFIED: Both fighters ALWAYS enter from their sides
         if (this.leftFighter) {
             this.leftFighter.style.opacity = '1';
             this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
@@ -691,6 +748,9 @@ export class RNGArena {
         const battleResult = this.tournament.battleResult(leftWins);
         if (!battleResult) return;
 
+        // Track previous winner name for next battle
+        this.previousWinnerName = battleResult.winner;
+
         // Update fighter cards
         const currentMatch = this.tournament.getCurrentMatch();
         const displayOrder = this.tournament.getDisplayOrder();
@@ -701,30 +761,25 @@ export class RNGArena {
         const winner = leftWins ? this.leftFighter : this.rightFighter;
         const loser = leftWins ? this.rightFighter : this.leftFighter;
 
-        // Winner animation
+        // Winner gets a pulsing gold-white glow and scale animation (scale on sprite only to avoid position conflicts)
         const winnerSprite = winner.querySelector('.fighter-sprite img');
         if (winnerSprite) {
-            winnerSprite.style.animation = 'victory-glow 1s ease-in-out';
+            winnerSprite.style.animation = 'victory-glow-pulse 1.5s ease-in-out infinite, winner-scale-pulse 1.5s ease-in-out infinite';
         }
-
-        // Loser exit
-        setTimeout(() => {
-            loser.classList.add(UI_CONFIG.FIGHTER_EXIT);
-        }, 300);
-
-        // Winner pose
-        setTimeout(() => {
-            const winnerSprite = winner.querySelector('.fighter-sprite');
-            if (winnerSprite) winnerSprite.classList.add(UI_CONFIG.WINNER_POSE);
-        }, 500);
 
         // Update battle status
         this.battleStatus.textContent = `${battleResult.winner.toUpperCase()} WINS!`;
         this.battleStatus.style.opacity = '1';
 
+        // Start background fade after loser completes fade + 1.5s pause (500ms + 2000ms + 1500ms = 4000ms)
+        setTimeout(() => {
+            this.startBackgroundFadeOut();
+        }, 4000);
+
+        // Keep text visible until black screen covers it
         setTimeout(() => {
             this.battleStatus.style.opacity = '0';
-        }, GAME_CONFIG.TIMING.STATUS_FADE_OUT);
+        }, 4000);
 
         // Announcer messages
         this.chatSystem.addAnnouncerMessage(`${ANNOUNCER_MESSAGES.WINNER_PREFIX}${battleResult.winner.toUpperCase()}${ANNOUNCER_MESSAGES.WINNER_SUFFIX}`);
@@ -739,7 +794,7 @@ export class RNGArena {
         this.chatSystem.addChatMessage(this.chatSystem.getRandomWinMessage());
         this.chatSystem.addChatMessage("GG!");
 
-        // Progress tournament
+        // Progress tournament - wait until loser faded + pause before loading next fighters
         setTimeout(() => {
             this.tournament.advanceToNextMatch();
             this.updateOdds();
@@ -752,11 +807,11 @@ export class RNGArena {
             }, 300);
 
             if (this.autoContinue && !this.tournament.isComplete()) {
-                setTimeout(() => this.startBattle(), GAME_CONFIG.TIMING.AUTO_CONTINUE_DELAY);
+                setTimeout(() => this.startBattle(), GAME_CONFIG.TIMING.AUTO_CONTINUE_DELAY - 4000);
             } else {
                 this.enableRestart();
             }
-        }, GAME_CONFIG.TIMING.VICTORY_DISPLAY);
+        }, 4000); // 500ms beat + 2000ms fade + 1500ms pause
     }
 
     handleByeRound(byeInfo) {
@@ -769,6 +824,13 @@ export class RNGArena {
                 sound.pause();
                 sound.currentTime = 0;
             }, 2000);
+
+            // Replay Lady Luck laugh after 1 second pause (at 3 seconds total)
+            setTimeout(() => {
+                const laughSound = new Audio('/sfx/game_female_soft_com_3-1760029620130.mp3');
+                laughSound.volume = 0.6;
+                laughSound.play().catch(err => console.log('Lady Luck laugh failed:', err));
+            }, 3000); // 2000ms bye sound + 1000ms pause
         }
 
         this.battleStatus.innerHTML = '✨ LADY LUCK VISITS YOU! ✨<br><span style="font-size: 0.6em;">You get a bye and a free loot tier - lucky you!</span>';
@@ -818,7 +880,7 @@ export class RNGArena {
         if (this.rightFighter) this.rightFighter.style.opacity = '0';
 
         this.updateByeDisplay(byeInfo);
-        this.switchBackground();
+        this.completeBackgroundSwitch();
 
         // Start fighter entrance animations
         setTimeout(() => {
@@ -836,6 +898,13 @@ export class RNGArena {
             if (nameplateContainer) {
                 setTimeout(() => {
                     nameplateContainer.classList.add('visible');
+
+                    // Play slide sound when nameplates appear
+                    if (!this.audioMuted) {
+                        const slideSound = new Audio('/sfx/slide.mp3');
+                        slideSound.volume = 0.4;
+                        slideSound.play().catch(err => console.log('Slide sound failed:', err));
+                    }
                 }, 100);
             }
 
@@ -989,6 +1058,9 @@ export class RNGArena {
         }
 
         this.updateFighterCards(match, null);
+
+        // Start Lady Luck's GIF-like animation
+        this.startLadyLuckAnimation();
     }
 
     updateFighterCards(match, displayOrder) {
@@ -1034,15 +1106,36 @@ export class RNGArena {
 
     resetFighters() {
         if (this.leftFighter) {
+            // Remove ALL classes (entrance, exit, victory, etc.)
             this.leftFighter.className = 'fighter-left';
+            // Clear all inline styles
+            this.leftFighter.removeAttribute('style');
+            // Set opacity to 0 for entrance
+            this.leftFighter.style.opacity = '0';
+
+            // Clear sprite element
+            const leftSprite = this.leftFighter.querySelector('.fighter-sprite');
+            if (leftSprite) {
+                leftSprite.className = 'fighter-sprite';
+                leftSprite.removeAttribute('style');
+            }
         }
+
         if (this.rightFighter) {
+            // Remove ALL classes (entrance, exit, victory, etc.)
             this.rightFighter.className = 'fighter-right';
+            // Clear all inline styles
+            this.rightFighter.removeAttribute('style');
+            // Set opacity to 0 for entrance
+            this.rightFighter.style.opacity = '0';
+
+            // Clear sprite element
+            const rightSprite = this.rightFighter.querySelector('.fighter-sprite');
+            if (rightSprite) {
+                rightSprite.className = 'fighter-sprite';
+                rightSprite.removeAttribute('style');
+            }
         }
-        const leftSprite = this.leftFighter ? this.leftFighter.querySelector('.fighter-sprite') : null;
-        const rightSprite = this.rightFighter ? this.rightFighter.querySelector('.fighter-sprite') : null;
-        if (leftSprite) leftSprite.style.animation = '';
-        if (rightSprite) rightSprite.style.animation = '';
     }
 
     hideRightFighter() {
@@ -1063,16 +1156,78 @@ export class RNGArena {
             return CHARACTER_CONFIG.HERO_READY;
         }
 
+        // IMPORTANT: Check if female first to prevent matching male arrays
+        const isFemale = CHARACTER_CONFIG.FEMALE_NAMES.includes(characterName);
+        if (isFemale) {
+            // Female character - use Athena or Nesta skin only
+            if (CHARACTER_CONFIG.ATHENA_NAMES.includes(characterName)) {
+                // Return appropriate pose for Athena skin
+                if (pose === 'attack') return CHARACTER_CONFIG.ATHENA_ATTACK;
+                if (pose === 'defense') return CHARACTER_CONFIG.ATHENA_DEFEND;
+                return CHARACTER_CONFIG.ATHENA_NEUTRAL;
+            }
+            // Default to Nesta for other female names
+            if (pose === 'attack') return CHARACTER_CONFIG.NESTA_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.NESTA_DEFEND;
+            return CHARACTER_CONFIG.NESTA_NEUTRAL;
+        }
+
+        // Check if this is a male fighter using Green Knight skin
+        if (CHARACTER_CONFIG.GREEN_KNIGHT_NAMES.includes(characterName)) {
+            // Return appropriate pose for Green Knight skin
+            if (pose === 'attack') return CHARACTER_CONFIG.GREEN_KNIGHT_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.GREEN_KNIGHT_DEFEND;
+            return CHARACTER_CONFIG.GREEN_KNIGHT_NEUTRAL;
+        }
+
+        // Check if this is a male fighter using Barb skin
+        if (CHARACTER_CONFIG.BARB_NAMES.includes(characterName)) {
+            // Return appropriate pose for Barb skin
+            if (pose === 'attack') return CHARACTER_CONFIG.BARB_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.BARB_DEFEND;
+            return CHARACTER_CONFIG.BARB_NEUTRAL;
+        }
+
+        // Check if this is a male fighter using Black Knight skin
+        if (CHARACTER_CONFIG.BLACK_NAMES.includes(characterName)) {
+            // Return appropriate pose for Black Knight skin
+            if (pose === 'attack') return CHARACTER_CONFIG.BLACK_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.BLACK_DEFEND;
+            return CHARACTER_CONFIG.BLACK_NEUTRAL;
+        }
+
+        // Check if this is a male fighter using Red Knight skin
+        if (CHARACTER_CONFIG.RED_NAMES.includes(characterName)) {
+            // Return appropriate pose for Red Knight skin
+            if (pose === 'attack') return CHARACTER_CONFIG.RED_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.RED_DEFEND;
+            return CHARACTER_CONFIG.RED_NEUTRAL;
+        }
+
+        // Check if this is a male fighter using Brown Knight skin
+        if (CHARACTER_CONFIG.BROWN_NAMES.includes(characterName)) {
+            // Return appropriate pose for Brown Knight skin
+            if (pose === 'attack') return CHARACTER_CONFIG.BROWN_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.BROWN_DEFEND;
+            return CHARACTER_CONFIG.BROWN_NEUTRAL;
+        }
+
+        // Check if this is a male fighter using Blue Knight skin
+        if (CHARACTER_CONFIG.BLUE_NAMES.includes(characterName)) {
+            // Return appropriate pose for Blue Knight skin
+            if (pose === 'attack') return CHARACTER_CONFIG.BLUE_ATTACK;
+            if (pose === 'defense') return CHARACTER_CONFIG.BLUE_DEFEND;
+            return CHARACTER_CONFIG.BLUE_NEUTRAL;
+        }
+
         if (characterName === 'Lady Luck') {
-            return 'Lady_bye_chance.png';
+            return `lady_luck_${this.ladyLuckFrame}.png`;
         }
 
-        if (!this.characterImageCache.has(characterName)) {
-            const randomIndex = Math.floor(Math.random() * CHARACTER_CONFIG.KNIGHT_IMAGES.length);
-            this.characterImageCache.set(characterName, CHARACTER_CONFIG.KNIGHT_IMAGES[randomIndex]);
-        }
-
-        return this.characterImageCache.get(characterName);
+        // OLD KNIGHT SYSTEM REMOVED - All fighters now use 3-pose systems
+        // If we reach here, something is wrong - return a default
+        console.warn(`Character ${characterName} not found in any skin configuration`);
+        return CHARACTER_CONFIG.GREEN_KNIGHT_NEUTRAL;
     }
 
     updateFighterSprite(fighterElement, characterName, pose = 'ready') {
@@ -1085,16 +1240,68 @@ export class RNGArena {
         const isLeftFighter = fighterElement.classList.contains('fighter-left');
         const isRightFighter = fighterElement.classList.contains('fighter-right');
 
-        const needsFlip = (isLeftFighter && (
+
+        // Check if this is left-oriented (Athena, Blue - flips on LEFT, not right)
+        const isLeftOriented = imageName.toLowerCase().includes('athena') ||
+                               imageName.toLowerCase().includes('blue_');
+        // Check if this is right-oriented (Daring Hero, Nesta, Barb, Green, Black, Red, Brown - flips on right side)
+        const needsRightFlip = imageName.toLowerCase().includes('daring_hero') ||
+                               imageName.toLowerCase().includes('nesta') ||
+                               imageName.toLowerCase().includes('barb_') ||
+                               imageName.toLowerCase().includes('green_') ||
+                               imageName.toLowerCase().includes('black_') ||
+                               imageName.toLowerCase().includes('red_') ||
+                               imageName.toLowerCase().includes('brown_');
+
+        // Special case: brown_attack.png should always be flipped
+        const isBrownAttack = imageName.toLowerCase() === 'brown_attack.png';
+
+        let needsFlip = (isLeftFighter && (
             imageName === 'knight_05.png' ||
             imageName === 'Knight_01.png' ||
-            imageName === 'Knight_03.png'
+            isLeftOriented  // Athena/Blue flip when on left side
         )) || (isRightFighter && (
-            imageName === 'knight_04.png'
+            imageName === 'knight_04.png' ||
+            needsRightFlip  // Daring Hero/Nesta/Barb/Green/Black/Red/Brown flip when on right side
         ));
 
-        const flipStyle = needsFlip ? 'transform: scale(0.8) scaleX(-1);' : 'transform: scale(0.8);';
-        spriteElement.innerHTML = `<img src="${imagePath}" alt="${characterName}" class="character-image" style="${flipStyle}">`;
+        // Override flip for brown attack - always flip it
+        if (isBrownAttack) {
+            needsFlip = !needsFlip;  // Invert the flip state
+        }
+
+        // Character size adjustments
+        const isRedCharacter = imageName.toLowerCase().includes('red_');
+        const isBarbCharacter = imageName.toLowerCase().includes('barb_');
+        const isGreenCharacter = imageName.toLowerCase().includes('green_');
+        const isBlackCharacter = imageName.toLowerCase().includes('black_');
+        const isBrownCharacter = imageName.toLowerCase().includes('brown_');
+        const isBlueCharacter = imageName.toLowerCase().includes('blue_');
+        const isNestaCharacter = imageName.toLowerCase().includes('nesta');
+        const isAthenaCharacter = imageName.toLowerCase().includes('athena');
+
+        let baseScale = 0.8;
+        if (isRedCharacter) baseScale = 1.10; // 8% smaller from 1.196
+        else if (isBarbCharacter) baseScale = 0.92; // 15% larger
+        else if (isGreenCharacter) baseScale = 1.13; // 5% smaller from 1.188
+        else if (isBlackCharacter) baseScale = 0.95; // 8% bigger from 0.88
+        else if (isBrownCharacter) baseScale = 0.99; // 8% bigger from 0.92
+        else if (isBlueCharacter) baseScale = 0.92; // 15% bigger
+        else if (isNestaCharacter) baseScale = 1.01; // 8% smaller from 1.10
+        // Athena stays at 0.8 base
+
+        // Vertical offsets with !important to override CSS
+        let verticalOffset = '';
+        if (isGreenCharacter) verticalOffset = 'margin-top: 120px !important;'; // Green down 120px
+        else if (isBlackCharacter) verticalOffset = 'margin-top: 65px !important;'; // Black down 65px (increased from 45px)
+        else if (isNestaCharacter) verticalOffset = 'margin-top: 25px !important;'; // Nesta down 25px
+        else if (isRedCharacter) verticalOffset = 'margin-top: -60px !important;'; // Red up 60px
+        else if (isBrownCharacter) verticalOffset = 'margin-top: 65px !important;'; // Brown down 65px (increased from 45px)
+        else if (isAthenaCharacter) verticalOffset = 'margin-top: 30px !important;'; // Athena down 30px
+
+        const flipStyle = needsFlip ? `transform: scale(${baseScale}) scaleX(-1) !important;` : `transform: scale(${baseScale}) !important;`;
+
+        spriteElement.innerHTML = `<img src="${imagePath}" alt="${characterName}" class="character-image" style="${flipStyle} ${verticalOffset}">`;
     }
 
     updateFighterPose(fighterElement, characterName, pose) {
@@ -1105,6 +1312,99 @@ export class RNGArena {
         const imageName = this.getCharacterImage(characterName, pose);
         const imagePath = `${CHARACTER_CONFIG.CHARACTER_PATH}${imageName}`;
         img.src = imagePath;
+
+        // Update flip state for 3-pose characters
+        const isRightFighter = fighterElement.classList.contains('fighter-right');
+        const isLeftFighter = fighterElement.classList.contains('fighter-left');
+        // Check if this is left-oriented (Athena, Blue - flips on LEFT, not right)
+        const isLeftOriented = imageName.toLowerCase().includes('athena') ||
+                               imageName.toLowerCase().includes('blue_');
+        // Check if this is right-oriented (Daring Hero, Nesta, Barb, Green, Black, Red, Brown - flips on right side)
+        const needsRightFlip = imageName.toLowerCase().includes('daring_hero') ||
+                               imageName.toLowerCase().includes('nesta') ||
+                               imageName.toLowerCase().includes('barb_') ||
+                               imageName.toLowerCase().includes('green_') ||
+                               imageName.toLowerCase().includes('black_') ||
+                               imageName.toLowerCase().includes('red_') ||
+                               imageName.toLowerCase().includes('brown_');
+
+        // Special case: brown_attack.png should always be flipped
+        const isBrownAttack = imageName.toLowerCase() === 'brown_attack.png';
+
+        let needsFlip = (isLeftFighter && (
+            imageName === 'knight_05.png' ||
+            imageName === 'Knight_01.png' ||
+            isLeftOriented  // Athena/Blue flip when on left side
+        )) || (isRightFighter && (
+            imageName === 'knight_04.png' ||
+            needsRightFlip  // Daring Hero/Nesta/Barb/Green/Black/Red/Brown flip when on right side
+        ));
+
+        // Override flip for brown attack - always flip it
+        if (isBrownAttack) {
+            needsFlip = !needsFlip;  // Invert the flip state
+        }
+
+        // Character size adjustments
+        const isRedCharacter = imageName.toLowerCase().includes('red_');
+        const isBarbCharacter = imageName.toLowerCase().includes('barb_');
+        const isGreenCharacter = imageName.toLowerCase().includes('green_');
+        const isBlackCharacter = imageName.toLowerCase().includes('black_');
+        const isBrownCharacter = imageName.toLowerCase().includes('brown_');
+        const isBlueCharacter = imageName.toLowerCase().includes('blue_');
+        const isNestaCharacter = imageName.toLowerCase().includes('nesta');
+        const isAthenaCharacter = imageName.toLowerCase().includes('athena');
+
+        let baseScale = 0.8;
+        if (isRedCharacter) baseScale = 1.10; // 8% smaller from 1.196
+        else if (isBarbCharacter) baseScale = 0.92; // 15% larger
+        else if (isGreenCharacter) baseScale = 1.13; // 5% smaller from 1.188
+        else if (isBlackCharacter) baseScale = 0.95; // 8% bigger from 0.88
+        else if (isBrownCharacter) baseScale = 0.99; // 8% bigger from 0.92
+        else if (isBlueCharacter) baseScale = 0.92; // 15% bigger
+        else if (isNestaCharacter) baseScale = 1.01; // 8% smaller from 1.10
+        // Athena stays at 0.8 base
+
+        // Vertical offsets - use setProperty with important flag
+        if (isGreenCharacter) img.style.setProperty('margin-top', '120px', 'important'); // Green down 120px
+        else if (isBlackCharacter) img.style.setProperty('margin-top', '65px', 'important'); // Black down 65px (increased from 45px)
+        else if (isNestaCharacter) img.style.setProperty('margin-top', '25px', 'important'); // Nesta down 25px
+        else if (isRedCharacter) img.style.setProperty('margin-top', '-60px', 'important'); // Red up 60px
+        else if (isBrownCharacter) img.style.setProperty('margin-top', '65px', 'important'); // Brown down 65px (increased from 45px)
+        else if (isAthenaCharacter) img.style.setProperty('margin-top', '30px', 'important'); // Athena down 30px
+        else img.style.setProperty('margin-top', '0px', 'important');
+
+        img.style.setProperty('transform', needsFlip ? `scale(${baseScale}) scaleX(-1)` : `scale(${baseScale})`, 'important');
+    }
+
+    // ===== Lady Luck Animation =====
+
+    startLadyLuckAnimation() {
+        // Stop any existing animation
+        this.stopLadyLuckAnimation();
+
+        // Start animation loop (cycle through frames 1-4 every 200ms)
+        this.ladyLuckAnimationInterval = setInterval(() => {
+            // Cycle to next frame (1 -> 2 -> 3 -> 4 -> 1)
+            this.ladyLuckFrame = (this.ladyLuckFrame % 4) + 1;
+
+            // Update both fighters (one will be Lady Luck)
+            if (this.leftFighterNameEl.textContent === 'Lady Luck') {
+                this.updateFighterSprite(this.leftFighter, 'Lady Luck');
+            }
+            if (this.rightFighterNameEl.textContent === 'Lady Luck') {
+                this.updateFighterSprite(this.rightFighter, 'Lady Luck');
+            }
+        }, 200); // 200ms per frame = 5 frames per second
+    }
+
+    stopLadyLuckAnimation() {
+        if (this.ladyLuckAnimationInterval) {
+            clearInterval(this.ladyLuckAnimationInterval);
+            this.ladyLuckAnimationInterval = null;
+        }
+        // Reset to frame 1
+        this.ladyLuckFrame = 1;
     }
 
     // ===== Round Announcement =====
@@ -1134,7 +1434,6 @@ export class RNGArena {
         // Skip fade on first battle
         if (this.isFirstBattle) {
             this.isFirstBattle = false;
-            this.arenaViewport.style.opacity = '1';
 
             // Just set initial background without fade
             const newBg = this.backgrounds[this.currentBgIndex];
@@ -1144,41 +1443,85 @@ export class RNGArena {
             return;
         }
 
-        // Fade out
-        this.arenaViewport.style.opacity = '0.3';
-        this.arenaViewport.style.transition = 'opacity 0.5s ease-in-out';
+        // Start fade out (will complete in completeBackgroundSwitch)
+        this.startBackgroundFadeOut();
+    }
 
-        setTimeout(() => {
-            // Check if final round - use gold background
-            const roundInfo = this.tournament.getRoundInfo();
-            if (roundInfo.current === 7) {
-                this.backgrounds.forEach(bg => {
-                    this.arenaViewport.classList.remove(bg);
-                });
-                this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
-                this.arenaViewport.classList.add(ARENA_CONFIG.GOLD_BACKGROUND);
-                this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(ARENA_CONFIG.GOLD_BACKGROUND));
-            } else {
-                // Remove current background
-                this.backgrounds.forEach(bg => {
-                    this.arenaViewport.classList.remove(bg);
-                });
-                this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+    startBackgroundFadeOut() {
+        if (!this.arenaViewport) return;
 
-                // Add new background
-                const newBg = this.backgrounds[this.currentBgIndex];
-                this.arenaViewport.classList.add(newBg);
+        // Create black overlay to fade ENTIRE arena (covers fighters too)
+        this.bgOverlay = document.createElement('div');
+        this.bgOverlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            opacity: 0;
+            z-index: 100;
+            pointer-events: none;
+        `;
+        this.arenaViewport.appendChild(this.bgOverlay);
 
-                this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+        // Force browser to acknowledge initial state
+        this.bgOverlay.offsetHeight;
 
-                this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
-            }
+        // Now add transition
+        this.bgOverlay.style.transition = 'opacity 1s ease-in-out';
 
-            // Fade in
+        // Use requestAnimationFrame to ensure browser has applied transition before changing opacity
+        requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+                if (this.bgOverlay) {
+                    this.bgOverlay.style.opacity = '0.95';
+                }
+            });
+        });
+    }
+
+    completeBackgroundSwitch() {
+        if (!this.arenaViewport) return;
+
+        // Check if final round - use gold background
+        const roundInfo = this.tournament.getRoundInfo();
+        if (roundInfo.current === 7) {
+            this.backgrounds.forEach(bg => {
+                this.arenaViewport.classList.remove(bg);
+            });
+            this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+            this.arenaViewport.classList.add(ARENA_CONFIG.GOLD_BACKGROUND);
+            this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(ARENA_CONFIG.GOLD_BACKGROUND));
+        } else {
+            // Remove current background
+            this.backgrounds.forEach(bg => {
+                this.arenaViewport.classList.remove(bg);
+            });
+            this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+
+            // Add new background
+            const newBg = this.backgrounds[this.currentBgIndex];
+            this.arenaViewport.classList.add(newBg);
+
+            this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+
+            this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
+        }
+
+        // Immediately start fading back out to reveal new background
+        if (this.bgOverlay) {
+            this.bgOverlay.style.transition = 'opacity 0.5s ease-in-out';
+            this.bgOverlay.style.opacity = '0';
+
+            // Remove overlay after fade completes
             setTimeout(() => {
-                this.arenaViewport.style.opacity = '1';
-            }, 50);
-        }, 500);
+                if (this.bgOverlay) {
+                    this.bgOverlay.remove();
+                    this.bgOverlay = null;
+                }
+            }, 500);
+        }
     }
 
     // ===== Victory Animation =====
@@ -1193,7 +1536,7 @@ export class RNGArena {
             sound.play().catch(err => console.log('Victory sound failed:', err));
         }
 
-        // Dark overlay
+        // Darken the arena slightly - reduced opacity to show background better
         const overlay = document.createElement('div');
         overlay.className = 'victory-overlay';
         overlay.style.cssText = `
@@ -1202,10 +1545,10 @@ export class RNGArena {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.5);
+            background: rgba(0, 0, 0, 0.3);
             z-index: 5;
             opacity: 0;
-            transition: opacity 1s ease-in-out;
+            transition: opacity 1.5s ease-in-out;
             pointer-events: none;
         `;
         this.arenaViewport.appendChild(overlay);
@@ -1214,88 +1557,68 @@ export class RNGArena {
             overlay.style.opacity = '1';
         }, 100);
 
-        // Determine winner fighter
-        const leftFighterName = this.leftFighterNameEl.textContent;
-        const rightFighterName = this.rightFighterNameEl.textContent;
-
-        let winnerFighter, winnerSide;
-        if (leftFighterName === winner) {
-            winnerFighter = this.leftFighter;
-            winnerSide = 'left';
-        } else if (rightFighterName === winner) {
-            winnerFighter = this.rightFighter;
-            winnerSide = 'right';
-        } else {
-            winnerFighter = this.leftFighter;
-            winnerSide = 'left';
-            this.leftFighterNameEl.textContent = this.tournament.getCharacterName(winner);
-            const winnerTitles = this.tournament.getCharacterTitles(winner);
-            this.leftFighterTitlesEl.textContent = winnerTitles.join(' • ');
-        }
-
-        // Hide other fighter
-        const otherFighter = winnerSide === 'left' ? this.rightFighter : this.leftFighter;
-        otherFighter.style.opacity = '0';
-
-        // Position winner
-        const startPosition = winnerSide === 'left' ? '15%' : '85%';
-        const startTransform = winnerSide === 'left' ? '0%' : '-100%';
-
-        winnerFighter.style.setProperty('--start-position', startPosition);
-        winnerFighter.style.setProperty('--start-transform', startTransform);
-        winnerFighter.classList.add('victory-center');
-        winnerFighter.style.zIndex = '1'; // Keep fighter behind nameplate
-
-        // Winner glow
-        const winnerSprite = winnerFighter.querySelector('.fighter-sprite img');
-        if (winnerSprite) {
-            winnerSprite.style.filter = 'drop-shadow(0 0 20px white) drop-shadow(0 0 40px white) drop-shadow(0 0 60px white)';
-            winnerSprite.style.animation = 'victory-glow 2s ease-in-out infinite';
-        }
-
-        // Upgrade chest to legendary (chest_01) with glow
+        // Upgrade chest to legendary with glow
         this.lootSystem.setMaxTier();
 
-        // Victor text
-        setTimeout(() => {
-            const victorText = document.createElement('div');
-            victorText.className = 'victor-text';
-            victorText.textContent = 'VICTOR!';
-            this.arenaViewport.appendChild(victorText);
-        }, 2000);
+        // Find the winner fighter element
+        const winnerFighter = this.leftFighter?.querySelector('.fighter-name')?.textContent === winner
+            ? this.leftFighter
+            : this.rightFighter;
 
-        // Hide loser nameplate and VS
-        setTimeout(() => {
-            const loserNameplate = winnerSide === 'left' ? document.querySelector('.right-nameplate') : document.querySelector('.left-nameplate');
-            const vsDisplay = document.querySelector('.vs-display');
-            const winnerNameplate = winnerSide === 'left' ? document.querySelector('.left-nameplate') : document.querySelector('.right-nameplate');
+        if (winnerFighter) {
+            // Add victory-center class to move winner to center (CSS handles animation)
+            winnerFighter.classList.add('victory-center');
 
-            if (loserNameplate) {
-                loserNameplate.style.opacity = '0';
-                loserNameplate.style.transition = 'opacity 0.5s ease';
+            // The victoryPulse animation is now applied via CSS
+            // .victory-center .fighter-sprite img { animation: victoryPulse ... }
+
+            // Find and center the winner's nameplate
+            const isLeftWinner = winnerFighter === this.leftFighter;
+            const nameplate = isLeftWinner
+                ? document.querySelector('.left-nameplate')
+                : document.querySelector('.right-nameplate');
+
+            if (nameplate) {
+                nameplate.classList.add('victory-nameplate');
+                nameplate.style.cssText = `
+                    position: absolute !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    top: 10% !important;
+                    z-index: 40 !important;
+                `;
             }
-            if (vsDisplay) {
-                vsDisplay.style.opacity = '0';
-                vsDisplay.style.transition = 'opacity 0.5s ease';
-            }
 
-            // Center and enlarge winner's nameplate
-            if (winnerNameplate) {
-                winnerNameplate.style.transition = 'all 0.8s ease';
-                winnerNameplate.style.position = 'absolute';
-                winnerNameplate.style.left = '50%';
-                winnerNameplate.style.top = '50%';
-                winnerNameplate.style.transform = 'translate(-50%, -50%) scale(1.3)';
-                winnerNameplate.style.textAlign = 'center';
-                winnerNameplate.style.zIndex = '200';
+            // Create and show VICTORY! text overlay
+            const victoryText = document.createElement('div');
+            victoryText.className = 'victory-text-overlay';
+            victoryText.style.cssText = `
+                position: absolute;
+                top: 35%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                font-size: 5rem;
+                font-weight: bold;
+                color: #FFD700;
+                text-shadow:
+                    0 0 20px rgba(255, 215, 0, 1),
+                    0 0 40px rgba(255, 215, 0, 0.8),
+                    0 0 60px rgba(255, 255, 255, 0.6),
+                    4px 4px 8px rgba(0, 0, 0, 0.8);
+                z-index: 50;
+                animation: victoryPulse 2s ease-in-out infinite;
+                pointer-events: none;
+                opacity: 0;
+                transition: opacity 0.5s ease-in-out;
+            `;
+            victoryText.textContent = 'VICTORY!';
+            this.arenaViewport.appendChild(victoryText);
 
-                // Force center alignment on child elements
-                const nameName = winnerNameplate.querySelector('.nameplate-name');
-                const nameTitles = winnerNameplate.querySelector('.nameplate-titles');
-                if (nameName) nameName.style.textAlign = 'center';
-                if (nameTitles) nameTitles.style.textAlign = 'center';
-            }
-        }, 1000);
+            // Fade in the victory text
+            setTimeout(() => {
+                victoryText.style.opacity = '1';
+            }, 500);
+        }
 
         this.battleStatus.style.opacity = '0';
     }
@@ -1303,6 +1626,7 @@ export class RNGArena {
     // ===== Combat Cleanup =====
 
     cleanupCombatElements() {
+        // Remove combat text elements
         const leftNameplate = document.querySelector('.left-nameplate');
         if (leftNameplate) {
             leftNameplate.querySelectorAll('.fighter-health').forEach(el => el.remove());
@@ -1315,29 +1639,23 @@ export class RNGArena {
             this.rightFighter.querySelectorAll('.damage-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
         }
 
-        if (this.arenaViewport) {
-            this.arenaViewport.querySelectorAll('.victor-text').forEach(el => el.remove());
-        }
+        // SIMPLIFIED: Clear any glow filters and animations from fighters
         if (this.leftFighter) {
-            this.leftFighter.querySelectorAll('.victory-crown, .victory-nameplate').forEach(el => el.remove());
+            const leftSprite = this.leftFighter.querySelector('.fighter-sprite img');
+            if (leftSprite) {
+                leftSprite.style.removeProperty('filter');
+                leftSprite.style.removeProperty('animation');
+            }
         }
         if (this.rightFighter) {
-            this.rightFighter.querySelectorAll('.victory-crown, .victory-nameplate').forEach(el => el.remove());
+            const rightSprite = this.rightFighter.querySelector('.fighter-sprite img');
+            if (rightSprite) {
+                rightSprite.style.removeProperty('filter');
+                rightSprite.style.removeProperty('animation');
+            }
         }
 
-        if (this.leftFighter) {
-            this.leftFighter.style.opacity = '1';
-            this.leftFighter.style.removeProperty('--start-position');
-            this.leftFighter.style.removeProperty('--start-transform');
-            this.leftFighter.classList.remove('victory-center');
-        }
-        if (this.rightFighter) {
-            this.rightFighter.style.opacity = '1';
-            this.rightFighter.style.removeProperty('--start-position');
-            this.rightFighter.style.removeProperty('--start-transform');
-            this.rightFighter.classList.remove('victory-center');
-        }
-
+        // Remove victory overlay
         if (this.arenaViewport) {
             const victoryOverlay = this.arenaViewport.querySelector('.victory-overlay');
             if (victoryOverlay) {
@@ -1345,6 +1663,7 @@ export class RNGArena {
             }
         }
 
+        // Remove loot glow
         this.lootSystem.removeVictoryGlow();
     }
 
@@ -2423,3 +2742,4 @@ export class RNGArena {
         });
     }
 }
+console.log('CACHE BUST TEST - Version 2.0 - Changes loaded');

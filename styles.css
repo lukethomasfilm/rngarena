@@ -562,12 +562,14 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 30% !important;
+    left: 38% !important;
+    z-index: 100000 !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
     left: 70% !important;
     right: auto !important;
+    z-index: 100000 !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate-name {
@@ -586,13 +588,13 @@ body {
 
 .chat-mode-battlefield-overlay .fighter-left {
     left: 50% !important;
-    transform: translateX(-220px) scale(0.75) !important;
+    transform: translateX(-220px) scale(0.5625) !important;
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
     right: auto !important;
     left: 50% !important;
-    transform: translateX(60px) scale(0.75) !important;
+    transform: translateX(60px) scale(0.5625) !important;
 }
 
 /* Override fighter positioning for victory animation in chat mode */
@@ -916,7 +918,7 @@ body {
     align-items: center;
     border: none;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .left-section::after {
@@ -1782,7 +1784,7 @@ body {
     right: 0;
     display: flex;
     align-items: end;
-    z-index: 10;
+    z-index: 1000;
     padding: 0 20px;
     gap: 2px;
     transform: translateY(150%);
@@ -2543,8 +2545,12 @@ body {
 }
 
 @keyframes victoryPulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
+    0%, 100% {
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.6)) brightness(1.1);
+    }
+    50% {
+        filter: drop-shadow(0 0 40px rgba(255, 215, 0, 1)) drop-shadow(0 0 80px rgba(255, 255, 255, 0.9)) brightness(1.3);
+    }
 }
 
 @keyframes victory-glow {
@@ -2556,6 +2562,39 @@ body {
     }
     100% {
         filter: brightness(1) drop-shadow(0 0 5px #ffd700);
+    }
+}
+
+@keyframes victory-glow-pulse {
+    0% {
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.6));
+    }
+    50% {
+        filter: drop-shadow(0 0 30px rgba(255, 255, 255, 1)) drop-shadow(0 0 60px rgba(255, 255, 255, 0.8)) drop-shadow(0 0 90px rgba(255, 215, 0, 0.5));
+    }
+    100% {
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 0.9)) drop-shadow(0 0 40px rgba(255, 215, 0, 0.6));
+    }
+}
+
+@keyframes winner-scale-pulse {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+@keyframes loser-fade-out {
+    0% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0;
     }
 }
 
@@ -2767,7 +2806,7 @@ body {
     background: #0f0f0f;
     border-radius: 0;
     border: none;
-    overflow: visible;
+    overflow: hidden;
     display: flex;
     flex-shrink: 0;
     flex-direction: column;
@@ -2924,7 +2963,7 @@ body {
     padding: 0px;
     padding-bottom: 5px;
     position: relative;
-    overflow: visible;
+    overflow: hidden;
 }
 
 .treasure-chest {
@@ -3793,10 +3832,28 @@ body {
     position: absolute !important;
     left: 50% !important;
     right: auto !important;
-    bottom: 0 !important;
+    bottom: -10% !important;
     transform: translateX(-50%) !important;
-    z-index: 30 !important;
-    animation: moveToCenter 2s ease-in-out forwards !important;
+    z-index: 60 !important;
+    transition: left 1.5s ease-in-out, transform 1.5s ease-in-out !important;
+}
+
+/* Pulsing animation for winner character sprite */
+.victory-center .fighter-sprite {
+    animation: victorySpritePulse 2s ease-in-out infinite !important;
+}
+
+.victory-center .fighter-sprite img {
+    animation: victoryPulse 2s ease-in-out infinite !important;
+}
+
+@keyframes victorySpritePulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.08);
+    }
 }
 
 .victory-crown {

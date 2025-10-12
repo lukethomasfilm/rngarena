@@ -34,7 +34,7 @@ export const GAME_CONFIG = {
         ENTRANCE_DURATION: 2000,
         TURN_DELAY: 1800,
         VICTORY_DISPLAY: 2000,
-        AUTO_CONTINUE_DELAY: 2000,
+        AUTO_CONTINUE_DELAY: 5000, // Black reaches 95% at 5000ms (starts at 4000ms + 1000ms fade)
         FIGHTER_ENTRANCE_DELAY: 100,
         STATUS_FADE_OUT: 1000
     }
@@ -115,13 +115,138 @@ export const ARENA_CONFIG = {
 };
 
 export const CHARACTER_CONFIG = {
-    // Knight image files
-    KNIGHT_IMAGES: ['Knight_01.png', 'Knight_02.png', 'Knight_03.png', 'knight_04.png', 'knight_05.png'],
+    // OLD STATIC KNIGHT SYSTEM REMOVED - All fighters now use 3-pose character skins
 
     // Hero images (3-pose system)
     HERO_READY: 'daring_hero_ready.png',
     HERO_ATTACK: 'daring_hero_attack.png',
     HERO_DEFENSE: 'daring_hero_defense.png',
+
+    // Athena images (3-pose system)
+    ATHENA_NEUTRAL: 'athena_neutral.png',
+    ATHENA_ATTACK: 'Athena_attack.png',
+    ATHENA_DEFEND: 'athena_defend.png',
+
+    // Nesta images (3-pose system)
+    NESTA_NEUTRAL: 'nesta_neutral.png',
+    NESTA_ATTACK: 'nesta_attack.png',
+    NESTA_DEFEND: 'nesta_defense.png',
+
+    // Green Knight images (3-pose system for random male fighters)
+    GREEN_KNIGHT_NEUTRAL: 'green_neutral.png',
+    GREEN_KNIGHT_ATTACK: 'green_attack.png',
+    GREEN_KNIGHT_DEFEND: 'green_defense.png',
+
+    // Barb images (3-pose system for random male fighters - left-oriented)
+    BARB_NEUTRAL: 'barb_attack.png',  // Using attack as neutral for now
+    BARB_ATTACK: 'barb_attack.png',
+    BARB_DEFEND: 'barb_defense.png',
+
+    // Black Knight images (3-pose system for random male fighters - left-oriented)
+    BLACK_NEUTRAL: 'black_ready.png',
+    BLACK_ATTACK: 'black_attack.png',
+    BLACK_DEFEND: 'black_defense.png',
+
+    // Red Knight images (3-pose system for random male fighters - right-oriented)
+    RED_NEUTRAL: 'red_neutral.png',
+    RED_ATTACK: 'red_attack.png',
+    RED_DEFEND: 'red_defense.png',
+
+    // Brown Knight images (3-pose system for random male fighters - right-oriented)
+    BROWN_NEUTRAL: 'brown_neutral.png',
+    BROWN_ATTACK: 'brown_attack.png',
+    BROWN_DEFEND: 'brown_defence.png',
+
+    // Blue Knight images (3-pose system for random male fighters - left-oriented)
+    BLUE_NEUTRAL: 'blue_neutral.png',
+    BLUE_ATTACK: 'blue_attack.png',
+    BLUE_DEFEND: 'blue_block.png',
+
+    // Female names using Athena skin (half of female fighters)
+    ATHENA_NAMES: [
+        'Lady Gigglebottom', 'Dame Wobbleworth', 'Duchess Tickletoes', 'Lady Snickerdoodle',
+        'Baroness Cupcake', 'Dame Butterfingers', 'Lady Dimplesworth', 'Duchess Wigglebum',
+        'Lady Pancakeface', 'Baroness Sparkles', 'Dame Muffinhead', 'Lady Wobbleshire',
+        'Duchess Giggleface'
+    ],
+
+    // Female names using Nesta skin (half of female fighters)
+    NESTA_NAMES: [
+        'Lady Bumblesnort', 'Dame Snuggleston', 'Baroness Waffles',
+        'Lady Chuckleberry', 'Duchess Picklebottom', 'Lady Jigglesnort', 'Dame Sillywhiskers',
+        'Baroness Tickleface', 'Lady Noodlebottom', 'Duchess Dimplesnort', 'Lady Gigglesworth',
+        'Dame Snickerbottom', 'Baroness Wobbleface'
+    ],
+
+    // All female names combined (for 25% of fighters)
+    FEMALE_NAMES: [
+        'Lady Gigglebottom', 'Dame Wobbleworth', 'Duchess Tickletoes', 'Lady Snickerdoodle',
+        'Baroness Cupcake', 'Dame Butterfingers', 'Lady Dimplesworth', 'Duchess Wigglebum',
+        'Lady Pancakeface', 'Baroness Sparkles', 'Dame Muffinhead', 'Lady Wobbleshire',
+        'Duchess Giggleface', 'Lady Bumblesnort', 'Dame Snuggleston', 'Baroness Waffles',
+        'Lady Chuckleberry', 'Duchess Picklebottom', 'Lady Jigglesnort', 'Dame Sillywhiskers',
+        'Baroness Tickleface', 'Lady Noodlebottom', 'Duchess Dimplesnort', 'Lady Gigglesworth',
+        'Dame Snickerbottom', 'Baroness Wobbleface'
+    ],
+
+    // Male fighters using Green Knight skin (3-pose system)
+    GREEN_KNIGHT_NAMES: [
+        'Sir Clumsy', 'Lord Butterfinger', 'Baron Whoopsie', 'Count Mishap',
+        'Sir Fumbles', 'Lord Oopsington', 'Duke Derp', 'Sir Noodles',
+        'Baron Giggles', 'Count Wiggles', 'Lord Snuggles', 'Sir Pickles',
+        'Duke Waffles', 'Baron Pancakes', 'Count Muffins', 'Sir Tickles',
+        'Lord Chuckles', 'Duke Sparkles', 'Baron Dimples', 'Count Silly'
+    ],
+
+    // Male fighters using Barb skin (3-pose system - left-oriented like Athena)
+    BARB_NAMES: [
+        'Sir Wobbly', 'Lord Jiggly', 'Duke Squiggly', 'Captain Chaos',
+        'Sir Stumbles', 'Lord Blunders', 'Duke Mishief', 'Baron Bumbles',
+        'Count Giggleton', 'Sir Wigglebum', 'Lord Snickerdood', 'Duke Ticklebottom',
+        'Baron Chucklehead', 'Count Dingleberg', 'Sir Noodlewhite', 'Lord Bumblestorm',
+        'Duke Gigglesnort', 'Baron Wobbleshire', 'Count Ticklebeard', 'Sir Snugglesworth',
+        'Lord Jigglesnort'
+    ],
+
+    // Male fighters using Black Knight skin (3-pose system - left-oriented)
+    BLACK_NAMES: [
+        'Lord Pickleface', 'Duke Wafflebottom', 'Baron Pancakehead', 'Count Muffinshire',
+        'Sir Tickletoes', 'Lord Chuckleberry', 'Duke Sparklebum', 'Baron Dimpleshire',
+        'Count Sillyhat', 'Sir Wobblesnort', 'Lord Jigglybottom', 'Duke Squigglebeard',
+        'Captain Clumsy', 'Sir Stumblebum', 'Lord Blunderworth', 'Duke Mischief'
+    ],
+
+    // Male fighters using Red Knight skin (3-pose system - right-oriented)
+    RED_NAMES: [
+        'Baron Bumblebee', 'Count Giggles', 'Sir Wiggletail', 'Lord Snickerdorf',
+        'Duke Ticklebeast', 'Baron Chucklenuts', 'Count Dingleworth', 'Sir Noodleface',
+        'Lord Bumblesnort', 'Duke Gigglebeard', 'Baron Wobblehead', 'Count Tickleshire',
+        'Sir Snugglesnort', 'Lord Picklebottom', 'Duke Waffleface', 'Baron Pancake',
+        'Count Muffinhead'
+    ],
+
+    // Male fighters using Brown Knight skin (3-pose system - right-oriented)
+    BROWN_NAMES: [
+        'Baron Muddlesworth', 'Count Clunkington', 'Sir Bumbleton', 'Lord Doodlesnort',
+        'Duke Fuzzlebottom', 'Baron Waddleface', 'Count Snortleworth', 'Sir Puddinghead',
+        'Lord Wobbleton', 'Duke Snicklefritz', 'Baron Gigglesniff', 'Count Bumblebeard',
+        'Sir Wigglewhisk', 'Lord Chucklethorn', 'Duke Dimpleton', 'Baron Snugglesworth'
+    ],
+
+    // Male fighters using Blue Knight skin (3-pose system - left-oriented)
+    BLUE_NAMES: [
+        'Baron Blueberry', 'Count Sapphire', 'Sir Cobaltson', 'Lord Azurewing',
+        'Duke Cerulean', 'Baron Indigobottom', 'Count Skyworth', 'Sir Periwinkle',
+        'Lord Navybeard', 'Duke Tealface', 'Baron Turquoise', 'Count Aquamarine',
+        'Sir Lapis', 'Lord Bluebell', 'Duke Duskblue', 'Baron Steelworth'
+    ],
+
+    // Female attack sound paths
+    FEMALE_ATTACK_SOUNDS: [
+        '/sfx/female_attack.mp3',
+        '/sfx/female_attack_2.mp3',
+        '/sfx/female_attack_3.mp3'
+    ],
 
     // Image paths
     CHARACTER_PATH: 'images/Characters/',

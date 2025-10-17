@@ -164,20 +164,27 @@ export class RNGArena {
 
     initAudioToggle() {
         const muteBtn = document.getElementById('mute-audio');
-        if (!muteBtn) return;
+        console.log('🔊 Audio button found:', muteBtn);
+        if (!muteBtn) {
+            console.error('❌ Audio button not found!');
+            return;
+        }
 
         this.audioMuted = false;
 
         muteBtn.addEventListener('click', () => {
+            console.log('🔊 Audio button clicked! Current state:', this.audioMuted);
             this.audioMuted = !this.audioMuted;
 
             // Toggle background music
             if (this.audioMuted) {
                 this.backgroundMusic.pause();
                 muteBtn.textContent = '🔇';
+                console.log('🔇 Audio muted');
             } else {
                 this.backgroundMusic.play().catch(e => console.log('Music play failed:', e));
                 muteBtn.textContent = '🔊';
+                console.log('🔊 Audio unmuted');
             }
 
             // Mute/unmute all sound effects in combat system
@@ -185,6 +192,7 @@ export class RNGArena {
                 this.combatSystem.setMuted(this.audioMuted);
             }
         });
+        console.log('✅ Audio button listener attached');
     }
 
     initTestModeToggle() {
@@ -266,20 +274,24 @@ export class RNGArena {
 
                         if (claimBtn) claimBtn.style.display = 'none';
 
-                        // Replace chest with glowing helmet (3x bigger, 10px to the right)
+                        // Replace chest with glowing helmet (centered using absolute positioning)
+                        // Note: parent .treasure-chest has scale(0.31), so 333px width = ~103px displayed
                         if (lootBox) {
                             lootBox.innerHTML = `
                                 <img src="/images/Loot Items/Loot_helmet_test.png"
                                      alt="Legendary Helmet"
                                      class="loot-helmet-claimed"
                                      style="
-                                         width: 300%;
-                                         height: 300%;
+                                         position: absolute;
+                                         top: calc(48% - 260px);
+                                         left: 50%;
+                                         transform: translate(-50%, -50%);
+                                         width: 333px;
+                                         height: auto;
                                          object-fit: contain;
-                                         position: relative;
-                                         left: 10px;
                                          filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
                                          animation: helmetWiggle 1s ease-in-out infinite, helmetGlow 2s ease-in-out infinite;
+                                         z-index: 10;
                                      ">
                             `;
                         }
@@ -305,10 +317,15 @@ export class RNGArena {
 
     initClaimLootButton() {
         const claimBtn = document.getElementById('claim-loot-btn');
+        console.log('🎁 Claim loot button found:', claimBtn);
         if (claimBtn) {
             claimBtn.addEventListener('click', () => {
+                console.log('🎁 Claim loot button clicked!');
                 this.claimLoot();
             });
+            console.log('✅ Claim loot button listener attached');
+        } else {
+            console.log('⚠️ Claim loot button not found - may appear after tournament win');
         }
     }
 
@@ -357,12 +374,13 @@ export class RNGArena {
     revealHelmet() {
         console.log('revealHelmet() called');
         const popupLootBox = document.getElementById('popup-loot-box');
+        const popupLootDisplay = document.querySelector('.popup-loot-display');
 
         // Check if loot already claimed in current mode
         const isAlreadyClaimed = this.heroLootOnlyMode ? this.heroLootClaimed : this.tournamentLootClaimed;
-        console.log('Loot claim check:', { popupLootBox, isAlreadyClaimed, audioMuted: this.audioMuted });
-        if (!popupLootBox || isAlreadyClaimed) {
-            console.log('Exiting early - popupLootBox missing or already claimed');
+        console.log('Loot claim check:', { popupLootBox, popupLootDisplay, isAlreadyClaimed, audioMuted: this.audioMuted });
+        if (!popupLootBox || !popupLootDisplay || isAlreadyClaimed) {
+            console.log('Exiting early - elements missing or already claimed');
             return;
         }
 
@@ -415,7 +433,7 @@ export class RNGArena {
             z-index: 100;
         `;
 
-        popupLootBox.appendChild(helmet);
+        popupLootDisplay.appendChild(helmet);
 
         // Animate helmet reveal
         setTimeout(() => {
@@ -581,7 +599,7 @@ export class RNGArena {
 
         // Play special round sounds
         if (!this.audioMuted) {
-            if (roundInfo.current === 7) {
+            if (roundInfo.current === 6) {
                 // Semifinals - play first 1.5 seconds
                 const sound = new Audio(this.semifinalsSoundPath);
                 sound.volume = 0.5;
@@ -590,7 +608,7 @@ export class RNGArena {
                     sound.pause();
                     sound.currentTime = 0;
                 }, 1500);
-            } else if (roundInfo.current === 8) {
+            } else if (roundInfo.current === 7) {
                 // Final Battle - play first 2 seconds
                 const sound = new Audio(this.finalBattleSoundPath);
                 sound.volume = 0.5;
@@ -1309,9 +1327,9 @@ export class RNGArena {
             barb:    { regular: {scale: 0.92, top: 0},    fullscreen: {scale: 1.24, top: 0},    chat: {scale: 0.52, top: 0} },
             blue:    { regular: {scale: 0.92, top: -15},  fullscreen: {scale: 1.24, top: -20},  chat: {scale: 0.52, top: -8} },
             black:   { regular: {scale: 0.95, top: 5},    fullscreen: {scale: 1.28, top: 7},    chat: {scale: 0.53, top: 3} },
-            brown:   { regular: {scale: 0.99, top: -15},  fullscreen: {scale: 1.34, top: 115},  chat: {scale: 0.56, top: 48} },
+            brown:   { regular: {scale: 0.94, top: 0},    fullscreen: {scale: 1.34, top: 115},  chat: {scale: 0.56, top: 48} },
             red:     { regular: {scale: 0.97, top: -20},  fullscreen: {scale: 1.31, top: -27},  chat: {scale: 0.55, top: -11} },
-            green:   { regular: {scale: 1.13, top: 10},   fullscreen: {scale: 1.53, top: 14},   chat: {scale: 0.64, top: 6} },
+            green:   { regular: {scale: 1.07, top: 15},   fullscreen: {scale: 1.53, top: 14},   chat: {scale: 0.64, top: 6} },
             default: { regular: {scale: 0.80, top: 0},    fullscreen: {scale: 1.08, top: 0},    chat: {scale: 0.45, top: 0} }
         };
 
@@ -1400,9 +1418,9 @@ export class RNGArena {
             barb:    { regular: {scale: 0.92, top: 0},    fullscreen: {scale: 1.24, top: 0},    chat: {scale: 0.52, top: 0} },
             blue:    { regular: {scale: 0.92, top: -15},  fullscreen: {scale: 1.24, top: -20},  chat: {scale: 0.52, top: -8} },
             black:   { regular: {scale: 0.95, top: 5},    fullscreen: {scale: 1.28, top: 7},    chat: {scale: 0.53, top: 3} },
-            brown:   { regular: {scale: 0.99, top: -15},  fullscreen: {scale: 1.34, top: 115},  chat: {scale: 0.56, top: 48} },
+            brown:   { regular: {scale: 0.94, top: 0},    fullscreen: {scale: 1.34, top: 115},  chat: {scale: 0.56, top: 48} },
             red:     { regular: {scale: 0.97, top: -20},  fullscreen: {scale: 1.31, top: -27},  chat: {scale: 0.55, top: -11} },
-            green:   { regular: {scale: 1.13, top: 10},   fullscreen: {scale: 1.53, top: 14},   chat: {scale: 0.64, top: 6} },
+            green:   { regular: {scale: 1.07, top: 15},   fullscreen: {scale: 1.53, top: 14},   chat: {scale: 0.64, top: 6} },
             default: { regular: {scale: 0.80, top: 0},    fullscreen: {scale: 1.08, top: 0},    chat: {scale: 0.45, top: 0} }
         };
 
@@ -2078,6 +2096,7 @@ export class RNGArena {
         const closeBracket = document.getElementById('close-bracket');
         const fullscreenBtn = document.getElementById('fullscreen-btn');
         const settingsBtn = document.getElementById('settings-btn');
+        const muteBtn = document.getElementById('mute-audio');
 
         if (bracketModeBtn && bracketOverlay) {
             bracketModeBtn.addEventListener('click', () => {
@@ -2089,7 +2108,8 @@ export class RNGArena {
         if (chatModeBtn) {
             const chatModeOverlay = document.getElementById('chat-mode-overlay');
             const closeChatModeBtn = document.getElementById('close-chat-mode-overlay');
-            const exitChatBtn = document.getElementById('chat-mode-exit-btn');
+            const chatModeSettingsBtn = document.getElementById('chat-mode-settings-btn');
+            const chatModeMuteBtn = document.getElementById('chat-mode-mute-btn');
             const devFrame = document.querySelector('.dev-frame');
 
             const openChatMode = () => {
@@ -2194,8 +2214,31 @@ export class RNGArena {
                 closeChatModeBtn.addEventListener('click', closeChatModeOverlay);
             }
 
-            if (exitChatBtn) {
-                exitChatBtn.addEventListener('click', closeChatModeOverlay);
+            // Top bar buttons in chat mode
+            if (chatModeSettingsBtn && settingsBtn) {
+                chatModeSettingsBtn.addEventListener('click', () => {
+                    settingsBtn.click();
+                });
+            }
+
+            if (chatModeMuteBtn && muteBtn) {
+                // Sync mute button appearance
+                const syncMuteButton = () => {
+                    const currentIcon = muteBtn.textContent;
+                    chatModeMuteBtn.textContent = currentIcon;
+                };
+
+                chatModeMuteBtn.addEventListener('click', () => {
+                    muteBtn.click();
+                    setTimeout(syncMuteButton, 50);
+                });
+
+                // Initial sync
+                syncMuteButton();
+
+                // Observe changes to main mute button
+                const muteObserver = new MutationObserver(syncMuteButton);
+                muteObserver.observe(muteBtn, { childList: true, characterData: true, subtree: true });
             }
         }
 
@@ -2792,4 +2835,4 @@ export class RNGArena {
         });
     }
 }
-console.log('CACHE BUST TEST - Version 2.0 - Changes loaded');
+console.log('🎮 RNGArena v3.0 - Audio & Loot Debug + CSS Fixes Loaded');

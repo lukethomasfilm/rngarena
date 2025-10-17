@@ -121,6 +121,9 @@ export class ChatSystem {
         this.chatMessages.appendChild(messageElement);
         this.scrollToBottom(this.chatMessages);
         this.limitMessages(this.chatMessages);
+
+        // Also add to chat mode view
+        this.addToChatMode(coloredMessage, null, 'combat');
     }
 
     /**
@@ -235,6 +238,9 @@ export class ChatSystem {
             messageElement.textContent = message;
         } else if (type === 'user') {
             messageElement.textContent = `${username}: ${message}`;
+        } else if (type === 'combat') {
+            // Combat messages contain HTML color coding
+            messageElement.innerHTML = message;
         } else {
             messageElement.textContent = message;
         }

@@ -27,6 +27,13 @@ export class LootSystem {
     updateLootBox(roundInfo) {
         if (!this.lootBox) return;
 
+        // Don't update if loot has already been claimed
+        const isLootClaimed = window.arena &&
+            (window.arena.heroLootOnlyMode ? window.arena.heroLootClaimed : window.arena.tournamentLootClaimed);
+        if (isLootClaimed) {
+            return; // Keep the helmet displayed
+        }
+
         // Loot tier progression - New system
         const lootTiers = [
             { name: 'grey', material: 'Wood', rarity: 'Common', chestNumber: 8 },       // Round 1
@@ -120,12 +127,7 @@ export class LootSystem {
     updateDevLoot(lootTier) {
         if (!this.devLootBox) return;
 
-        // Update dev loot header top - keep gold background
-        if (this.devLootHeaderTop) {
-            this.devLootHeaderTop.innerHTML = 'LOOT<br>CHEST';
-            this.devLootHeaderTop.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)';
-            this.devLootHeaderTop.style.color = '#1a1a1a';
-        }
+        // Dev loot header top - uses CSS stone texture (no text)
 
         // Update dev loot header bottom with tier info
         if (this.devLootHeaderBottom) {
@@ -167,12 +169,7 @@ export class LootSystem {
     updatePopupLoot(lootTier) {
         if (!this.popupLootBox) return;
 
-        // Update popup loot header top - keep gold background
-        if (this.popupLootHeaderTop) {
-            this.popupLootHeaderTop.innerHTML = 'LOOT<br>CHEST';
-            this.popupLootHeaderTop.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)';
-            this.popupLootHeaderTop.style.color = '#1a1a1a';
-        }
+        // Popup loot header top - uses CSS stone texture (no text)
 
         // Update popup loot header bottom with tier info
         if (this.popupLootHeaderBottom) {
@@ -261,12 +258,7 @@ export class LootSystem {
         this.currentChestNumber = 8;
         this.removeVictoryGlow();
 
-        // Top header stays gold always
-        if (this.lootHeaderTop) {
-            this.lootHeaderTop.innerHTML = 'LOOT<br>CHEST';
-            this.lootHeaderTop.style.background = 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)';
-            this.lootHeaderTop.style.color = '#000';
-        }
+        // Top header uses CSS stone texture (no text)
 
         // Bottom header resets to Wood/Common
         if (this.lootHeaderBottom) {

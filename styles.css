@@ -46,11 +46,49 @@ body {
 
 
 /* Hide tabs and dev frames when chat mode is active */
-.dev-frame.chat-mode-active ~ .dev-tabs-container,
-.dev-frame.chat-mode-active ~ .bracket-dev-frame,
-.dev-frame.chat-mode-active ~ .loot-claim-dev-frame,
-.dev-frame.chat-mode-active ~ .chat-mode-dev-frame {
+.dev-frame.chat-mode-active ~ .dev-toggle-container,
+.dev-frame.chat-mode-active ~ .dev-preview-wrapper {
     display: none !important;
+}
+
+/* Dev Preview Toggle Button */
+.dev-toggle-container {
+    max-width: 844px;
+    margin: 10px auto 0;
+    display: flex;
+    justify-content: center;
+    padding: 0 10px;
+}
+
+.dev-preview-toggle-btn {
+    padding: 8px 24px;
+    background: linear-gradient(135deg, #333, #222);
+    border: 1px solid #444;
+    border-radius: 6px;
+    color: #888;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dev-preview-toggle-btn:hover {
+    background: linear-gradient(135deg, #444, #333);
+    color: #aaa;
+    border-color: #555;
+}
+
+/* Dev Preview Wrapper */
+.dev-preview-wrapper {
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+    max-height: 2000px;
+    opacity: 1;
+    overflow: hidden;
+}
+
+.dev-preview-wrapper.hidden {
+    max-height: 0;
+    opacity: 0;
 }
 
 /* Dev Frame Tabs */
@@ -121,7 +159,7 @@ body {
 }
 
 .dev-frame::after {
-    content: "Safe Area";
+    content: "";
     position: absolute;
     top: 2px;
     left: 2px;
@@ -150,7 +188,7 @@ body {
 }
 
 .bracket-dev-frame::after {
-    content: "Bracket Safe Area";
+    content: "";
     position: absolute;
     top: 2px;
     left: 2px;
@@ -224,13 +262,20 @@ body {
 .popup-loot-header-top {
     font-size: 0.8rem;
     font-weight: 900;
-    color: #1a1a1a;
+    color: #fff;
     text-align: center;
     line-height: 1.2;
     padding: 6px 8px;
-    background: linear-gradient(135deg, #ffd700, #ffed4a, #daa520);
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-    border-bottom: 3px solid #daa520;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                      linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 10%),
+                      linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
+                      radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
+                      url('/images/UX%20Images/stone_texture_1.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    border-bottom: 3px solid rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
 }
 
@@ -310,7 +355,7 @@ body {
 }
 
 .loot-claim-dev-frame::after {
-    content: "Loot Safe Area";
+    content: "";
     position: absolute;
     top: 2px;
     left: 2px;
@@ -361,13 +406,20 @@ body {
 .dev-loot-header-top {
     font-size: 0.7rem;
     font-weight: 900;
-    color: #1a1a1a;
+    color: #fff;
     text-align: center;
     line-height: 1.2;
     padding: 8px;
-    background: linear-gradient(135deg, #ffd700, #ffed4a, #daa520);
-    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
-    border-bottom: 2px solid #daa520;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                      linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 10%),
+                      linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
+                      radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
+                      url('/images/UX%20Images/stone_texture_1.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    border-bottom: 2px solid rgba(0, 0, 0, 0.5);
     flex-shrink: 0;
 }
 
@@ -546,9 +598,9 @@ body {
 .chat-mode-battlefield-overlay .vs-display {
     position: absolute !important;
     bottom: -1px !important;
-    left: 50% !important;
+    left: calc(50% - 9px) !important;
     transform: translateX(-50%) !important;
-    z-index: 15 !important;
+    z-index: 100000 !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate {
@@ -562,14 +614,14 @@ body {
 }
 
 .chat-mode-battlefield-overlay .left-nameplate {
-    left: 38% !important;
-    z-index: 100000 !important;
+    left: 28% !important;
+    z-index: 10 !important;
 }
 
 .chat-mode-battlefield-overlay .right-nameplate {
-    left: 70% !important;
+    left: 71% !important;
     right: auto !important;
-    z-index: 100000 !important;
+    z-index: 10 !important;
 }
 
 .chat-mode-battlefield-overlay .nameplate-name {
@@ -588,22 +640,22 @@ body {
 
 .chat-mode-battlefield-overlay .fighter-left {
     left: 50% !important;
-    transform: translateX(-220px) !important;
-    /* Scale removed - now controlled by JavaScript per-character */
+    transform: translateX(-220px) scale(0.9) !important;
+    /* 10% smaller for chat mode */
 }
 
 .chat-mode-battlefield-overlay .fighter-right {
     right: auto !important;
     left: 50% !important;
-    transform: translateX(60px) !important;
-    /* Scale removed - now controlled by JavaScript per-character */
+    transform: translateX(60px) scale(0.9) !important;
+    /* 10% smaller for chat mode */
 }
 
 /* Override fighter positioning for victory animation in chat mode */
 .chat-mode-battlefield-overlay .victory-center {
     left: 50% !important;
-    transform: translateX(-50%) !important;
-    /* Scale removed - now controlled by JavaScript per-character */
+    transform: translateX(-50%) scale(0.9) !important;
+    /* 10% smaller for chat mode */
 }
 
 /* Ensure victory nameplate is centered and highest z-index in chat mode */
@@ -626,84 +678,103 @@ body {
 }
 
 
-.chat-mode-separator {
+/* Top Control Bar */
+.chat-mode-top-bar {
     width: 100%;
-    height: 50px;
+    height: 36px;
     flex-shrink: 0;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, #3a3a3a, #2a2a2a);
-    border-top: 2px solid rgba(255, 215, 0, 0.5);
-    border-bottom: 2px solid rgba(255, 215, 0, 0.5);
-    margin: 8px 0;
+    justify-content: flex-end;
+    gap: 8px;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+    padding: 0 10px 2px 10px;
+    border-radius: 18px 18px 0 0;
 }
 
-.chat-mode-exit-btn {
-    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ffa500);
-    background-size: 300% 100%;
-    color: #000;
-    border: 2px solid #ffa500;
-    border-radius: 8px;
-    padding: 8px 20px;
-    font-size: 0.75rem;
-    font-weight: bold;
+.chat-mode-control-btn {
+    background: rgba(50, 50, 50, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    font-size: 0.9rem;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.3s ease;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
-.chat-mode-exit-btn:hover {
-    background-position: 100% 0;
+.chat-mode-control-btn:hover {
+    background: rgba(70, 70, 70, 0.9);
+    border-color: rgba(255, 255, 255, 0.5);
     transform: scale(1.05);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4);
+}
+
+.chat-mode-control-btn.chat-mode-close-btn {
+    color: #999;
 }
 
 .chat-mode-messages-overlay {
     flex: 1;
     overflow-y: auto;
+    overflow-x: hidden;
     background: rgba(0, 0, 0, 0.3);
     border-radius: 8px;
     padding: 10px;
     margin-bottom: 10px;
+    position: relative;
+}
+
+/* Dark grey scrollbar styling */
+.chat-mode-messages-overlay::-webkit-scrollbar {
+    width: 8px;
+}
+
+.chat-mode-messages-overlay::-webkit-scrollbar-track {
+    background: rgba(40, 40, 40, 0.5);
+    border-radius: 4px;
+}
+
+.chat-mode-messages-overlay::-webkit-scrollbar-thumb {
+    background: rgba(80, 80, 80, 0.8);
+    border-radius: 4px;
+}
+
+.chat-mode-messages-overlay::-webkit-scrollbar-thumb:hover {
+    background: rgba(100, 100, 100, 0.9);
+}
+
+/* Remove scrollbar arrows */
+.chat-mode-messages-overlay::-webkit-scrollbar-button {
+    display: none;
+}
+
+/* Vignette at top of chat messages */
+.chat-mode-messages-overlay::before {
+    content: '';
+    position: sticky;
+    top: -15px;
+    left: -10px;
+    right: -10px;
+    width: calc(100% + 20px);
+    display: block;
+    height: 60px;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);
+    pointer-events: none;
+    z-index: 1;
+    border-radius: 8px 8px 0 0;
+    margin-bottom: -60px;
 }
 
 .chat-mode-input-container-overlay {
     display: flex;
     gap: 10px;
     flex-shrink: 0;
-}
-
-.chat-mode-close-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    z-index: 10000;
-    background: linear-gradient(135deg, #ffd700, #ffed4a, #daa520);
-    border: 2px solid #ffa500;
-    color: #1a1a1a;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-}
-
-.chat-mode-dev-frame.active .chat-mode-close-btn {
-    display: flex;
-}
-
-.chat-mode-close-btn:hover {
-    transform: scale(1.1) rotate(90deg);
-    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.6);
-    background: linear-gradient(135deg, #ffed4a, #ffd700, #ffed4a);
+    padding-bottom: 6px;
 }
 
 .chat-mode-dev-frame::before {
@@ -781,7 +852,7 @@ body {
 }
 
 .chat-mode-battlefield .vs-display {
-    transform: scale(0.7) !important;
+    transform: translateX(-50%) scale(0.7) !important;
     transform-origin: center !important;
 }
 
@@ -837,6 +908,13 @@ body {
     font-weight: bold;
 }
 
+.chat-mode-message.combat {
+    background: rgba(50, 50, 50, 0.3);
+    color: #fff;
+    text-align: right;
+    border-left: 3px solid rgba(255, 68, 68, 0.5);
+}
+
 .chat-mode-input-container {
     display: flex;
     gap: 8px;
@@ -864,8 +942,8 @@ body {
 
 .chat-mode-send-btn {
     padding: 10px 20px;
-    background: linear-gradient(135deg, #ffd700, #ffed4e);
-    color: #000;
+    background: linear-gradient(135deg, #4169e1, #1e90ff);
+    color: #fff;
     border: none;
     border-radius: 6px;
     font-weight: bold;
@@ -875,7 +953,7 @@ body {
 }
 
 .chat-mode-send-btn:hover {
-    background: linear-gradient(135deg, #ffed4e, #ffd700);
+    background: linear-gradient(135deg, #1e90ff, #4169e1);
     transform: scale(1.05);
 }
 
@@ -1071,7 +1149,8 @@ body {
     display: flex;
     justify-content: flex-start;
     align-items: flex-start;
-    background-image: linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 10%),
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                      linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 10%),
                       linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
                       radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
                       url('/images/UX%20Images/stone_texture_1.png');
@@ -1082,6 +1161,20 @@ body {
     padding: 6px;
     padding-left: 6px;
     padding-top: 8px;
+    position: relative;
+}
+
+/* Sheen gradient overlay on right side of bottom-left section */
+.bottom-left-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 10%;
+    height: 100%;
+    background: linear-gradient(to left, rgba(255,255,255,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .control-grid {
@@ -1098,7 +1191,7 @@ body {
     background: rgba(50, 50, 50, 0.8);
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: white;
-    font-size: 1rem;
+    font-size: 1.1rem;
     font-weight: 700;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1110,7 +1203,7 @@ body {
 }
 
 .control-btn.mute-btn {
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
 #settings-btn {
@@ -1124,12 +1217,16 @@ body {
 }
 
 .control-btn.exit-btn {
-    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ff8c00);
-    background-size: 400% 400%;
-    border: 1px solid #fff700;
-    color: #000;
-    font-size: 0.55rem;
-    animation: goldShimmer 3s ease-in-out infinite;
+    background: rgba(50, 50, 50, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #999;
+    font-size: 1.1rem;
+}
+
+.control-btn.exit-btn:hover {
+    background: rgba(70, 70, 70, 0.9);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
 }
 
 .control-btn.toggle-btn {
@@ -1209,7 +1306,8 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    background-image: linear-gradient(to left, rgba(255,255,255,0.3) 0%, transparent 10%),
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                      linear-gradient(to left, rgba(255,255,255,0.3) 0%, transparent 10%),
                       linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
                       radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
                       url('/images/UX%20Images/stone_texture_2.png');
@@ -1218,6 +1316,20 @@ body {
     background-repeat: no-repeat;
     border: none;
     padding: 4px;
+    position: relative;
+}
+
+/* Sheen gradient overlay on left side of bottom-right section */
+.bottom-right-section::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 10%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 100%);
+    pointer-events: none;
+    z-index: 1;
 }
 
 .view-grid {
@@ -1233,7 +1345,7 @@ body {
     background: linear-gradient(135deg, #ffd700, #ffed4a, #daa520);
     border: 1px solid #ffa500;
     color: #1a1a1a;
-    font-size: 0.55rem;
+    font-size: 0.48rem;
     font-weight: 900;
     cursor: pointer;
     transition: all 0.3s ease;
@@ -1241,7 +1353,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
+    padding: 3px;
     text-align: center;
     line-height: 1.1;
 }
@@ -1280,44 +1392,7 @@ body {
     border: none;
 }
 
-/* Exit Button Styling */
-.exit-container {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: transparent;
-}
-
-.exit-btn {
-    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ff8c00);
-    background-size: 400% 400%;
-    border: 2px solid #fff700;
-    color: #000;
-    font-size: 0.5rem;
-    font-weight: 900;
-    font-family: 'serif';
-    padding: 6px 12px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.5s ease;
-    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3), inset 0 0 10px rgba(255, 255, 255, 0.2);
-    animation: goldShimmer 3s ease-in-out infinite;
-    letter-spacing: 2px;
-}
-
-.exit-btn:hover {
-    background: linear-gradient(45deg, #ffed4e, #ffd700, #ffed4e, #ffa500);
-    transform: scale(1.1);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(255, 255, 255, 0.3);
-    animation: goldShimmer 1.5s ease-in-out infinite;
-}
-
-.exit-btn:active {
-    transform: scale(0.95);
-}
+/* Exit Button Styling - Removed duplicate, now using .control-btn.exit-btn */
 
 /* Test Mode Toggle */
 .test-mode-container {
@@ -1415,11 +1490,11 @@ body {
 
 .mute-btn {
     background: rgba(50, 50, 50, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     color: #fff;
     font-size: 1.5rem;
     padding: 8px 12px;
-    border-radius: 8px;
+    border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s ease;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
@@ -1461,13 +1536,20 @@ body {
 }
 
 .emoji-header {
-    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700);
-    color: #000;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                      linear-gradient(to left, rgba(255,255,255,0.3) 0%, transparent 10%),
+                      linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
+                      radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
+                      url('/images/UX%20Images/stone_texture_2.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    color: #fff;
     padding: 6px 8px;
     text-align: center;
     font-weight: bold;
     font-size: 0.8rem;
-    text-shadow: none;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     border-radius: 0;
     width: 100%;
     flex-shrink: 0;
@@ -2365,7 +2447,7 @@ body {
 
 .arena-viewport.mushrooms {
     background: url('/images/backgrounds/mushrooms_background.png') !important;
-    background-size: cover !important;
+    background-size: 110% !important;
     background-position: center bottom !important;
     background-repeat: no-repeat !important;
 }
@@ -2824,13 +2906,20 @@ body {
 }
 
 .loot-header-top {
-    background: linear-gradient(135deg, #ffd700, #ffed4a, #daa520);
-    color: #000;
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)),
+                      linear-gradient(to right, rgba(255,255,255,0.3) 0%, transparent 10%),
+                      linear-gradient(to bottom, rgba(0,0,0,0.7) 0%, transparent 20%),
+                      radial-gradient(ellipse at center, rgba(0,0,0,0) 0%, rgba(0,0,0,0.5) 100%),
+                      url('/images/UX%20Images/stone_texture_1.png');
+    background-position: center;
+    background-size: cover;
+    background-repeat: no-repeat;
+    color: #fff;
     padding: 6px 8px;
     text-align: center;
     font-weight: bold;
     font-size: 0.8rem;
-    text-shadow: none;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     border-radius: 0;
     width: 100%;
     flex-shrink: 0;

@@ -14,7 +14,7 @@ export class ChatSystem {
     /**
      * Add a regular chat message with username
      */
-    addChatMessage(message) {
+    addChatMessage(message, isUserMessage = false) {
         if (!message || !message.trim()) {
             return;
         }
@@ -28,16 +28,24 @@ export class ChatSystem {
         messageElement.className = 'chat-message';
 
         const username = this.generateRandomUsername();
-        messageElement.innerHTML = `
-            <span class="chat-username">${username}: ${message}</span>
-        `;
+
+        // Apply green color for user's own messages
+        if (isUserMessage) {
+            messageElement.innerHTML = `
+                <span class="chat-username" style="color: #00ff00; font-weight: bold;">${username}: ${message}</span>
+            `;
+        } else {
+            messageElement.innerHTML = `
+                <span class="chat-username">${username}: ${message}</span>
+            `;
+        }
 
         chatEl.appendChild(messageElement);
         this.scrollToBottom(chatEl);
         this.limitMessages(chatEl);
 
         // Also add to chat mode view
-        this.addToChatMode(message, username, 'user');
+        this.addToChatMode(message, username, isUserMessage ? 'user-typed' : 'user');
     }
 
     /**
@@ -236,6 +244,9 @@ export class ChatSystem {
 
         if (type === 'announcer') {
             messageElement.textContent = message;
+        } else if (type === 'user-typed') {
+            // User's own typed messages in green
+            messageElement.innerHTML = `<span style="color: #00ff00; font-weight: bold;">${username}: ${message}</span>`;
         } else if (type === 'user') {
             messageElement.textContent = `${username}: ${message}`;
         } else if (type === 'combat') {

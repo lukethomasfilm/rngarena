@@ -164,81 +164,71 @@ export const CHARACTER_CONFIG = {
 
     // Female names using Athena skin (half of female fighters)
     ATHENA_NAMES: [
-        'Lady Gigglebottom', 'Dame Wobbleworth', 'Duchess Tickletoes', 'Lady Snickerdoodle',
-        'Baroness Cupcake', 'Dame Butterfingers', 'Lady Dimplesworth', 'Duchess Wigglebum',
-        'Lady Pancakeface', 'Baroness Sparkles', 'Dame Muffinhead', 'Lady Wobbleshire',
-        'Duchess Giggleface'
+        'Lady Lagspike', 'Dame Critfail', 'Duchess Respawn', 'Lady Questgiver',
+        'Dame Loothoarder', 'Lady Ragequit', 'Duchess Oneshot', 'Lady Minmaxer',
+        'Dame Speedrun', 'Lady Checkpoint', 'Duchess Autoaim', 'Dame Buttonmash',
+        'Lady Quicksave'
     ],
 
     // Female names using Nesta skin (half of female fighters)
     NESTA_NAMES: [
-        'Lady Bumblesnort', 'Dame Snuggleston', 'Baroness Waffles',
-        'Lady Chuckleberry', 'Duchess Picklebottom', 'Lady Jigglesnort', 'Dame Sillywhiskers',
-        'Baroness Tickleface', 'Lady Noodlebottom', 'Duchess Dimplesnort', 'Lady Gigglesworth',
-        'Dame Snickerbottom', 'Baroness Wobbleface'
+        'Duchess Tiltlord', 'Lady Wallhack', 'Dame Noscope', 'Lady Spawncamp',
+        'Duchess Griefborn', 'Dame Glitchlord', 'Lady Permadeath', 'Duchess Farmbot',
+        'Dame Multibox', 'Lady Tryhard', 'Duchess Clutch', 'Dame Sweatlord'
     ],
 
     // All female names combined (for 25% of fighters)
     FEMALE_NAMES: [
-        'Lady Gigglebottom', 'Dame Wobbleworth', 'Duchess Tickletoes', 'Lady Snickerdoodle',
-        'Baroness Cupcake', 'Dame Butterfingers', 'Lady Dimplesworth', 'Duchess Wigglebum',
-        'Lady Pancakeface', 'Baroness Sparkles', 'Dame Muffinhead', 'Lady Wobbleshire',
-        'Duchess Giggleface', 'Lady Bumblesnort', 'Dame Snuggleston', 'Baroness Waffles',
-        'Lady Chuckleberry', 'Duchess Picklebottom', 'Lady Jigglesnort', 'Dame Sillywhiskers',
-        'Baroness Tickleface', 'Lady Noodlebottom', 'Duchess Dimplesnort', 'Lady Gigglesworth',
-        'Dame Snickerbottom', 'Baroness Wobbleface'
+        'Lady Lagspike', 'Dame Critfail', 'Duchess Respawn', 'Lady Questgiver',
+        'Dame Loothoarder', 'Lady Ragequit', 'Duchess Oneshot', 'Lady Minmaxer',
+        'Dame Speedrun', 'Lady Checkpoint', 'Duchess Autoaim', 'Dame Buttonmash',
+        'Lady Quicksave', 'Duchess Tiltlord', 'Lady Wallhack', 'Dame Noscope',
+        'Lady Spawncamp', 'Duchess Griefborn', 'Dame Glitchlord', 'Lady Permadeath',
+        'Duchess Farmbot', 'Dame Multibox', 'Lady Tryhard', 'Duchess Clutch',
+        'Dame Sweatlord'
     ],
 
     // Male fighters using Green Knight skin (3-pose system)
     GREEN_KNIGHT_NAMES: [
-        'Sir Clumsy', 'Lord Butterfinger', 'Baron Whoopsie', 'Count Mishap',
-        'Sir Fumbles', 'Lord Oopsington', 'Duke Derp', 'Sir Noodles',
-        'Baron Giggles', 'Count Wiggles', 'Lord Snuggles', 'Sir Pickles',
-        'Duke Waffles', 'Baron Pancakes', 'Count Muffins', 'Sir Tickles',
-        'Lord Chuckles', 'Duke Sparkles', 'Baron Dimples', 'Count Silly'
+        'Sir Lagalot', 'Lord Derpsalot', 'Baron AFK-King', 'Duke Noobstick',
+        'Sir Ragequit', 'Count Feedlord', 'Baron Scrublord', 'Lord Disconnect',
+        'Sir Respawn', 'Duke Potato', 'Baron Campfire', 'Count Keyboard',
+        'Sir Failstack', 'Lord Flatline', 'Duke Onetrick'
     ],
 
     // Male fighters using Barb skin (3-pose system - left-oriented like Athena)
     BARB_NAMES: [
-        'Sir Wobbly', 'Lord Jiggly', 'Duke Squiggly', 'Captain Chaos',
-        'Sir Stumbles', 'Lord Blunders', 'Duke Mishief', 'Baron Bumbles',
-        'Count Giggleton', 'Sir Wigglebum', 'Lord Snickerdood', 'Duke Ticklebottom',
-        'Baron Chucklehead', 'Count Dingleberg', 'Sir Noodlewhite', 'Lord Bumblestorm',
-        'Duke Gigglesnort', 'Baron Wobbleshire', 'Count Ticklebeard', 'Sir Snugglesworth',
-        'Lord Jigglesnort'
+        'Sir Bonkmaster', 'Lord Smashface', 'Duke Unga-Bunga', 'Baron Headbutt',
+        'Sir Meatshield', 'Count Bigaxe', 'Lord Chunkyboi', 'Duke Groundpound',
+        'Baron Necksnap', 'Sir Facetank', 'Count Skullcrush', 'Lord Spinebreak',
+        'Duke Ribcracker', 'Baron Hammertime', 'Sir Cleave'
     ],
 
     // Male fighters using Black Knight skin (3-pose system - left-oriented)
     BLACK_NAMES: [
-        'Lord Pickleface', 'Duke Wafflebottom', 'Baron Pancakehead', 'Count Muffinshire',
-        'Sir Tickletoes', 'Lord Chuckleberry', 'Duke Sparklebum', 'Baron Dimpleshire',
-        'Count Sillyhat', 'Sir Wobblesnort', 'Lord Jigglybottom', 'Duke Squigglebeard',
-        'Captain Clumsy', 'Sir Stumblebum', 'Lord Blunderworth', 'Duke Mischief'
+        'Lord Edgelord', 'Duke Backstab', 'Baron Shadowblade', 'Sir Darksoul',
+        'Count Nightfall', 'Lord Voidborn', 'Duke Grimdark', 'Baron Bloodmoon',
+        'Sir Obsidian', 'Count Doomstrike', 'Lord Ravensbane', 'Duke Netherblade'
     ],
 
     // Male fighters using Red Knight skin (3-pose system - right-oriented)
     RED_NAMES: [
-        'Baron Bumblebee', 'Count Giggles', 'Sir Wiggletail', 'Lord Snickerdorf',
-        'Duke Ticklebeast', 'Baron Chucklenuts', 'Count Dingleworth', 'Sir Noodleface',
-        'Lord Bumblesnort', 'Duke Gigglebeard', 'Baron Wobblehead', 'Count Tickleshire',
-        'Sir Snugglesnort', 'Lord Picklebottom', 'Duke Waffleface', 'Baron Pancake',
-        'Count Muffinhead'
+        'Baron Fireborn', 'Count Blazewing', 'Sir Pyromancer', 'Lord Emberstorm',
+        'Duke Scorchblade', 'Baron Ashmaker', 'Sir Flameheart', 'Count Infernox',
+        'Lord Burnstrike', 'Duke Moltencore', 'Baron Cinderfist', 'Sir Wildfire'
     ],
 
     // Male fighters using Brown Knight skin (3-pose system - right-oriented)
     BROWN_NAMES: [
-        'Baron Muddlesworth', 'Count Clunkington', 'Sir Bumbleton', 'Lord Doodlesnort',
-        'Duke Fuzzlebottom', 'Baron Waddleface', 'Count Snortleworth', 'Sir Puddinghead',
-        'Lord Wobbleton', 'Duke Snicklefritz', 'Baron Gigglesniff', 'Count Bumblebeard',
-        'Sir Wigglewhisk', 'Lord Chucklethorn', 'Duke Dimpleton', 'Baron Snugglesworth'
+        'Baron Mudslide', 'Count Rockfall', 'Sir Earthshaker', 'Lord Boulder',
+        'Duke Stonefist', 'Baron Ironore', 'Sir Gravelord', 'Count Dustborn'
     ],
 
     // Male fighters using Blue Knight skin (3-pose system - left-oriented)
     BLUE_NAMES: [
-        'Baron Blueberry', 'Count Sapphire', 'Sir Cobaltson', 'Lord Azurewing',
-        'Duke Cerulean', 'Baron Indigobottom', 'Count Skyworth', 'Sir Periwinkle',
-        'Lord Navybeard', 'Duke Tealface', 'Baron Turquoise', 'Count Aquamarine',
-        'Sir Lapis', 'Lord Bluebell', 'Duke Duskblue', 'Baron Steelworth'
+        'Baron Frostbite', 'Count Iceshard', 'Sir Snowdrift', 'Lord Winterborn',
+        'Duke Glacius', 'Baron Coldsnap', 'Sir Permafrost', 'Count Blizzard',
+        'Lord Chillfang', 'Duke Frostpeak', 'Baron Hailstorm', 'Sir Icebreaker'
     ],
 
     // Female attack sound paths

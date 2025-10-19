@@ -36,7 +36,13 @@
       "Bash(start http://localhost:8081)",
       "Bash(cmd /c:*)",
       "Bash(npx kill-port:*)",
-      "Bash(npm start)"
+      "Bash(npm start)",
+      "Bash(powershell:*)",
+      "Bash(del \"C:\\Users\\Luke\\rngarena\\rename_audio.ps1\")",
+      "Read(//c/Users/Luke/**)",
+      "Bash(copy \"C:\\Users\\Luke\\rngarena\\sfx\\slide.mp3\" \"C:\\Users\\Luke\\rngarena\\public\\sfx\\slide.mp3\")",
+      "SlashCommand(/start)",
+      "Bash(del nul)"
     ],
     "deny": [],
     "ask": []

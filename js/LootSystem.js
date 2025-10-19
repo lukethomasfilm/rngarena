@@ -86,7 +86,13 @@ export class LootSystem {
         }
 
         // Check if button should be visible based on game state (not just previous state)
-        const shouldShowButton = window.arena && window.arena.heroEliminated && window.arena.heroLootOnlyMode;
+        // Show button if:
+        // 1. Hero-only mode AND hero eliminated, OR
+        // 2. Track all mode AND tournament complete
+        const shouldShowButton = window.arena && (
+            (window.arena.heroLootOnlyMode && window.arena.heroEliminated) ||
+            (!window.arena.heroLootOnlyMode && window.arena.tournament?.isComplete())
+        );
 
         // Add fade transition
         this.lootBox.style.opacity = '0';

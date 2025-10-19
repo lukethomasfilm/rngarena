@@ -2,13 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, orientation=landscape">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>RNG Arena</title>
     <meta name="description" content="Epic medieval tournament battles with turn-based combat and RNG mechanics">
     <meta name="theme-color" content="#1a1a2e">
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
-  <script type="module" crossorigin src="/assets/index-rHpL94ms.js"></script>
-  <link rel="stylesheet" crossorigin href="/assets/index-CZh372E6.css">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+  <script type="module" crossorigin src="/assets/index-xR5oHf6b.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-BiAZYKkg.css">
   <script type="module">import.meta.url;import("_").catch(()=>1);(async function*(){})().next();if(location.protocol!="file:"){window.__vite_is_modern_browser=true}</script>
   <script type="module">!function(){if(window.__vite_is_modern_browser)return;console.warn("vite: loading legacy chunks, syntax error above and the same error below should be ignored");var e=document.getElementById("vite-legacy-polyfill"),n=document.createElement("script");n.src=e.src,n.onload=function(){System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))},document.body.appendChild(n)}();</script>
 </head>
@@ -18,38 +18,62 @@
             <!-- Left Side: Loot Container -->
             <div class="left-section">
                 <div class="loot-container">
-                    <div class="loot-header">LOOT TIER</div>
-                    <div class="loot-description">Gray → White → Green → Blue → Purple → Orange → Gold</div>
+                    <div class="loot-header-top"></div>
                     <div class="loot-content">
                         <div id="loot-box" class="treasure-chest">
-                            <img src="/images/Loot/chest_01.png" alt="Treasure Chest" class="chest-image">
+                            <img src="/assets/chest_shadow-D0y0pHs_.png" alt="Chest Shadow" class="loot-chest-shadow">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image">
+                            <button id="claim-loot-btn" class="claim-loot-btn hidden">CLAIM LOOT</button>
                         </div>
                     </div>
+                    <div class="loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
                 </div>
             </div>
 
             <!-- Center: Battlefield Section -->
             <div class="battlefield-section">
+                <button class="battlefield-fullscreen-close">✕</button>
                 <div class="arena-viewport castle">
+                    <!-- Countdown Overlay -->
+                    <div class="countdown-overlay" id="countdown-overlay">
+                        <div class="countdown-timer" id="countdown-timer">00:00:10</div>
+                    </div>
+
                     <!-- Top Tournament Progress -->
                     <div class="top-progress">
+                        <!-- Left Fighter HP Bar -->
+                        <div class="hp-bar left-hp">
+                            <div class="hp-bar-background"></div>
+                            <div class="hp-bar-fill" id="left-hp-fill"></div>
+                            <div class="hp-text" id="left-hp-text">10/10</div>
+                        </div>
+
                         <div class="progress-container">
                             <div class="progress-label">Tournament Progress</div>
                             <div class="progress-bar">
                                 <div class="progress-segments" id="progress-segments"></div>
+                                <div class="hero-progress-indicator" id="hero-progress-indicator">▲</div>
                             </div>
+                        </div>
+
+                        <!-- Right Fighter HP Bar -->
+                        <div class="hp-bar right-hp">
+                            <div class="hp-bar-background"></div>
+                            <div class="hp-bar-fill" id="right-hp-fill"></div>
+                            <div class="hp-text" id="right-hp-text">10/10</div>
                         </div>
                     </div>
 
                     <!-- Top Odds Display -->
                     <div class="top-odds">
                         <div class="odds-display">
-                            <span class="odds-label">Odds:</span>
+                            <span class="odds-label">odds:</span>
                             <span class="crown-odds">1 in 16,384</span>
                         </div>
                     </div>
                     <button id="start-battle" class="battle-btn">START TOURNAMENT</button>
                     <div class="battle-status"></div>
+                    <div class="round-announcement"></div>
                     <div class="fighter-left">
                         <div class="fighter-sprite left-sprite">
                         </div>
@@ -63,15 +87,15 @@
                     <!-- Corner to Center Nameplates with VS -->
                     <div class="nameplate-vs-container">
                         <div class="nameplate left-nameplate">
-                            <div class="nameplate-name" id="left-nameplate-name">Daring Hero</div>
-                            <div class="nameplate-titles" id="left-nameplate-titles">The Brave • Destined for Glory</div>
+                            <div class="nameplate-name" id="left-nameplate-name"></div>
+                            <div class="nameplate-titles" id="left-nameplate-titles"></div>
                         </div>
 
                         <div class="vs-display">VS</div>
 
                         <div class="nameplate right-nameplate">
-                            <div class="nameplate-name" id="right-nameplate-name">Opponent</div>
-                            <div class="nameplate-titles" id="right-nameplate-titles">The Unknown • Mystery Fighter</div>
+                            <div class="nameplate-name" id="right-nameplate-name"></div>
+                            <div class="nameplate-titles" id="right-nameplate-titles"></div>
                         </div>
                     </div>
                 </div>
@@ -80,7 +104,7 @@
             <!-- Right Side: Battle Emojis -->
             <div class="right-section">
                 <div class="emoji-panel">
-                    <div class="emoji-header">BATTLE EMOJIS</div>
+                    <div class="emoji-header"></div>
                     <div class="emoji-grid">
                         <button class="emoji-btn" data-emoji="⚔️">⚔️</button>
                         <button class="emoji-btn" data-emoji="🛡️">🛡️</button>
@@ -96,10 +120,16 @@
                 </div>
             </div>
 
-            <!-- Bottom Left: Exit Button -->
+            <!-- Bottom Left: 4-Button Control Grid -->
             <div class="bottom-left-section">
-                <div class="exit-container">
-                    <button id="exit-game" class="exit-btn">EXIT</button>
+                <div class="control-grid">
+                    <button id="settings-btn" class="control-btn">⚙️</button>
+                    <button id="mute-audio" class="control-btn mute-btn">🔊</button>
+                    <button id="exit-game" class="control-btn exit-btn">❌</button>
+                    <label class="control-btn toggle-btn">
+                        <input type="checkbox" id="daring-hero-checkbox">
+                        <span class="toggle-slider"></span>
+                    </label>
                 </div>
             </div>
 
@@ -115,14 +145,31 @@
                 </div>
             </div>
 
-            <!-- Bottom Right: Chat Mode Button -->
+            <!-- Bottom Right: 4-Button View Grid -->
             <div class="bottom-right-section">
-                <div class="chat-mode-container">
-                    <button id="chat-mode" class="chat-mode-btn">VIEW<br>LIVE CHAT<br>MODE</button>
-                    <button id="bracket-mode" class="chat-mode-btn">VIEW<br>TOURNAMENT<br>BRACKET</button>
+                <div class="view-grid">
+                    <button id="chat-mode" class="view-btn">LIVE<br>CHAT</button>
+                    <button id="bracket-mode" class="view-btn">BRACKET</button>
+                    <button id="fullscreen-btn" class="view-btn">⛶</button>
+                    <button class="view-btn shield-btn">🛡️</button>
                 </div>
             </div>
-    </div>
+
+        <!-- Loot Claim Popup Overlay -->
+        <div class="loot-claim-overlay hidden" id="loot-claim-overlay">
+            <div class="loot-claim-viewport">
+                <div class="popup-loot-container">
+                    <div class="popup-loot-header-top"></div>
+                    <div class="popup-loot-display">
+                        <div id="popup-loot-box" class="popup-treasure-chest">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="popup-loot-chest-image">
+                        </div>
+                    </div>
+                    <div class="popup-loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
+                </div>
+            </div>
+        </div>
+
         <!-- Tournament Bracket Overlay -->
         <div id="bracket-overlay" class="bracket-overlay hidden">
             <div class="bracket-overlay-background"></div>
@@ -150,10 +197,47 @@
                 </div>
             </div>
         </div>
+
+        <!-- Live Chat Overlay -->
+        <div id="chat-mode-overlay" class="chat-mode-overlay hidden">
+            <div class="chat-mode-overlay-content">
+                <!-- Top Control Bar -->
+                <div class="chat-mode-top-bar">
+                    <button id="chat-mode-settings-btn" class="chat-mode-control-btn">⚙️</button>
+                    <button id="chat-mode-mute-btn" class="chat-mode-control-btn">🔊</button>
+                    <button class="chat-mode-control-btn chat-mode-close-btn" id="close-chat-mode-overlay">✕</button>
+                </div>
+                <div class="chat-mode-battlefield-overlay" id="chat-mode-battlefield-overlay">
+                    <!-- Battlefield will be cloned here -->
+                </div>
+                <div class="chat-mode-messages-overlay" id="chat-mode-messages-overlay">
+                    <div class="chat-mode-message system">Welcome to Live Chat!</div>
+                    <div class="chat-mode-message system">Messages will appear here during battles...</div>
+                </div>
+                <div class="chat-mode-input-container-overlay">
+                    <input type="text" class="chat-mode-input" id="chat-mode-input-overlay" placeholder="Type a message...">
+                    <button class="chat-mode-send-btn" id="chat-mode-send-btn-overlay">SEND</button>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <!-- Bracket Development Frame -->
-    <div class="bracket-dev-frame">
+    <!-- Dev Preview Toggle Button -->
+    <div class="dev-toggle-container">
+        <button id="dev-preview-toggle" class="dev-preview-toggle-btn">▼ Show Dev Previews</button>
+    </div>
+
+    <!-- Dev Preview Wrapper -->
+    <div id="dev-preview-wrapper" class="dev-preview-wrapper hidden">
+        <!-- Dev Frame Tabs -->
+        <div class="dev-tabs-container">
+            <button class="dev-tab active" data-tab="bracket">📊 Bracket</button>
+            <button class="dev-tab" data-tab="loot">🎁 Loot</button>
+            <button class="dev-tab" data-tab="chat">💬 Live Chat</button>
+        </div>
+
+        <!-- Bracket Development Frame -->
+        <div class="bracket-dev-frame dev-frame-tab" data-frame="bracket">
         <div class="bracket-container-dev">
             <div class="bracket-container">
                 <div class="bracket-header" id="bracket-toggle">
@@ -178,10 +262,55 @@
             </div>
         </div>
     </div>
-
+
+    <!-- Loot Claim Preview Frame -->
+    <div class="loot-claim-dev-frame dev-frame-tab hidden" data-frame="loot">
+        <div class="loot-claim-container-dev">
+            <div class="loot-claim-viewport-dev">
+                <div class="dev-loot-container">
+                    <div class="dev-loot-header-top"></div>
+                    <div class="dev-loot-display">
+                        <div id="dev-loot-box" class="dev-treasure-chest">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="dev-loot-chest-image">
+                        </div>
+                    </div>
+                    <div class="dev-loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Live Chat Preview Frame -->
+    <div class="chat-mode-dev-frame dev-frame-tab hidden" id="chat-mode-frame" data-frame="chat">
+        <button class="chat-mode-close-btn" id="close-chat-mode">✕</button>
+        <div class="chat-mode-container-dev">
+            <div class="chat-mode-viewport-dev">
+                <!-- Top: Battlefield Clone -->
+                <div class="chat-mode-battlefield" id="chat-mode-battlefield">
+                    <!-- Battlefield will be cloned here -->
+                </div>
+
+                <!-- Middle: Chat Messages -->
+                <div class="chat-mode-messages" id="chat-mode-messages">
+                    <div class="chat-mode-message system">Welcome to Live Chat!</div>
+                    <div class="chat-mode-message system">Messages will appear here during battles...</div>
+                </div>
+
+                <!-- Bottom: Chat Input -->
+                <div class="chat-mode-input-container">
+                    <input type="text" class="chat-mode-input" id="chat-mode-input" placeholder="Type a message...">
+                    <button class="chat-mode-send-btn" id="chat-mode-send-btn">SEND</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div><!-- End dev-preview-wrapper -->
+
+    <!-- Game Scripts - ES6 Modules -->
+    <script src="./tournament.js"></script>
 
   <script nomodule>!function(){var e=document,t=e.createElement("script");if(!("noModule"in t)&&"onbeforeload"in t){var n=!1;e.addEventListener("beforeload",(function(e){if(e.target===t)n=!0;else if(!e.target.hasAttribute("nomodule")||!n)return;e.preventDefault()}),!0),t.type="module",t.src=".",e.head.appendChild(t),t.remove()}}();</script>
-  <script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/polyfills-legacy-l5Wayqe5.js"></script>
-  <script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/index-legacy-Bf6qj7OC.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
+  <script nomodule crossorigin id="vite-legacy-polyfill" src="/assets/polyfills-legacy-DW5P6aIe.js"></script>
+  <script nomodule crossorigin id="vite-legacy-entry" data-src="/assets/index-legacy-Bp0VLUV9.js">System.import(document.getElementById('vite-legacy-entry').getAttribute('data-src'))</script>
 </body>
 </html>

@@ -208,39 +208,96 @@ export class RNGArena {
 
                 if (e.target.checked) {
                     this.chatSystem.addChatMessage('🌐 TRACKING ALL BATTLE LOOT');
-                    // Update loot to current tournament round
-                    const roundInfo = this.tournament.getRoundInfo();
-                    this.lootSystem.updateLootBox(roundInfo);
 
                     // Hide/show elements based on tournament loot claim state
                     if (this.tournamentLootClaimed) {
-                        // Hide chest if already claimed in this mode
+                        // Don't call updateLootBox - just show helmet directly (already claimed)
+                        const roundInfo = this.tournament.getRoundInfo();
+                        // Update banner to current tournament tier even though loot is claimed
+                        this.updateLootBanner(roundInfo);
+
+                        // Show helmet if already claimed in this mode
                         if (claimBtn) claimBtn.style.display = 'none';
-                        if (lootBox) lootBox.style.display = 'none';
-                    } else {
-                        // Show chest but hide claim button (not in hero mode)
-                        if (claimBtn) {
-                            claimBtn.classList.add('hidden');
-                            claimBtn.style.display = '';
+                        if (lootBox) {
+                            lootBox.style.display = '';
+                            lootBox.innerHTML = `
+                                <img src="/images/Loot Items/Loot_helmet_test.png"
+                                     alt="Legendary Helmet"
+                                     class="loot-helmet-claimed"
+                                     style="
+                                         position: absolute;
+                                         top: calc(48% - 260px);
+                                         left: 50%;
+                                         transform: translate(-50%, -50%);
+                                         width: 333px;
+                                         height: auto;
+                                         object-fit: contain;
+                                         filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
+                                         animation: helmetWiggle 1s ease-in-out infinite, helmetGlow 2s ease-in-out infinite;
+                                         z-index: 10;
+                                     ">
+                            `;
                         }
+                    } else {
+                        // Update loot to current tournament round (chest not yet claimed)
+                        const roundInfo = this.tournament.getRoundInfo();
+                        this.lootSystem.updateLootBox(roundInfo);
+
+                        // Show chest and possibly claim button if tournament is complete
                         if (lootBox) {
                             lootBox.classList.remove('claimable');
                             lootBox.style.display = '';
                         }
+                        // Show button if tournament is complete
+                        if (this.tournament?.isComplete()) {
+                            this.showClaimLootButton();
+                        } else {
+                            // Hide claim button during tournament
+                            if (claimBtn) {
+                                claimBtn.classList.add('hidden');
+                                claimBtn.style.display = '';
+                            }
+                        }
                     }
                 } else {
                     this.chatSystem.addChatMessage('🎯 TRACKING HERO WINS ONLY');
-                    // Update loot back to hero's max round
-                    if (this.heroMaxRound > 0) {
-                        this.lootSystem.updateLootBox({ current: this.heroMaxRound });
-                    }
 
                     // Hide/show elements based on hero loot claim state
                     if (this.heroLootClaimed) {
-                        // Hide chest if already claimed in this mode
+                        // Don't call updateLootBox - just show helmet directly (already claimed)
+                        // Update banner to hero's tier even though loot is claimed
+                        if (this.heroMaxRound > 0) {
+                            this.updateLootBanner({ current: this.heroMaxRound });
+                        }
+
+                        // Show helmet if already claimed in this mode
                         if (claimBtn) claimBtn.style.display = 'none';
-                        if (lootBox) lootBox.style.display = 'none';
+                        if (lootBox) {
+                            lootBox.style.display = '';
+                            lootBox.innerHTML = `
+                                <img src="/images/Loot Items/Loot_helmet_test.png"
+                                     alt="Legendary Helmet"
+                                     class="loot-helmet-claimed"
+                                     style="
+                                         position: absolute;
+                                         top: calc(48% - 260px);
+                                         left: 50%;
+                                         transform: translate(-50%, -50%);
+                                         width: 333px;
+                                         height: auto;
+                                         object-fit: contain;
+                                         filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 40px rgba(255, 255, 255, 0.8));
+                                         animation: helmetWiggle 1s ease-in-out infinite, helmetGlow 2s ease-in-out infinite;
+                                         z-index: 10;
+                                     ">
+                            `;
+                        }
                     } else {
+                        // Update loot back to hero's max round (chest not yet claimed)
+                        if (this.heroMaxRound > 0) {
+                            this.lootSystem.updateLootBox({ current: this.heroMaxRound });
+                        }
+
                         // Show button only if hero has been eliminated
                         if (claimBtn) claimBtn.style.display = '';
                         if (lootBox) lootBox.style.display = '';
@@ -251,6 +308,49 @@ export class RNGArena {
                 // Update chevron position and color based on toggle state
                 this.updateHeroProgressIndicator();
             });
+        }
+    }
+
+    /**
+     * Update just the loot banner/header (for when loot is already claimed)
+     */
+    updateLootBanner(roundInfo) {
+        const lootHeaderBottom = document.querySelector('.loot-header-bottom');
+        if (!lootHeaderBottom) return;
+
+        const lootTiers = [
+            { name: 'grey', material: 'Wood', rarity: 'Common' },
+            { name: 'green', material: 'Stone', rarity: 'Uncommon' },
+            { name: 'blue', material: 'Copper', rarity: 'Rare' },
+            { name: 'teal', material: 'Bronze', rarity: 'Superior' },
+            { name: 'purple', material: 'Silver', rarity: 'Epic' },
+            { name: 'orange', material: 'Gold', rarity: 'Legendary' },
+            { name: 'crimson', material: 'Diamond', rarity: 'Mythic' },
+            { name: 'gold', material: 'Platinum', rarity: 'Exalted' }
+        ];
+
+        const currentRound = Math.max(0, roundInfo.current - 1);
+        const lootTier = lootTiers[Math.min(currentRound, lootTiers.length - 1)];
+
+        const material = lootTier.material.toUpperCase();
+        const rarity = lootTier.rarity.toUpperCase();
+        lootHeaderBottom.innerHTML = `${material} CHEST<br>${rarity} LOOT`;
+
+        const tierColors = {
+            'grey': 'linear-gradient(135deg, #808080, #a0a0a0, #606060)',
+            'green': 'linear-gradient(135deg, #00ff7f, #32cd32, #228b22)',
+            'blue': 'linear-gradient(135deg, #4169e1, #1e90ff, #0066cc)',
+            'teal': 'linear-gradient(135deg, #00CED1, #20B2AA, #008B8B)',
+            'purple': 'linear-gradient(135deg, #8a2be2, #9370db, #6a0dad)',
+            'orange': 'linear-gradient(135deg, #ff8c00, #ffa500, #ff6347)',
+            'crimson': 'linear-gradient(135deg, #DC143C, #B22222, #8B0000)',
+            'gold': 'linear-gradient(135deg, #ffd700, #ffed4a, #daa520)'
+        };
+
+        const tierName = lootTier.name.toLowerCase();
+        if (tierColors[tierName]) {
+            lootHeaderBottom.style.background = tierColors[tierName];
+            lootHeaderBottom.style.color = '#fff';
         }
     }
 
@@ -332,24 +432,37 @@ export class RNGArena {
     showClaimLootButton() {
         console.log('showClaimLootButton called', {
             heroLootOnlyMode: this.heroLootOnlyMode,
-            heroEliminated: this.heroEliminated
+            heroEliminated: this.heroEliminated,
+            tournamentComplete: this.tournament?.isComplete()
         });
-
-        // Only show button if BOTH:
-        // 1. We're in hero-only mode (toggle OFF)
-        // 2. Hero has been eliminated
-        if (!this.heroLootOnlyMode || !this.heroEliminated) {
-            console.log('Button not shown - conditions not met');
-            return;
-        }
 
         const claimBtn = document.getElementById('claim-loot-btn');
         const lootBox = document.getElementById('loot-box');
+
+        // Check if loot has already been claimed in current mode
+        const isAlreadyClaimed = this.heroLootOnlyMode ? this.heroLootClaimed : this.tournamentLootClaimed;
+
+        if (isAlreadyClaimed) {
+            console.log('Loot already claimed in current mode');
+            if (claimBtn) claimBtn.style.display = 'none';
+            return;
+        }
+
+        // Show button if:
+        // 1. Tournament is complete (any mode), OR
+        // 2. Hero-only mode AND hero has been eliminated
+        const shouldShow = this.tournament?.isComplete() || (this.heroLootOnlyMode && this.heroEliminated);
+
+        if (!shouldShow) {
+            console.log('Button not shown - conditions not met');
+            return;
+        }
 
         console.log('Elements found:', { claimBtn, lootBox });
 
         if (claimBtn) {
             claimBtn.classList.remove('hidden');
+            claimBtn.style.display = '';
             console.log('Button shown!');
         }
 
@@ -360,7 +473,39 @@ export class RNGArena {
     }
 
     claimLoot() {
+        // Check if loot already claimed in current mode
+        const isAlreadyClaimed = this.heroLootOnlyMode ? this.heroLootClaimed : this.tournamentLootClaimed;
+        if (isAlreadyClaimed) {
+            console.log('⚠️ Loot already claimed in current mode');
+            this.chatSystem.addAnnouncerMessage('⚠️ LOOT ALREADY CLAIMED IN THIS MODE!');
+            return;
+        }
+
         const lootClaimOverlay = document.getElementById('loot-claim-overlay');
+        const popupLootBox = document.getElementById('popup-loot-box');
+        const popupLootDisplay = document.querySelector('.popup-loot-display');
+
+        // Fully reset popup content to ensure clean state (remove any leftover helmet from other mode)
+        if (popupLootDisplay) {
+            // Remove any helmets that might be lingering from previous claims
+            const existingHelmet = popupLootDisplay.querySelector('.loot-helmet');
+            if (existingHelmet) {
+                existingHelmet.remove();
+                console.log('Removed leftover helmet from popup');
+            }
+        }
+        if (popupLootBox) {
+            popupLootBox.classList.remove('opened');
+        }
+
+        // Update popup loot to match current loot tier before showing
+        const roundInfo = this.heroLootOnlyMode
+            ? { current: this.heroMaxRound }
+            : this.tournament.getRoundInfo();
+
+        if (roundInfo && roundInfo.current > 0) {
+            this.lootSystem.updatePopupLoot(this.getLootTierInfo(roundInfo));
+        }
 
         // Show the loot claim popup overlay (keep button and glow visible)
         if (lootClaimOverlay) {
@@ -369,6 +514,22 @@ export class RNGArena {
 
         // Add feedback message
         this.chatSystem.addAnnouncerMessage('🎁 CLICK THE CHEST TO OPEN! 🎁');
+    }
+
+    getLootTierInfo(roundInfo) {
+        const lootTiers = [
+            { name: 'grey', material: 'Wood', rarity: 'Common', chestNumber: 8 },
+            { name: 'green', material: 'Stone', rarity: 'Uncommon', chestNumber: 7 },
+            { name: 'blue', material: 'Copper', rarity: 'Rare', chestNumber: 6 },
+            { name: 'teal', material: 'Bronze', rarity: 'Superior', chestNumber: 5 },
+            { name: 'purple', material: 'Silver', rarity: 'Epic', chestNumber: 4 },
+            { name: 'orange', material: 'Gold', rarity: 'Legendary', chestNumber: 3 },
+            { name: 'crimson', material: 'Diamond', rarity: 'Mythic', chestNumber: 2 },
+            { name: 'gold', material: 'Platinum', rarity: 'Exalted', chestNumber: 1 }
+        ];
+
+        const currentRound = Math.max(0, roundInfo.current - 1);
+        return lootTiers[Math.min(currentRound, lootTiers.length - 1)];
     }
 
     revealHelmet() {
@@ -701,8 +862,12 @@ export class RNGArena {
     }
 
     fighterEntrance() {
+        // Get current round info
+        const roundInfo = this.tournament.getRoundInfo();
+
         // Play random fight entrance sound (first second only)
-        if (!this.audioMuted) {
+        // Skip for semifinals (round 6) and finals (round 7) - they have their own sounds
+        if (!this.audioMuted && roundInfo.current !== 6 && roundInfo.current !== 7) {
             // Randomly select one of the fight entrance sounds
             const randomIndex = Math.floor(Math.random() * this.fightEntranceSoundPaths.length);
             const soundPath = this.fightEntranceSoundPaths[randomIndex];
@@ -721,13 +886,12 @@ export class RNGArena {
         }
 
         // SIMPLIFIED: Both fighters ALWAYS enter from their sides
+        // Animation handles opacity transition from 0 to 1
         if (this.leftFighter) {
-            this.leftFighter.style.opacity = '1';
             this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
         }
 
         if (this.rightFighter) {
-            this.rightFighter.style.opacity = '1';
             this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
         }
 
@@ -750,6 +914,13 @@ export class RNGArena {
             this.combatSystem.setMuted(true);
         }
 
+        // Reconnect MutationObservers if chat mode is open
+        const chatModeOverlay = document.getElementById('chat-mode-overlay');
+        if (chatModeOverlay && !chatModeOverlay.classList.contains('hidden')) {
+            console.log('🔄 Chat mode is open, reconnecting observers for new battle');
+            this.setupAnimationObservers();
+        }
+
         // Set combat callbacks
         this.combatSystem.onCombatEnd = (leftWins) => {
             this.resolveFight(leftWins);
@@ -766,6 +937,13 @@ export class RNGArena {
         const battleResult = this.tournament.battleResult(leftWins);
         if (!battleResult) return;
 
+        // Disconnect MutationObservers when combat ends to prevent repeating damage elements
+        if (this.chatModeObservers) {
+            console.log('🔇 Disconnecting chat mode observers (combat ended)');
+            this.chatModeObservers.forEach(observer => observer.disconnect());
+            this.chatModeObservers = null;
+        }
+
         // Track previous winner name for next battle
         this.previousWinnerName = battleResult.winner;
 
@@ -778,6 +956,28 @@ export class RNGArena {
 
         const winner = leftWins ? this.leftFighter : this.rightFighter;
         const loser = leftWins ? this.rightFighter : this.leftFighter;
+
+        // Store winner/loser for final victory screen (clone to preserve state)
+        // ALWAYS store these before advancing the tournament, then check if complete after
+        console.log('🏆 Pre-storing battle elements - winner:', battleResult.winner);
+        this.finalWinnerElement = winner.cloneNode(true);
+        this.finalWinnerName = battleResult.winner;
+        this.finalLoserElement = loser.cloneNode(true);
+
+        // Clean up damage elements from stored fighters to prevent repeating animations in chat mode
+        const damageClasses = ['.damage-number', '.attacker-damage-number', '.crit-number', '.attacker-crit-number',
+                              '.block-text', '.parry-text', '.miss-text', '.slash-effect', '.block-effect', '.parry-effect'];
+        damageClasses.forEach(selector => {
+            this.finalWinnerElement.querySelectorAll(selector).forEach(el => el.remove());
+            this.finalLoserElement.querySelectorAll(selector).forEach(el => el.remove());
+        });
+        console.log('🧹 Cleaned damage elements from stored battle elements');
+
+        console.log('🏆 Battle elements stored:', {
+            winner: this.finalWinnerName,
+            hasWinnerElement: !!this.finalWinnerElement,
+            hasLoserElement: !!this.finalLoserElement
+        });
 
         // Winner gets a pulsing gold-white glow and scale animation (scale on sprite only to avoid position conflicts)
         const winnerSprite = winner.querySelector('.fighter-sprite img');
@@ -792,6 +992,8 @@ export class RNGArena {
         // Start background fade after loser completes fade + 1.5s pause (500ms + 2000ms + 1500ms = 4000ms)
         setTimeout(() => {
             this.startBackgroundFadeOut();
+            // Also trigger simple chat mode transition
+            this.triggerChatModeTransition();
         }, 4000);
 
         // Keep text visible until black screen covers it
@@ -901,13 +1103,12 @@ export class RNGArena {
         this.completeBackgroundSwitch();
 
         // Start fighter entrance animations
+        // Animation handles opacity transition from 0 to 1
         setTimeout(() => {
             if (this.leftFighter) {
-                this.leftFighter.style.opacity = '1';
                 this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
             }
             if (this.rightFighter) {
-                this.rightFighter.style.opacity = '1';
                 this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
             }
 
@@ -972,25 +1173,21 @@ export class RNGArena {
 
             this.showVictoryAnimation(winner);
 
-            // Show claim loot button if tournament is complete (hero has lost or won)
-            this.heroEliminated = true; // Mark as eligible for loot claim
-
-            // Update loot box to recreate button with correct visibility
-            const roundInfo = this.tournament.getRoundInfo();
+            // In hero-only mode: keep loot at hero's max round (don't upgrade if hero lost)
+            // In track-all mode: use final round
+            const roundInfo = this.heroLootOnlyMode && this.heroEliminated
+                ? { current: this.heroMaxRound }
+                : this.tournament.getRoundInfo();
             this.lootSystem.updateLootBox(roundInfo);
 
             // Always show button when tournament completes (after a delay to ensure loot system updates first)
             setTimeout(() => {
-                const claimBtn = document.getElementById('claim-loot-btn');
+                // Use the unified function to show claim button (works for both modes)
+                this.showClaimLootButton();
+
+                // Add victory glow to chest
                 const lootBox = document.getElementById('loot-box');
-
-                if (claimBtn) {
-                    claimBtn.classList.remove('hidden');
-                    console.log('Claim button shown after tournament completion');
-                }
-
                 if (lootBox) {
-                    lootBox.classList.add('claimable');
                     this.lootSystem.addVictoryGlow();
                 }
             }, 500);
@@ -1520,6 +1717,7 @@ export class RNGArena {
 
         // Create black overlay to fade ENTIRE arena (covers fighters too)
         this.bgOverlay = document.createElement('div');
+        this.bgOverlay.className = 'bg-overlay'; // Add class so sync can find it
         this.bgOverlay.style.cssText = `
             position: absolute;
             top: 0;
@@ -1595,6 +1793,17 @@ export class RNGArena {
     // ===== Victory Animation =====
 
     showVictoryAnimation(winner) {
+        console.log('🏆 showVictoryAnimation called for:', winner);
+        console.log('🏆 finalWinnerElement:', this.finalWinnerElement);
+        console.log('🏆 finalLoserElement:', this.finalLoserElement);
+
+        // Disconnect MutationObservers to prevent repeating damage elements on chat mode
+        if (this.chatModeObservers) {
+            console.log('🔇 Disconnecting chat mode observers to prevent damage element repetition');
+            this.chatModeObservers.forEach(observer => observer.disconnect());
+            this.chatModeObservers = null;
+        }
+
         this.emojiSystem.setMaxSpawnRate();
 
         // Play victory sound (full duration)
@@ -1604,89 +1813,291 @@ export class RNGArena {
             sound.play().catch(err => console.log('Victory sound failed:', err));
         }
 
-        // Darken the arena slightly - reduced opacity to show background better
-        const overlay = document.createElement('div');
-        overlay.className = 'victory-overlay';
-        overlay.style.cssText = `
+        // Upgrade chest to max tier ONLY if:
+        // - NOT in hero-only mode, OR
+        // - Hero won the tournament
+        const heroWon = winner === 'Daring Hero';
+        if (!this.heroLootOnlyMode || heroWon) {
+            this.lootSystem.setMaxTier();
+        }
+
+        // Use stored winner/loser elements to ensure correct display
+        if (!this.finalWinnerElement || !this.finalLoserElement) {
+            console.error('❌ Final battle elements not stored! finalWinnerElement:', this.finalWinnerElement, 'finalLoserElement:', this.finalLoserElement);
+            console.error('❌ Aborting victory animation');
+            return;
+        }
+
+        console.log('✅ Final battle elements found, proceeding with victory animation');
+        console.log('🎬 Creating victory screen elements...');
+
+        // Stop emoji spam after 2 seconds to reduce lag
+        setTimeout(() => {
+            this.emojiSystem.stopEmojiReactions();
+        }, 2000);
+
+        // Hide the black background overlay immediately
+        if (this.bgOverlay) {
+            this.bgOverlay.style.display = 'none';
+        }
+
+        // Slide tournament progress out (up) - all instances
+        document.querySelectorAll('.progress-container').forEach(el => {
+            el.style.setProperty('transition', 'transform 0.8s ease-in, opacity 0.8s ease-in', 'important');
+            el.style.setProperty('transform', 'translateY(-200px)', 'important');
+            el.style.setProperty('opacity', '0', 'important');
+        });
+
+        // Slide odds display out (up) - all instances
+        document.querySelectorAll('.top-odds').forEach(el => {
+            el.style.setProperty('transition', 'transform 0.8s ease-in, opacity 0.8s ease-in', 'important');
+            el.style.setProperty('transform', 'translateY(-200px)', 'important');
+            el.style.setProperty('opacity', '0', 'important');
+        });
+
+        // Slide HP bars out (left and right) - all instances
+        document.querySelectorAll('.left-hp').forEach(el => {
+            el.style.setProperty('transition', 'transform 0.8s ease-in, opacity 0.8s ease-in', 'important');
+            el.style.setProperty('transform', 'translateX(-300px)', 'important');
+            el.style.setProperty('opacity', '0', 'important');
+        });
+        document.querySelectorAll('.right-hp').forEach(el => {
+            el.style.setProperty('transition', 'transform 0.8s ease-in, opacity 0.8s ease-in', 'important');
+            el.style.setProperty('transform', 'translateX(300px)', 'important');
+            el.style.setProperty('opacity', '0', 'important');
+        });
+
+        // Hide existing fighters completely - all instances (main and chat mode)
+        if (this.leftFighter) this.leftFighter.style.display = 'none';
+        if (this.rightFighter) this.rightFighter.style.display = 'none';
+        document.querySelectorAll('.fighter-left, .fighter-right').forEach(el => {
+            el.style.display = 'none';
+        });
+
+        // Drop VS element down and away - all instances
+        document.querySelectorAll('.vs-display').forEach(el => {
+            el.style.setProperty('transition', 'transform 1s ease-in, opacity 0.8s ease-in', 'important');
+            el.style.setProperty('transform', 'translateY(300px)', 'important');
+            el.style.setProperty('opacity', '0', 'important');
+        });
+
+        // Also hide the nameplate-vs-container - all instances
+        document.querySelectorAll('.nameplate-vs-container').forEach(el => {
+            el.style.setProperty('transition', 'transform 1s ease-in, opacity 0.8s ease-in', 'important');
+            el.style.setProperty('transform', 'translateY(300px)', 'important');
+            el.style.setProperty('opacity', '0', 'important');
+        });
+
+        // Find winner's nameplate and loser's nameplate
+        const leftNameplate = document.querySelector('.left-nameplate');
+        const rightNameplate = document.querySelector('.right-nameplate');
+        let winnerNameplate = null;
+        let loserNameplate = null;
+
+        if (leftNameplate) {
+            const leftName = leftNameplate.querySelector('.nameplate-name')?.textContent;
+            if (leftName === this.finalWinnerName) {
+                winnerNameplate = leftNameplate;
+                loserNameplate = rightNameplate;
+            }
+        }
+
+        if (rightNameplate && !winnerNameplate) {
+            const rightName = rightNameplate.querySelector('.nameplate-name')?.textContent;
+            if (rightName === this.finalWinnerName) {
+                winnerNameplate = rightNameplate;
+                loserNameplate = leftNameplate;
+            }
+        }
+
+        // Drop both nameplates down and away
+        if (loserNameplate) {
+            loserNameplate.style.setProperty('transition', 'transform 1s ease-in, opacity 0.8s ease-in', 'important');
+            loserNameplate.style.setProperty('transform', 'translateY(300px)', 'important');
+            loserNameplate.style.setProperty('opacity', '0', 'important');
+        }
+
+        if (winnerNameplate) {
+            winnerNameplate.style.setProperty('transition', 'transform 1s ease-in, opacity 0.8s ease-in', 'important');
+            winnerNameplate.style.setProperty('transform', 'translateY(300px)', 'important');
+            winnerNameplate.style.setProperty('opacity', '0', 'important');
+        }
+
+        // Create 40% opacity black overlay above background
+        const blackOverlay = document.createElement('div');
+        blackOverlay.className = 'victory-black-overlay';
+        blackOverlay.style.cssText = `
             position: absolute;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.3);
-            z-index: 5;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 2;
             opacity: 0;
-            transition: opacity 1.5s ease-in-out;
+            transition: opacity 0.8s ease-in;
             pointer-events: none;
         `;
-        this.arenaViewport.appendChild(overlay);
+        this.arenaViewport.appendChild(blackOverlay);
 
+        // Fade in black overlay
         setTimeout(() => {
-            overlay.style.opacity = '1';
+            blackOverlay.style.setProperty('opacity', '1', 'important');
         }, 100);
 
-        // Upgrade chest to legendary with glow
-        this.lootSystem.setMaxTier();
+        // Create victory container (above overlay, z-index 500)
+        const victoryContainer = document.createElement('div');
+        victoryContainer.className = 'final-victory-container';
+        victoryContainer.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 500;
+            pointer-events: none;
+        `;
+        this.arenaViewport.appendChild(victoryContainer);
+        console.log('✅ Victory container created and appended to viewport');
 
-        // Find the winner fighter element
-        const winnerFighter = this.leftFighter?.querySelector('.fighter-name')?.textContent === winner
-            ? this.leftFighter
-            : this.rightFighter;
+        // Clone and add winner to screen (fill screen, centered, lowered by 20px)
+        const winnerDisplay = this.finalWinnerElement.cloneNode(true);
+        winnerDisplay.className = 'final-victory-winner';
+        winnerDisplay.style.cssText = `
+            position: absolute;
+            left: 50%;
+            top: calc(50% + 20px);
+            transform: translate(-50%, -50%) scale(1.1);
+            z-index: 600;
+            opacity: 0;
+            transition: opacity 1s ease-in-out, transform 1s ease-in-out;
+            will-change: opacity, transform;
+        `;
 
-        if (winnerFighter) {
-            // Add victory-center class to move winner to center (CSS handles animation)
-            winnerFighter.classList.add('victory-center');
+        // Remove any nameplate that got cloned with the winner
+        const clonedNameplate = winnerDisplay.querySelector('.left-nameplate, .right-nameplate');
+        if (clonedNameplate) clonedNameplate.remove();
 
-            // The victoryPulse animation is now applied via CSS
-            // .victory-center .fighter-sprite img { animation: victoryPulse ... }
+        victoryContainer.appendChild(winnerDisplay);
 
-            // Find and center the winner's nameplate
-            const isLeftWinner = winnerFighter === this.leftFighter;
-            const nameplate = isLeftWinner
-                ? document.querySelector('.left-nameplate')
-                : document.querySelector('.right-nameplate');
+        // Fade in and scale up winner
+        setTimeout(() => {
+            winnerDisplay.style.setProperty('opacity', '1', 'important');
+            winnerDisplay.style.setProperty('transform', 'translate(-50%, -50%) scale(1.2)', 'important');
+            console.log('✅ Winner display fading in and scaling up');
+        }, 200);
 
-            if (nameplate) {
-                nameplate.classList.add('victory-nameplate');
-                nameplate.style.cssText = `
-                    position: absolute !important;
-                    left: 50% !important;
-                    transform: translateX(-50%) !important;
-                    top: 10% !important;
-                    z-index: 40 !important;
-                `;
+        // Add victory glow to winner sprite with subtle pulse
+        setTimeout(() => {
+            const winnerSprite = winnerDisplay.querySelector('.fighter-sprite img');
+            if (winnerSprite) {
+                winnerSprite.style.filter = 'drop-shadow(0 0 30px rgba(255, 215, 0, 0.8)) brightness(1.2)';
+                winnerSprite.style.animation = 'winnerGlowPulse 2.5s ease-in-out infinite';
             }
+        }, 500);
 
-            // Create and show VICTORY! text overlay
-            const victoryText = document.createElement('div');
-            victoryText.className = 'victory-text-overlay';
-            victoryText.style.cssText = `
-                position: absolute;
-                top: 35%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-                font-size: 5rem;
-                font-weight: bold;
-                color: #FFD700;
-                text-shadow:
-                    0 0 20px rgba(255, 215, 0, 1),
-                    0 0 40px rgba(255, 215, 0, 0.8),
-                    0 0 60px rgba(255, 255, 255, 0.6),
-                    4px 4px 8px rgba(0, 0, 0, 0.8);
-                z-index: 50;
-                animation: victoryPulse 2s ease-in-out infinite;
-                pointer-events: none;
-                opacity: 0;
-                transition: opacity 0.5s ease-in-out;
-            `;
-            victoryText.textContent = 'VICTORY!';
-            this.arenaViewport.appendChild(victoryText);
+        // Create VICTORY! text near top (BEHIND hero, lower z-index)
+        const victoryText = document.createElement('div');
+        victoryText.className = 'final-victory-text';
+        victoryText.style.cssText = `
+            position: absolute;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 4rem;
+            font-weight: bold;
+            color: #FFD700;
+            text-align: center;
+            text-shadow:
+                0 0 20px rgba(255, 215, 0, 1),
+                0 0 40px rgba(255, 215, 0, 0.8),
+                0 0 60px rgba(255, 255, 255, 0.6),
+                4px 4px 8px rgba(0, 0, 0, 0.8);
+            z-index: 550;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out;
+            animation: victoryTextPulse 3s ease-in-out infinite;
+            will-change: opacity;
+        `;
+        victoryText.textContent = 'VICTORY!';
+        victoryContainer.appendChild(victoryText);
+        console.log('✅ VICTORY text created and appended');
 
-            // Fade in the victory text
-            setTimeout(() => {
-                victoryText.style.opacity = '1';
-            }, 500);
+        // Fade in victory text
+        setTimeout(() => {
+            victoryText.style.setProperty('opacity', '1', 'important');
+            console.log('✅ Victory text opacity set to 1');
+            console.log('   Victory text computed opacity:', window.getComputedStyle(victoryText).opacity);
+            console.log('   Victory text computed display:', window.getComputedStyle(victoryText).display);
+            console.log('   Victory text computed visibility:', window.getComputedStyle(victoryText).visibility);
+        }, 400);
+
+        // Create centered victory nameplate for winner (matches original, 20% bigger, 50px wider)
+        const victoryNameplate = document.createElement('div');
+        victoryNameplate.className = 'victory-nameplate';
+        victoryNameplate.style.cssText = `
+            position: absolute !important;
+            bottom: 0 !important;
+            top: auto !important;
+            left: 50% !important;
+            transform: translateX(-50%) translateY(100px) scale(1.2) !important;
+            background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700) !important;
+            border: 2px solid #ffed4e !important;
+            border-bottom: none !important;
+            border-radius: 8px 8px 0 0 !important;
+            padding: 12px 41px !important;
+            text-align: center !important;
+            box-shadow: 0 -4px 15px rgba(255, 215, 0, 0.4) !important;
+            z-index: 1000 !important;
+            opacity: 0;
+            transition: opacity 0.8s ease-in-out, transform 0.8s ease-in-out;
+            animation: victoryNameplatePulse 2s ease-in-out infinite;
+        `;
+
+        // Get winner's name and titles (matching original nameplate styles)
+        const winnerName = document.createElement('div');
+        winnerName.className = 'victory-nameplate-name';
+        winnerName.style.cssText = `
+            font-size: 1.1rem;
+            font-weight: bold;
+            color: #000;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.3);
+            margin-bottom: 2px;
+        `;
+        winnerName.textContent = this.finalWinnerName;
+
+        const winnerTitles = document.createElement('div');
+        winnerTitles.className = 'victory-nameplate-titles';
+        winnerTitles.style.cssText = `
+            font-size: 0.7rem;
+            color: #333;
+            font-weight: 600;
+            opacity: 0.8;
+        `;
+
+        // Get titles from the original nameplate if available
+        let titlesText = 'Champion';
+        if (winnerNameplate) {
+            const originalTitles = winnerNameplate.querySelector('.nameplate-titles');
+            if (originalTitles) {
+                titlesText = originalTitles.textContent;
+            }
         }
+        winnerTitles.textContent = titlesText;
+
+        victoryNameplate.appendChild(winnerName);
+        victoryNameplate.appendChild(winnerTitles);
+        victoryContainer.appendChild(victoryNameplate);
+        console.log('✅ Victory nameplate created and appended');
+        console.log('🎬 All victory elements created! Starting fade-in animations...');
+
+        // Slide up and fade in victory nameplate (delayed to avoid flicker with old nameplates)
+        setTimeout(() => {
+            victoryNameplate.style.setProperty('opacity', '1', 'important');
+            victoryNameplate.style.setProperty('transform', 'translateX(-50%) translateY(0) scale(1.2)', 'important');
+            console.log('✅ Victory nameplate sliding up and fading in');
+        }, 1200);
 
         this.battleStatus.style.opacity = '0';
     }
@@ -1723,12 +2134,95 @@ export class RNGArena {
             }
         }
 
-        // Remove victory overlay
+        // Remove victory container and black overlay
         if (this.arenaViewport) {
-            const victoryOverlay = this.arenaViewport.querySelector('.victory-overlay');
-            if (victoryOverlay) {
-                victoryOverlay.remove();
+            const victoryContainer = this.arenaViewport.querySelector('.final-victory-container');
+            if (victoryContainer) {
+                victoryContainer.remove();
             }
+
+            const blackOverlay = this.arenaViewport.querySelector('.victory-black-overlay');
+            if (blackOverlay) {
+                blackOverlay.remove();
+            }
+        }
+
+        // Restore background overlay
+        if (this.bgOverlay) {
+            this.bgOverlay.style.display = '';
+        }
+
+        // Restore tournament progress and odds
+        const progressContainer = document.querySelector('.progress-container');
+        if (progressContainer) {
+            progressContainer.style.transform = '';
+            progressContainer.style.opacity = '1';
+            progressContainer.style.transition = '';
+        }
+
+        const oddsDisplay = document.querySelector('.top-odds');
+        if (oddsDisplay) {
+            oddsDisplay.style.transform = '';
+            oddsDisplay.style.opacity = '1';
+            oddsDisplay.style.transition = '';
+        }
+
+        // Restore HP bars
+        const leftHP = document.querySelector('.left-hp');
+        const rightHP = document.querySelector('.right-hp');
+        if (leftHP) {
+            leftHP.style.transform = '';
+            leftHP.style.opacity = '1';
+            leftHP.style.transition = '';
+        }
+        if (rightHP) {
+            rightHP.style.transform = '';
+            rightHP.style.opacity = '1';
+            rightHP.style.transition = '';
+        }
+
+        document.querySelectorAll('.fighter-health').forEach(hp => {
+            hp.style.opacity = '1';
+        });
+
+        // Restore nameplates
+        document.querySelectorAll('.left-nameplate, .right-nameplate').forEach(plate => {
+            plate.style.display = '';
+            plate.style.position = '';
+            plate.style.left = '';
+            plate.style.bottom = '';
+            plate.style.top = '';
+            plate.style.transform = '';
+            plate.style.opacity = '1';
+            plate.style.zIndex = '';
+            plate.style.transition = '';
+        });
+
+        // Restore VS elements
+        const vsDisplay = document.querySelector('.vs-display');
+        if (vsDisplay) {
+            vsDisplay.style.display = '';
+            vsDisplay.style.transform = '';
+            vsDisplay.style.opacity = '1';
+            vsDisplay.style.transition = '';
+        }
+
+        const nameplateVsContainer = document.querySelector('.nameplate-vs-container');
+        if (nameplateVsContainer) {
+            nameplateVsContainer.style.display = '';
+            nameplateVsContainer.style.transform = '';
+            nameplateVsContainer.style.opacity = '1';
+            nameplateVsContainer.style.transition = '';
+        }
+
+        // Restore fighter visibility
+        if (this.leftFighter) {
+            this.leftFighter.style.display = '';
+            this.leftFighter.style.opacity = '1';
+        }
+        if (this.rightFighter) {
+            this.rightFighter.style.display = '';
+            this.rightFighter.style.opacity = '1';
         }
 
         // Remove loot glow
@@ -1967,7 +2461,7 @@ export class RNGArena {
 
         const message = this.chatInput.value.trim();
         if (message) {
-            this.chatSystem.addChatMessage(message);
+            this.chatSystem.addChatMessage(message, true); // Mark as user's own message
             this.chatInput.value = '';
         }
     }
@@ -2338,16 +2832,50 @@ export class RNGArena {
 
         console.log('Chat mode battlefield initialized with scale:', scale);
 
-        // Set up continuous sync at 500ms to reduce lag
+        // Set up continuous sync at 100ms for smooth transitions (10 FPS)
         if (this.syncChatModeBattlefield) {
             clearInterval(this.syncChatModeBattlefield);
         }
         this.syncChatModeBattlefield = setInterval(() => {
             this.updateChatModeBattlefield();
-        }, 500);
+        }, 100);
+
+        // Create a simple black overlay for chat mode transitions (independent of main battlefield)
+        const chatModeTransitionOverlay = document.createElement('div');
+        chatModeTransitionOverlay.id = 'chat-mode-transition-overlay';
+        chatModeTransitionOverlay.style.cssText = `
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: black;
+            opacity: 0;
+            z-index: 200;
+            pointer-events: none;
+            transition: opacity 0.8s ease-in-out;
+        `;
+        clone.appendChild(chatModeTransitionOverlay);
 
         // Set up MutationObservers for real-time animation class syncing
         this.setupAnimationObservers();
+    }
+
+    // Simple chat mode transition - fade to black and back
+    triggerChatModeTransition() {
+        const overlay = document.getElementById('chat-mode-transition-overlay');
+        if (!overlay) return;
+
+        console.log('🎬 Chat mode transition starting');
+
+        // Fade to full black over 0.8s
+        overlay.style.opacity = '1';
+
+        // After 1.5s at full black, fade back out over 0.8s
+        setTimeout(() => {
+            overlay.style.opacity = '0';
+            console.log('🎬 Chat mode transition complete');
+        }, 1500);
     }
 
     setupAnimationObservers() {
@@ -2355,6 +2883,13 @@ export class RNGArena {
         const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
 
         if (!arenaViewport || !chatModeBattlefield) return;
+
+        // Disconnect existing observers first (if any)
+        if (this.chatModeObservers) {
+            console.log('🔄 Disconnecting old observers before setting up new ones');
+            this.chatModeObservers.forEach(observer => observer.disconnect());
+            this.chatModeObservers = null;
+        }
 
         const originalLeftFighter = arenaViewport.querySelector('.fighter-left');
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
@@ -2364,6 +2899,7 @@ export class RNGArena {
         if (!originalLeftFighter || !originalRightFighter || !cloneLeftFighter || !cloneRightFighter) return;
 
         const animClasses = ['fighter-attacking', 'fighter-crit-attack', 'fighter-defending', 'fighter-miss', 'fighter-block', 'fighter-parry', 'fighter-hit', 'fighter-crit-glow', 'fighter-entrance-left', 'fighter-entrance-right'];
+        const combatElementClasses = ['damage-number', 'attacker-damage-number', 'crit-number', 'attacker-crit-number', 'block-text', 'parry-text', 'miss-text', 'slash-effect', 'block-effect', 'parry-effect'];
 
         // Observer for left fighter
         const leftObserver = new MutationObserver((mutations) => {
@@ -2388,6 +2924,26 @@ export class RNGArena {
                     });
 
                     console.log('[LEFT FIGHTER] Clone after:', cloneLeftFighter.className);
+                }
+
+                // Handle added nodes (damage numbers, effects, etc.)
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // Element node
+                            const isCombatElement = combatElementClasses.some(cls => node.classList.contains(cls));
+                            if (isCombatElement) {
+                                // Give the original element a unique ID
+                                if (!node.dataset.cloneId) {
+                                    node.dataset.cloneId = Math.random().toString(36).substr(2, 9);
+                                }
+
+                                // Clone the element immediately to chat mode with the ID
+                                const clonedNode = node.cloneNode(true);
+                                clonedNode.dataset.cloneId = node.dataset.cloneId;
+                                cloneLeftFighter.appendChild(clonedNode);
+                            }
+                        }
+                    });
                 }
             });
         });
@@ -2416,6 +2972,60 @@ export class RNGArena {
 
                     console.log('[RIGHT FIGHTER] Clone after:', cloneRightFighter.className);
                 }
+
+                // Handle added nodes (damage numbers, effects, etc.)
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) { // Element node
+                            const isCombatElement = combatElementClasses.some(cls => node.classList.contains(cls));
+                            if (isCombatElement) {
+                                // Give the original element a unique ID
+                                if (!node.dataset.cloneId) {
+                                    node.dataset.cloneId = Math.random().toString(36).substr(2, 9);
+                                }
+
+                                // Clone the element immediately to chat mode with the ID
+                                const clonedNode = node.cloneNode(true);
+                                clonedNode.dataset.cloneId = node.dataset.cloneId;
+                                cloneRightFighter.appendChild(clonedNode);
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // Observer for left sprite style changes (loser fade-out)
+        const leftSpriteObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const originalLeftSprite = originalLeftFighter.querySelector('.fighter-sprite');
+                    const cloneLeftSprite = cloneLeftFighter.querySelector('.fighter-sprite');
+                    if (originalLeftSprite && cloneLeftSprite && originalLeftSprite.style.animation) {
+                        // Only update if animation actually changed
+                        if (cloneLeftSprite.style.animation !== originalLeftSprite.style.animation) {
+                            console.log('[LEFT SPRITE] Style animation changed to:', originalLeftSprite.style.animation);
+                            cloneLeftSprite.style.animation = originalLeftSprite.style.animation;
+                        }
+                    }
+                }
+            });
+        });
+
+        // Observer for right sprite style changes (loser fade-out)
+        const rightSpriteObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'style') {
+                    const originalRightSprite = originalRightFighter.querySelector('.fighter-sprite');
+                    const cloneRightSprite = cloneRightFighter.querySelector('.fighter-sprite');
+                    if (originalRightSprite && cloneRightSprite && originalRightSprite.style.animation) {
+                        // Only update if animation actually changed
+                        if (cloneRightSprite.style.animation !== originalRightSprite.style.animation) {
+                            console.log('[RIGHT SPRITE] Style animation changed to:', originalRightSprite.style.animation);
+                            cloneRightSprite.style.animation = originalRightSprite.style.animation;
+                        }
+                    }
+                }
             });
         });
 
@@ -2426,13 +3036,39 @@ export class RNGArena {
             cloneLeft: cloneLeftFighter,
             cloneRight: cloneRightFighter
         });
-        leftObserver.observe(originalLeftFighter, { attributes: true, attributeFilter: ['class'] });
-        rightObserver.observe(originalRightFighter, { attributes: true, attributeFilter: ['class'] });
+        leftObserver.observe(originalLeftFighter, {
+            attributes: true,
+            attributeFilter: ['class'],
+            childList: true, // Watch for added/removed child nodes (damage numbers, effects)
+            subtree: false // Only direct children
+        });
+        rightObserver.observe(originalRightFighter, {
+            attributes: true,
+            attributeFilter: ['class'],
+            childList: true, // Watch for added/removed child nodes (damage numbers, effects)
+            subtree: false // Only direct children
+        });
+
+        // Observe sprite style changes
+        const originalLeftSprite = originalLeftFighter.querySelector('.fighter-sprite');
+        const originalRightSprite = originalRightFighter.querySelector('.fighter-sprite');
+        if (originalLeftSprite) {
+            leftSpriteObserver.observe(originalLeftSprite, {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+        }
+        if (originalRightSprite) {
+            rightSpriteObserver.observe(originalRightSprite, {
+                attributes: true,
+                attributeFilter: ['style']
+            });
+        }
 
         console.log('[ANIMATION OBSERVERS] Observers active');
 
         // Store observers so we can disconnect them later
-        this.chatModeObservers = [leftObserver, rightObserver];
+        this.chatModeObservers = [leftObserver, rightObserver, leftSpriteObserver, rightSpriteObserver];
     }
 
     updateChatModeBattlefield() {
@@ -2485,20 +3121,31 @@ export class RNGArena {
                 }
             }
 
-            // Sync opacity and other inline styles (for victory animations)
-            if (originalLeftFighter.style.opacity !== '') {
-                cloneLeftFighter.style.opacity = originalLeftFighter.style.opacity;
+            // Sync opacity and other inline styles (for victory animations) - only update if changed
+            if (originalLeftFighter.style.opacity !== '' && cloneLeftFighter.style.opacity !== originalLeftFighter.style.opacity) {
+                const priority = originalLeftFighter.style.getPropertyPriority('opacity');
+                cloneLeftFighter.style.setProperty('opacity', originalLeftFighter.style.opacity, priority);
             }
 
-            // Only sync transform/position if they have explicit inline values (for victory animations)
-            if (originalLeftFighter.style.left) {
-                cloneLeftFighter.style.left = originalLeftFighter.style.left;
+            // Sync display property (for visibility during transitions) - only update if changed
+            if (originalLeftFighter.style.display !== '' && cloneLeftFighter.style.display !== originalLeftFighter.style.display) {
+                const priority = originalLeftFighter.style.getPropertyPriority('display');
+                cloneLeftFighter.style.setProperty('display', originalLeftFighter.style.display, priority);
             }
-            if (originalLeftFighter.style.transform) {
-                cloneLeftFighter.style.transform = originalLeftFighter.style.transform;
+
+            // Only sync transform/position if they have explicit inline values (for victory animations) - only update if changed
+            if (originalLeftFighter.style.left && cloneLeftFighter.style.left !== originalLeftFighter.style.left) {
+                const priority = originalLeftFighter.style.getPropertyPriority('left');
+                cloneLeftFighter.style.setProperty('left', originalLeftFighter.style.left, priority);
             }
-            if (originalLeftFighter.style.transition) {
-                cloneLeftFighter.style.transition = originalLeftFighter.style.transition;
+            if (originalLeftFighter.style.transform && cloneLeftFighter.style.transform !== originalLeftFighter.style.transform) {
+                const priority = originalLeftFighter.style.getPropertyPriority('transform');
+                cloneLeftFighter.style.setProperty('transform', originalLeftFighter.style.transform, priority);
+            }
+            // Sync transition property only when it changes (won't interrupt if already set)
+            if (originalLeftFighter.style.transition && cloneLeftFighter.style.transition !== originalLeftFighter.style.transition) {
+                const priority = originalLeftFighter.style.getPropertyPriority('transition');
+                cloneLeftFighter.style.setProperty('transition', originalLeftFighter.style.transition, priority);
             }
 
             // Sync sprite filter (for victory glow)
@@ -2509,36 +3156,9 @@ export class RNGArena {
                 cloneLeftSpriteImg.style.animation = originalLeftSpriteImg.style.animation;
             }
 
-            // Sync damage elements - find all in original
-            const originalDamageEls = originalLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
-            const cloneDamageEls = cloneLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
-
-            // Remove damage from clone that doesn't exist in original
-            cloneDamageEls.forEach(cloneEl => {
-                let found = false;
-                originalDamageEls.forEach(origEl => {
-                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
-                        found = true;
-                    }
-                });
-                if (!found) {
-                    cloneEl.remove();
-                }
-            });
-
-            // Add damage to clone that exists in original but not in clone
-            originalDamageEls.forEach(origEl => {
-                let found = false;
-                const newCloneDamageEls = cloneLeftFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
-                newCloneDamageEls.forEach(cloneEl => {
-                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
-                        found = true;
-                    }
-                });
-                if (!found) {
-                    cloneLeftFighter.appendChild(origEl.cloneNode(true));
-                }
-            });
+            // REMOVED: Damage element syncing from 500ms loop
+            // MutationObserver handles ALL damage elements in real-time when they're added
+            // Syncing here causes flashing because elements are cloned mid-animation
         }
 
         const originalRightFighter = arenaViewport.querySelector('.fighter-right');
@@ -2554,23 +3174,35 @@ export class RNGArena {
                 }
             }
 
-            // Sync opacity and other inline styles (for victory animations)
-            if (originalRightFighter.style.opacity !== '') {
-                cloneRightFighter.style.opacity = originalRightFighter.style.opacity;
+            // Sync opacity and other inline styles (for victory animations) - only update if changed
+            if (originalRightFighter.style.opacity !== '' && cloneRightFighter.style.opacity !== originalRightFighter.style.opacity) {
+                const priority = originalRightFighter.style.getPropertyPriority('opacity');
+                cloneRightFighter.style.setProperty('opacity', originalRightFighter.style.opacity, priority);
             }
 
-            // Only sync transform/position if they have explicit inline values (for victory animations)
-            if (originalRightFighter.style.left) {
-                cloneRightFighter.style.left = originalRightFighter.style.left;
+            // Sync display property (for visibility during transitions) - only update if changed
+            if (originalRightFighter.style.display !== '' && cloneRightFighter.style.display !== originalRightFighter.style.display) {
+                const priority = originalRightFighter.style.getPropertyPriority('display');
+                cloneRightFighter.style.setProperty('display', originalRightFighter.style.display, priority);
             }
-            if (originalRightFighter.style.right) {
-                cloneRightFighter.style.right = originalRightFighter.style.right;
+
+            // Only sync transform/position if they have explicit inline values (for victory animations) - only update if changed
+            if (originalRightFighter.style.left && cloneRightFighter.style.left !== originalRightFighter.style.left) {
+                const priority = originalRightFighter.style.getPropertyPriority('left');
+                cloneRightFighter.style.setProperty('left', originalRightFighter.style.left, priority);
             }
-            if (originalRightFighter.style.transform) {
-                cloneRightFighter.style.transform = originalRightFighter.style.transform;
+            if (originalRightFighter.style.right && cloneRightFighter.style.right !== originalRightFighter.style.right) {
+                const priority = originalRightFighter.style.getPropertyPriority('right');
+                cloneRightFighter.style.setProperty('right', originalRightFighter.style.right, priority);
             }
-            if (originalRightFighter.style.transition) {
-                cloneRightFighter.style.transition = originalRightFighter.style.transition;
+            if (originalRightFighter.style.transform && cloneRightFighter.style.transform !== originalRightFighter.style.transform) {
+                const priority = originalRightFighter.style.getPropertyPriority('transform');
+                cloneRightFighter.style.setProperty('transform', originalRightFighter.style.transform, priority);
+            }
+            // Sync transition property only when it changes (won't interrupt if already set)
+            if (originalRightFighter.style.transition && cloneRightFighter.style.transition !== originalRightFighter.style.transition) {
+                const priority = originalRightFighter.style.getPropertyPriority('transition');
+                cloneRightFighter.style.setProperty('transition', originalRightFighter.style.transition, priority);
             }
 
             // Sync sprite filter (for victory glow)
@@ -2581,44 +3213,34 @@ export class RNGArena {
                 cloneRightSpriteImg.style.animation = originalRightSpriteImg.style.animation;
             }
 
-            // Sync damage elements - find all in original
-            const originalDamageEls = originalRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
-            const cloneDamageEls = cloneRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
-
-            // Remove damage from clone that doesn't exist in original
-            cloneDamageEls.forEach(cloneEl => {
-                let found = false;
-                originalDamageEls.forEach(origEl => {
-                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
-                        found = true;
-                    }
-                });
-                if (!found) {
-                    cloneEl.remove();
-                }
-            });
-
-            // Add damage to clone that exists in original but not in clone
-            originalDamageEls.forEach(origEl => {
-                let found = false;
-                const newCloneDamageEls = cloneRightFighter.querySelectorAll('.damage-number, .attacker-damage-number, .crit-number, .attacker-crit-number, .block-text, .parry-text, .miss-text');
-                newCloneDamageEls.forEach(cloneEl => {
-                    if (origEl.className === cloneEl.className && origEl.textContent === cloneEl.textContent) {
-                        found = true;
-                    }
-                });
-                if (!found) {
-                    cloneRightFighter.appendChild(origEl.cloneNode(true));
-                }
-            });
+            // REMOVED: Damage element syncing from 500ms loop (same as left fighter)
+            // MutationObserver handles ALL damage elements in real-time when they're added
+            // Syncing here causes the "repeating attack messages" bug on victory screen
         }
 
-        // Sync nameplates
+        // Sync nameplates container (including victory slide-away animations)
         const originalNameplates = arenaViewport.querySelector('.nameplate-vs-container');
         const cloneNameplates = clone.querySelector('.nameplate-vs-container');
         if (originalNameplates && cloneNameplates) {
             cloneNameplates.innerHTML = originalNameplates.innerHTML;
             cloneNameplates.className = originalNameplates.className;
+            // Sync inline styles for victory animations - only update if changed
+            if (originalNameplates.style.opacity !== '' && cloneNameplates.style.opacity !== originalNameplates.style.opacity) {
+                const priority = originalNameplates.style.getPropertyPriority('opacity');
+                cloneNameplates.style.setProperty('opacity', originalNameplates.style.opacity, priority);
+            }
+            if (originalNameplates.style.transform && cloneNameplates.style.transform !== originalNameplates.style.transform) {
+                const priority = originalNameplates.style.getPropertyPriority('transform');
+                cloneNameplates.style.setProperty('transform', originalNameplates.style.transform, priority);
+            }
+            if (originalNameplates.style.transition && cloneNameplates.style.transition !== originalNameplates.style.transition) {
+                const priority = originalNameplates.style.getPropertyPriority('transition');
+                cloneNameplates.style.setProperty('transition', originalNameplates.style.transition, priority);
+            }
+            if (originalNameplates.style.display !== '' && cloneNameplates.style.display !== originalNameplates.style.display) {
+                const priority = originalNameplates.style.getPropertyPriority('display');
+                cloneNameplates.style.setProperty('display', originalNameplates.style.display, priority);
+            }
         }
 
         // Sync individual nameplate styles (for victory animations)
@@ -2648,15 +3270,64 @@ export class RNGArena {
             if (originalRightNameplate.style.zIndex) cloneRightNameplate.style.zIndex = originalRightNameplate.style.zIndex;
         }
 
-        // Sync VS display opacity
+        // Sync VS display opacity, transform, and display - only update if changed
         const originalVS = arenaViewport.querySelector('.vs-display');
         const cloneVS = clone.querySelector('.vs-display');
         if (originalVS && cloneVS) {
-            if (originalVS.style.opacity !== '') cloneVS.style.opacity = originalVS.style.opacity;
-            if (originalVS.style.transition) cloneVS.style.transition = originalVS.style.transition;
+            if (originalVS.style.opacity !== '' && cloneVS.style.opacity !== originalVS.style.opacity) {
+                const priority = originalVS.style.getPropertyPriority('opacity');
+                cloneVS.style.setProperty('opacity', originalVS.style.opacity, priority);
+            }
+            if (originalVS.style.transform && cloneVS.style.transform !== originalVS.style.transform) {
+                const priority = originalVS.style.getPropertyPriority('transform');
+                cloneVS.style.setProperty('transform', originalVS.style.transform, priority);
+            }
+            if (originalVS.style.transition && cloneVS.style.transition !== originalVS.style.transition) {
+                const priority = originalVS.style.getPropertyPriority('transition');
+                cloneVS.style.setProperty('transition', originalVS.style.transition, priority);
+            }
+            if (originalVS.style.display !== '' && cloneVS.style.display !== originalVS.style.display) {
+                const priority = originalVS.style.getPropertyPriority('display');
+                cloneVS.style.setProperty('display', originalVS.style.display, priority);
+            }
         }
 
-        // Sync HP bars
+        // Sync HP bar containers (for victory slide-out animations) - only update if changed
+        const originalLeftHPContainer = arenaViewport.querySelector('.left-hp');
+        const cloneLeftHPContainer = clone.querySelector('.left-hp');
+        if (originalLeftHPContainer && cloneLeftHPContainer) {
+            if (originalLeftHPContainer.style.transform && cloneLeftHPContainer.style.transform !== originalLeftHPContainer.style.transform) {
+                const priority = originalLeftHPContainer.style.getPropertyPriority('transform');
+                cloneLeftHPContainer.style.setProperty('transform', originalLeftHPContainer.style.transform, priority);
+            }
+            if (originalLeftHPContainer.style.opacity !== '' && cloneLeftHPContainer.style.opacity !== originalLeftHPContainer.style.opacity) {
+                const priority = originalLeftHPContainer.style.getPropertyPriority('opacity');
+                cloneLeftHPContainer.style.setProperty('opacity', originalLeftHPContainer.style.opacity, priority);
+            }
+            if (originalLeftHPContainer.style.transition && cloneLeftHPContainer.style.transition !== originalLeftHPContainer.style.transition) {
+                const priority = originalLeftHPContainer.style.getPropertyPriority('transition');
+                cloneLeftHPContainer.style.setProperty('transition', originalLeftHPContainer.style.transition, priority);
+            }
+        }
+
+        const originalRightHPContainer = arenaViewport.querySelector('.right-hp');
+        const cloneRightHPContainer = clone.querySelector('.right-hp');
+        if (originalRightHPContainer && cloneRightHPContainer) {
+            if (originalRightHPContainer.style.transform && cloneRightHPContainer.style.transform !== originalRightHPContainer.style.transform) {
+                const priority = originalRightHPContainer.style.getPropertyPriority('transform');
+                cloneRightHPContainer.style.setProperty('transform', originalRightHPContainer.style.transform, priority);
+            }
+            if (originalRightHPContainer.style.opacity !== '' && cloneRightHPContainer.style.opacity !== originalRightHPContainer.style.opacity) {
+                const priority = originalRightHPContainer.style.getPropertyPriority('opacity');
+                cloneRightHPContainer.style.setProperty('opacity', originalRightHPContainer.style.opacity, priority);
+            }
+            if (originalRightHPContainer.style.transition && cloneRightHPContainer.style.transition !== originalRightHPContainer.style.transition) {
+                const priority = originalRightHPContainer.style.getPropertyPriority('transition');
+                cloneRightHPContainer.style.setProperty('transition', originalRightHPContainer.style.transition, priority);
+            }
+        }
+
+        // Sync HP bars (fill width)
         const originalLeftHP = arenaViewport.querySelector('#left-hp-fill');
         const cloneLeftHP = clone.querySelector('#left-hp-fill');
         if (originalLeftHP && cloneLeftHP) {
@@ -2689,6 +3360,42 @@ export class RNGArena {
             cloneAnnouncement.className = originalAnnouncement.className;
         }
 
+        // Sync progress container (for victory slide-out animations) - only update if changed
+        const originalProgressContainer = arenaViewport.querySelector('.progress-container');
+        const cloneProgressContainer = clone.querySelector('.progress-container');
+        if (originalProgressContainer && cloneProgressContainer) {
+            if (originalProgressContainer.style.transform && cloneProgressContainer.style.transform !== originalProgressContainer.style.transform) {
+                const priority = originalProgressContainer.style.getPropertyPriority('transform');
+                cloneProgressContainer.style.setProperty('transform', originalProgressContainer.style.transform, priority);
+            }
+            if (originalProgressContainer.style.opacity !== '' && cloneProgressContainer.style.opacity !== originalProgressContainer.style.opacity) {
+                const priority = originalProgressContainer.style.getPropertyPriority('opacity');
+                cloneProgressContainer.style.setProperty('opacity', originalProgressContainer.style.opacity, priority);
+            }
+            if (originalProgressContainer.style.transition && cloneProgressContainer.style.transition !== originalProgressContainer.style.transition) {
+                const priority = originalProgressContainer.style.getPropertyPriority('transition');
+                cloneProgressContainer.style.setProperty('transition', originalProgressContainer.style.transition, priority);
+            }
+        }
+
+        // Sync odds display (for victory slide-out animations) - only update if changed
+        const originalTopOdds = arenaViewport.querySelector('.top-odds');
+        const cloneTopOdds = clone.querySelector('.top-odds');
+        if (originalTopOdds && cloneTopOdds) {
+            if (originalTopOdds.style.transform && cloneTopOdds.style.transform !== originalTopOdds.style.transform) {
+                const priority = originalTopOdds.style.getPropertyPriority('transform');
+                cloneTopOdds.style.setProperty('transform', originalTopOdds.style.transform, priority);
+            }
+            if (originalTopOdds.style.opacity !== '' && cloneTopOdds.style.opacity !== originalTopOdds.style.opacity) {
+                const priority = originalTopOdds.style.getPropertyPriority('opacity');
+                cloneTopOdds.style.setProperty('opacity', originalTopOdds.style.opacity, priority);
+            }
+            if (originalTopOdds.style.transition && cloneTopOdds.style.transition !== originalTopOdds.style.transition) {
+                const priority = originalTopOdds.style.getPropertyPriority('transition');
+                cloneTopOdds.style.setProperty('transition', originalTopOdds.style.transition, priority);
+            }
+        }
+
         // Sync tournament progress segments
         const originalProgressSegments = arenaViewport.querySelector('#progress-segments');
         const cloneProgressSegments = clone.querySelector('#progress-segments');
@@ -2703,7 +3410,54 @@ export class RNGArena {
             cloneHeroIndicator.style.left = originalHeroIndicator.style.left;
         }
 
-        // Sync victory overlay
+        // Sync background overlay (for round transitions)
+        const originalBgOverlay = arenaViewport.querySelector('.bg-overlay');
+        let cloneBgOverlay = clone.querySelector('.bg-overlay');
+
+        if (originalBgOverlay && !cloneBgOverlay) {
+            // BG overlay exists in original but not in clone - create it
+            cloneBgOverlay = originalBgOverlay.cloneNode(true);
+            clone.appendChild(cloneBgOverlay);
+        } else if (!originalBgOverlay && cloneBgOverlay) {
+            // BG overlay removed from original - remove from clone
+            cloneBgOverlay.remove();
+        } else if (originalBgOverlay && cloneBgOverlay) {
+            // Sync opacity, transition, and display
+            if (originalBgOverlay.style.opacity !== '' && cloneBgOverlay.style.opacity !== originalBgOverlay.style.opacity) {
+                const priority = originalBgOverlay.style.getPropertyPriority('opacity');
+                cloneBgOverlay.style.setProperty('opacity', originalBgOverlay.style.opacity, priority);
+            }
+            if (originalBgOverlay.style.transition && cloneBgOverlay.style.transition !== originalBgOverlay.style.transition) {
+                const priority = originalBgOverlay.style.getPropertyPriority('transition');
+                cloneBgOverlay.style.setProperty('transition', originalBgOverlay.style.transition, priority);
+            }
+            if (originalBgOverlay.style.display !== '' && cloneBgOverlay.style.display !== originalBgOverlay.style.display) {
+                const priority = originalBgOverlay.style.getPropertyPriority('display');
+                cloneBgOverlay.style.setProperty('display', originalBgOverlay.style.display, priority);
+            }
+        }
+
+        // Sync victory black overlay (for victory screen)
+        const originalVictoryBlackOverlay = arenaViewport.querySelector('.victory-black-overlay');
+        let cloneVictoryBlackOverlay = clone.querySelector('.victory-black-overlay');
+
+        if (originalVictoryBlackOverlay && !cloneVictoryBlackOverlay) {
+            cloneVictoryBlackOverlay = originalVictoryBlackOverlay.cloneNode(true);
+            clone.appendChild(cloneVictoryBlackOverlay);
+        } else if (!originalVictoryBlackOverlay && cloneVictoryBlackOverlay) {
+            cloneVictoryBlackOverlay.remove();
+        } else if (originalVictoryBlackOverlay && cloneVictoryBlackOverlay) {
+            if (originalVictoryBlackOverlay.style.opacity !== '' && cloneVictoryBlackOverlay.style.opacity !== originalVictoryBlackOverlay.style.opacity) {
+                const priority = originalVictoryBlackOverlay.style.getPropertyPriority('opacity');
+                cloneVictoryBlackOverlay.style.setProperty('opacity', originalVictoryBlackOverlay.style.opacity, priority);
+            }
+            if (originalVictoryBlackOverlay.style.transition && cloneVictoryBlackOverlay.style.transition !== originalVictoryBlackOverlay.style.transition) {
+                const priority = originalVictoryBlackOverlay.style.getPropertyPriority('transition');
+                cloneVictoryBlackOverlay.style.setProperty('transition', originalVictoryBlackOverlay.style.transition, priority);
+            }
+        }
+
+        // Sync victory overlay (old system)
         const originalVictoryOverlay = arenaViewport.querySelector('.victory-overlay');
         let cloneVictoryOverlay = clone.querySelector('.victory-overlay');
 
@@ -2721,7 +3475,25 @@ export class RNGArena {
             }
         }
 
-        // Sync victor text
+        // Sync final victory container (new victory screen)
+        const originalVictoryContainer = arenaViewport.querySelector('.final-victory-container');
+        let cloneVictoryContainer = clone.querySelector('.final-victory-container');
+
+        if (originalVictoryContainer && !cloneVictoryContainer) {
+            // Victory container exists in original but not in clone - create it
+            cloneVictoryContainer = originalVictoryContainer.cloneNode(true);
+            clone.appendChild(cloneVictoryContainer);
+        } else if (!originalVictoryContainer && cloneVictoryContainer) {
+            // Victory container removed from original - remove from clone
+            cloneVictoryContainer.remove();
+        } else if (originalVictoryContainer && cloneVictoryContainer) {
+            // Replace clone with fresh copy to sync all animations
+            cloneVictoryContainer.remove();
+            cloneVictoryContainer = originalVictoryContainer.cloneNode(true);
+            clone.appendChild(cloneVictoryContainer);
+        }
+
+        // Sync victor text (old system)
         const originalVictorText = arenaViewport.querySelector('.victor-text');
         let cloneVictorText = clone.querySelector('.victor-text');
 
@@ -2788,7 +3560,7 @@ export class RNGArena {
             const message = chatModeInput.value.trim();
             console.log('Sending message from chat mode:', message);
             if (message) {
-                this.chatSystem.addChatMessage(message);
+                this.chatSystem.addChatMessage(message, true); // Mark as user's own message
                 chatModeInput.value = '';
             }
         };

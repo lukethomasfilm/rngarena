@@ -677,7 +677,9 @@ export class CombatSystem {
         // Random angle between -15 and 15 degrees
         const randomAngle = (Math.random() * 30) - 15;
 
-        // Determine direction based on which fighter
+        // Slash orientation - match the block icon pattern for proper direction
+        // - LEFT fighter: FLIP (scaleX(-1))
+        // - RIGHT fighter: NO flip (scaleX(1))
         const isLeftFighter = fighter.classList.contains('fighter-left');
         const flipTransform = isLeftFighter ? 'scaleX(-1)' : 'scaleX(1)';
 
@@ -687,7 +689,7 @@ export class CombatSystem {
             height: 150px;
             top: 50%;
             left: 50%;
-            transform: translate(-50%, -50%) rotate(${randomAngle}deg) ${flipTransform};
+            transform: translate(-50%, -50%) rotate(${randomAngle}deg) ${flipTransform} !important;
             z-index: 15;
             opacity: 0;
             filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.9)) drop-shadow(0 0 15px rgba(255, 215, 0, 0.7));

@@ -223,6 +223,7 @@
 
     <!-- Dev Preview Toggle Button -->
     <div class="dev-toggle-container">
+        <button id="fast-forward-btn" class="fast-forward-btn">⏩ 4x Fast Forward</button>
         <button id="dev-preview-toggle" class="dev-preview-toggle-btn">▼ Show Dev Previews</button>
     </div>
 
@@ -310,6 +311,10 @@
     <script type="module">
         // Import all game systems
         import { RNGArena } from './js/RNGArena.js';
+        import { GAME_CONFIG } from './js/constants.js';
+
+        // Make GAME_CONFIG globally accessible for fast forward button
+        window.GAME_CONFIG = GAME_CONFIG;
 
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', () => {
@@ -321,6 +326,28 @@
                 toggleBtn.addEventListener('click', () => {
                     const isHidden = previewWrapper.classList.toggle('hidden');
                     toggleBtn.textContent = isHidden ? '▼ Show Dev Previews' : '▲ Hide Dev Previews';
+                });
+            }
+
+            // Fast Forward 4x functionality
+            const fastForwardBtn = document.getElementById('fast-forward-btn');
+            let isFastForward = false;
+
+            if (fastForwardBtn) {
+                fastForwardBtn.addEventListener('click', () => {
+                    isFastForward = !isFastForward;
+                    fastForwardBtn.classList.toggle('active');
+                    fastForwardBtn.textContent = isFastForward ? '⏸️ Normal Speed' : '⏩ 4x Fast Forward';
+
+                    // Update GAME_CONFIG timing values
+                    if (window.GAME_CONFIG && window.GAME_CONFIG.TIMING) {
+                        const multiplier = isFastForward ? 0.25 : 4;
+                        window.GAME_CONFIG.TIMING.TURN_DELAY = Math.round(window.GAME_CONFIG.TIMING.TURN_DELAY * multiplier);
+                        window.GAME_CONFIG.TIMING.END_OF_ROUND_DELAY = Math.round(window.GAME_CONFIG.TIMING.END_OF_ROUND_DELAY * multiplier);
+
+                        console.log('⏩ Fast forward', isFastForward ? 'ENABLED (4x)' : 'DISABLED (1x)');
+                        console.log('   Turn delay:', window.GAME_CONFIG.TIMING.TURN_DELAY, 'ms');
+                    }
                 });
             }
 

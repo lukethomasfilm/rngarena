@@ -377,3 +377,34 @@ export const ROUND_NAMES = {
     7: "Final",
     8: "Champion"
 };
+
+// Economy & Progression (Session-based, resets on refresh)
+export const ECONOMY_CONFIG = {
+    // Gold rewards for PVE tournament completion
+    TOURNAMENT_REWARDS: {
+        ROUND_1: 100,
+        ROUND_2: 200,
+        ROUND_3: 300,
+        ROUND_4: 400,
+        ROUND_5: 500,   // Quarterfinals
+        ROUND_6: 750,   // Semifinals
+        ROUND_7: 1000,  // Final
+        ROUND_8: 2000   // Champion (complete victory)
+    },
+
+    // Battle rewards
+    BATTLE_WIN_GOLD: 10,
+    CRITICAL_HIT_BONUS: 5,
+
+    // Starting values
+    STARTING_GOLD: 0,
+    STARTING_GEMS: 0
+};
+
+// Screen/Navigation IDs
+export const SCREENS = {
+    HOME: 'home',
+    CASTLE: 'castle',
+    MAP: 'map',
+    PVE_TOURNAMENT: 'pve-tournament'
+};

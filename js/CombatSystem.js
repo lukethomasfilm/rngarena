@@ -742,6 +742,17 @@ export class CombatSystem {
         const arenaViewport = document.querySelector('.arena-viewport');
         if (!arenaViewport) return;
 
+        // Add screen shake to viewport
+        arenaViewport.classList.add('crit-shake');
+        setTimeout(() => arenaViewport.classList.remove('crit-shake'), 400);
+
+        // Also shake live chat battlefield if it exists
+        const chatBattlefield = document.querySelector('.chat-mode-battlefield-overlay');
+        if (chatBattlefield) {
+            chatBattlefield.classList.add('crit-shake');
+            setTimeout(() => chatBattlefield.classList.remove('crit-shake'), 400);
+        }
+
         const flashOverlay = document.createElement('div');
         flashOverlay.className = 'crit-screen-flash';
         flashOverlay.style.cssText = `

@@ -1141,7 +1141,31 @@ export class RNGArena {
             this.battleStatus.style.opacity = '0';
         }, 7000);
 
-        // Advance after 7 seconds
+        // Start fade-out at 7 seconds (2 second fade-out before advancing)
+        setTimeout(() => {
+            // Fade out both fighters using the loser-fade-out animation
+            if (this.leftFighter) {
+                const leftSprite = this.leftFighter.querySelector('.fighter-sprite');
+                if (leftSprite) {
+                    leftSprite.style.animation = 'loser-fade-out 2s ease-out forwards';
+                }
+            }
+            if (this.rightFighter) {
+                const rightSprite = this.rightFighter.querySelector('.fighter-sprite');
+                if (rightSprite) {
+                    rightSprite.style.animation = 'loser-fade-out 2s ease-out forwards';
+                }
+            }
+
+            // Also fade out nameplates
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
+            if (nameplateContainer) {
+                nameplateContainer.style.transition = 'opacity 2s ease-out';
+                nameplateContainer.style.opacity = '0';
+            }
+        }, 7000);
+
+        // Advance after 9 seconds (7 seconds display + 2 seconds fade-out)
         setTimeout(() => {
             this.tournament.advanceToNextMatch();
             this.updateOdds();
@@ -1153,7 +1177,7 @@ export class RNGArena {
             } else {
                 this.enableRestart();
             }
-        }, 7000);
+        }, 9000);
     }
 
     handleNoMatch() {
@@ -1320,6 +1344,9 @@ export class RNGArena {
     // ===== Fighter Management =====
 
     resetFighters() {
+        // Stop coin shower if running
+        this.stopVictoryCoinShower();
+
         if (this.leftFighter) {
             // Remove ALL classes (entrance, exit, victory, etc.)
             this.leftFighter.className = 'fighter-left';
@@ -1806,6 +1833,9 @@ export class RNGArena {
 
         this.emojiSystem.setMaxSpawnRate();
 
+        // Start coin shower from above (continuous until stopped)
+        this.startVictoryCoinShower();
+
         // Play victory sound (full duration)
         if (!this.audioMuted) {
             const sound = new Audio(this.victorySoundPath);
@@ -2100,6 +2130,43 @@ export class RNGArena {
         }, 1200);
 
         this.battleStatus.style.opacity = '0';
+    }
+
+    /**
+     * Start continuous coin shower for victory animation
+     */
+    startVictoryCoinShower() {
+        console.log('💰 Starting victory coin shower!');
+
+        // Create coins at a steady rate
+        this.victoryCoinInterval = setInterval(() => {
+            const coin = document.createElement('img');
+            coin.className = 'victory-coin';
+            coin.src = '/images/effects/Gold Coin.webp';
+            coin.style.cssText = `
+                position: absolute;
+                left: ${Math.random() * 100}%;
+                top: -50px;
+                width: ${7.5 + Math.random() * 5}px;
+                height: auto;
+                z-index: 3;
+                pointer-events: none;
+            `;
+            this.arenaViewport.appendChild(coin);
+
+            // Remove coin after animation completes
+            setTimeout(() => coin.remove(), 3000);
+        }, 150); // Spawn a coin every 150ms
+    }
+
+    /**
+     * Stop victory coin shower
+     */
+    stopVictoryCoinShower() {
+        if (this.victoryCoinInterval) {
+            clearInterval(this.victoryCoinInterval);
+            this.victoryCoinInterval = null;
+        }
     }
 
     // ===== Combat Cleanup =====

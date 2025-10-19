@@ -1360,9 +1360,15 @@ body {
 }
 
 .control-btn:hover {
-    background: rgba(70, 70, 70, 0.9);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: scale(1.05);
+    background: rgba(70, 70, 70, 0.95);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px) scale(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+.control-btn:active {
+    transform: translateY(0) scale(1.03);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .control-btn.exit-btn {
@@ -1373,9 +1379,15 @@ body {
 }
 
 .control-btn.exit-btn:hover {
-    background: rgba(70, 70, 70, 0.9);
-    border-color: rgba(255, 255, 255, 0.5);
-    transform: scale(1.05);
+    background: rgba(70, 70, 70, 0.95);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: translateY(-2px) scale(1.08);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 255, 255, 0.2);
+}
+
+.control-btn.exit-btn:active {
+    transform: translateY(0) scale(1.03);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.4);
 }
 
 .control-btn.toggle-btn {
@@ -2909,12 +2921,21 @@ body {
 }
 
 .battle-btn:hover {
-    transform: translate(-50%, -50%) scale(1.05);
+    transform: translate(-50%, calc(-50% - 3px)) scale(1.08);
     box-shadow:
-        0 0 40px rgba(255, 215, 0, 1),
-        0 0 80px rgba(255, 215, 0, 0.6),
-        inset 0 0 25px rgba(255, 255, 255, 0.5);
+        0 0 45px rgba(255, 215, 0, 1),
+        0 0 90px rgba(255, 215, 0, 0.7),
+        inset 0 0 30px rgba(255, 255, 255, 0.6);
     animation: goldShimmer 1.5s ease-in-out infinite, buttonPulse 1s ease-in-out infinite;
+    filter: brightness(1.15);
+}
+
+.battle-btn:active {
+    transform: translate(-50%, calc(-50% - 1px)) scale(1.03);
+    box-shadow:
+        0 0 35px rgba(255, 215, 0, 0.9),
+        0 0 70px rgba(255, 215, 0, 0.5),
+        inset 0 0 20px rgba(255, 255, 255, 0.4);
 }
 
 .battle-btn:disabled {
@@ -3138,15 +3159,41 @@ body {
 
 @keyframes subtleGlow {
     0%, 100% {
-        filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.3)) drop-shadow(0 0 20px rgba(255, 215, 0, 0.2));
+        filter: drop-shadow(0 0 15px rgba(200, 200, 255, 0.4)) drop-shadow(0 0 25px rgba(150, 150, 200, 0.3)) brightness(1.05);
     }
     50% {
-        filter: drop-shadow(0 0 15px rgba(255, 215, 0, 0.5)) drop-shadow(0 0 30px rgba(255, 215, 0, 0.3));
+        filter: drop-shadow(0 0 25px rgba(220, 220, 255, 0.6)) drop-shadow(0 0 40px rgba(180, 180, 220, 0.4)) drop-shadow(0 0 60px rgba(150, 150, 200, 0.2)) brightness(1.1);
     }
 }
 
 .treasure-chest.claimable .loot-chest-image {
-    animation: chestBounce 2s ease-in-out infinite, subtleGlow 3s ease-in-out infinite;
+    animation: chestBounce 2s ease-in-out infinite, subtleGlow 2.5s ease-in-out infinite;
+}
+
+/* Additional claimable chest background glow */
+.loot-box.claimable::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 400px;
+    background: radial-gradient(circle, rgba(200, 200, 255, 0.15) 0%, transparent 70%);
+    z-index: 1;
+    pointer-events: none;
+    animation: claimableBackgroundPulse 2.5s ease-in-out infinite;
+}
+
+@keyframes claimableBackgroundPulse {
+    0%, 100% {
+        opacity: 0.4;
+        transform: translateX(-50%) scale(1);
+    }
+    50% {
+        opacity: 0.6;
+        transform: translateX(-50%) scale(1.1);
+    }
 }
 
 /* Claim Loot Button */
@@ -3190,11 +3237,20 @@ body {
 }
 
 .claim-loot-btn:hover {
-    transform: translateX(-50%) scale(1.1);
+    transform: translateX(-50%) translateY(-5px) scale(1.12);
     box-shadow:
-        0 8px 35px rgba(255, 215, 0, 0.8),
-        0 0 40px rgba(255, 215, 0, 0.6),
-        inset 0 2px 10px rgba(255, 255, 255, 0.5);
+        0 12px 45px rgba(255, 215, 0, 0.9),
+        0 0 50px rgba(255, 215, 0, 0.7),
+        inset 0 2px 15px rgba(255, 255, 255, 0.6);
+    filter: brightness(1.15);
+}
+
+.claim-loot-btn:active {
+    transform: translateX(-50%) translateY(-2px) scale(1.08);
+    box-shadow:
+        0 6px 30px rgba(255, 215, 0, 0.7),
+        0 0 35px rgba(255, 215, 0, 0.5),
+        inset 0 2px 10px rgba(255, 255, 255, 0.4);
 }
 
 .claim-loot-btn.hidden {
@@ -4111,6 +4167,158 @@ body {
 
 .fighter-entrance-right {
     animation: fighterEntranceRight 1s ease-out forwards;
+}
+
+/* Screen shake on critical hit - applied to viewport, not fighters */
+.arena-viewport.crit-shake {
+    animation: critScreenShake 0.4s ease-in-out;
+}
+
+/* Reduced shake for live chat view */
+.chat-mode-battlefield-overlay.crit-shake {
+    animation: critScreenShakeLiveChat 0.4s ease-in-out;
+}
+
+@keyframes critScreenShake {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-5px, 3px); }
+    20% { transform: translate(5px, -3px); }
+    30% { transform: translate(-4px, -4px); }
+    40% { transform: translate(4px, 4px); }
+    50% { transform: translate(-5px, -3px); }
+    60% { transform: translate(5px, 3px); }
+    70% { transform: translate(-3px, 5px); }
+    80% { transform: translate(3px, -5px); }
+    90% { transform: translate(-2px, 2px); }
+}
+
+@keyframes critScreenShakeLiveChat {
+    0%, 100% { transform: translate(0, 0); }
+    10% { transform: translate(-1px, 0.5px); }
+    20% { transform: translate(1px, -0.5px); }
+    30% { transform: translate(-0.5px, -1px); }
+    40% { transform: translate(0.5px, 1px); }
+    50% { transform: translate(-1px, -0.5px); }
+    60% { transform: translate(1px, 0.5px); }
+    70% { transform: translate(-0.5px, 1px); }
+    80% { transform: translate(0.5px, -1px); }
+    90% { transform: translate(-0.5px, 0.5px); }
+}
+
+/* Low HP red glow effect - target by ID */
+#left-hp-fill[style*="width: 1%"],
+#left-hp-fill[style*="width: 2%"],
+#left-hp-fill[style*="width: 3%"],
+#left-hp-fill[style*="width: 4%"],
+#left-hp-fill[style*="width: 5%"],
+#left-hp-fill[style*="width: 6%"],
+#left-hp-fill[style*="width: 7%"],
+#left-hp-fill[style*="width: 8%"],
+#left-hp-fill[style*="width: 9%"],
+#left-hp-fill[style*="width: 10%"],
+#left-hp-fill[style*="width: 11%"],
+#left-hp-fill[style*="width: 12%"],
+#left-hp-fill[style*="width: 13%"],
+#left-hp-fill[style*="width: 14%"],
+#left-hp-fill[style*="width: 15%"],
+#left-hp-fill[style*="width: 16%"],
+#left-hp-fill[style*="width: 17%"],
+#left-hp-fill[style*="width: 18%"],
+#left-hp-fill[style*="width: 19%"],
+#left-hp-fill[style*="width: 20%"],
+#left-hp-fill[style*="width: 21%"],
+#left-hp-fill[style*="width: 22%"],
+#left-hp-fill[style*="width: 23%"],
+#left-hp-fill[style*="width: 24%"],
+#left-hp-fill[style*="width: 25%"],
+#left-hp-fill[style*="width: 26%"],
+#left-hp-fill[style*="width: 27%"],
+#left-hp-fill[style*="width: 28%"],
+#left-hp-fill[style*="width: 29%"],
+#left-hp-fill[style*="width: 30%"],
+#right-hp-fill[style*="width: 1%"],
+#right-hp-fill[style*="width: 2%"],
+#right-hp-fill[style*="width: 3%"],
+#right-hp-fill[style*="width: 4%"],
+#right-hp-fill[style*="width: 5%"],
+#right-hp-fill[style*="width: 6%"],
+#right-hp-fill[style*="width: 7%"],
+#right-hp-fill[style*="width: 8%"],
+#right-hp-fill[style*="width: 9%"],
+#right-hp-fill[style*="width: 10%"],
+#right-hp-fill[style*="width: 11%"],
+#right-hp-fill[style*="width: 12%"],
+#right-hp-fill[style*="width: 13%"],
+#right-hp-fill[style*="width: 14%"],
+#right-hp-fill[style*="width: 15%"],
+#right-hp-fill[style*="width: 16%"],
+#right-hp-fill[style*="width: 17%"],
+#right-hp-fill[style*="width: 18%"],
+#right-hp-fill[style*="width: 19%"],
+#right-hp-fill[style*="width: 20%"],
+#right-hp-fill[style*="width: 21%"],
+#right-hp-fill[style*="width: 22%"],
+#right-hp-fill[style*="width: 23%"],
+#right-hp-fill[style*="width: 24%"],
+#right-hp-fill[style*="width: 25%"],
+#right-hp-fill[style*="width: 26%"],
+#right-hp-fill[style*="width: 27%"],
+#right-hp-fill[style*="width: 28%"],
+#right-hp-fill[style*="width: 29%"],
+#right-hp-fill[style*="width: 30%"] {
+    box-shadow: 0 0 10px rgba(255, 0, 0, 0.8), 0 0 20px rgba(255, 0, 0, 0.6), inset 0 0 10px rgba(255, 0, 0, 0.4) !important;
+    animation: lowHPPulse 1s ease-in-out infinite !important;
+}
+
+@keyframes lowHPPulse {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.3);
+    }
+}
+
+/* Victory coin falling animation - applied to gold coin images */
+.victory-coin {
+    animation: coinFall 3s linear forwards, coinRotate 1s linear infinite !important;
+}
+
+@keyframes coinFall {
+    0% {
+        top: -50px;
+        opacity: 1;
+    }
+    100% {
+        top: 100%;
+        opacity: 0.3;
+    }
+}
+
+@keyframes coinRotate {
+    0% {
+        transform: rotateY(0deg);
+    }
+    50% {
+        transform: rotateY(180deg);
+    }
+    100% {
+        transform: rotateY(360deg);
+    }
+}
+
+/* Victory character bobbing animation */
+.final-victory-winner {
+    animation: victoryCharacterBob 3s ease-in-out infinite !important;
+}
+
+@keyframes victoryCharacterBob {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1.2) translateY(0);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.2) translateY(-15px);
+    }
 }
 
 .fighter-exit {

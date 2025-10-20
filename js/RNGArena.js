@@ -2693,8 +2693,7 @@ export class RNGArena {
                 height: auto;
                 z-index: 3;
                 pointer-events: none;
-                animation-delay: ${randomDelay}s;
-                animation-duration: ${randomDuration}s, 1s;
+                animation: coinFall ${randomDuration}s linear forwards ${randomDelay}s, coinRotate 1s linear infinite ${randomDelay}s !important;
             `;
             this.arenaViewport.appendChild(coin);
 

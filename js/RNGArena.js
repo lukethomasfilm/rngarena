@@ -1140,17 +1140,27 @@ export class RNGArena {
             // This ensures they're fully off-screen and hidden
             this.resetFighters();
 
-            // Get the first match to populate nameplate names only
+            // Get the first match to populate nameplate names AND titles
             const firstMatch = this.tournament.getCurrentMatch();
             if (firstMatch) {
                 const displayOrder = this.tournament.getDisplayOrder();
 
-                // Populate nameplate names WITHOUT loading images
+                // Populate nameplate names
                 if (this.leftFighterNameEl && displayOrder) {
                     this.leftFighterNameEl.textContent = this.tournament.getCharacterName(displayOrder.leftFighter);
                 }
                 if (this.rightFighterNameEl && displayOrder) {
                     this.rightFighterNameEl.textContent = this.tournament.getCharacterName(displayOrder.rightFighter);
+                }
+
+                // CRITICAL: Also populate titles BEFORE animation so height is stable
+                if (this.leftFighterTitlesEl && displayOrder) {
+                    const leftTitles = this.tournament.getCharacterTitles(displayOrder.leftFighter);
+                    this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
+                }
+                if (this.rightFighterTitlesEl && displayOrder) {
+                    const rightTitles = this.tournament.getCharacterTitles(displayOrder.rightFighter);
+                    this.rightFighterTitlesEl.textContent = rightTitles.join(' • ');
                 }
 
                 // Note: Images will be loaded later by startBattle()

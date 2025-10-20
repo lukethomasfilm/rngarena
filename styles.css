@@ -888,9 +888,9 @@ body {
     content: '';
     position: sticky;
     top: -15px;
-    left: -20px;
-    right: -20px;
-    width: calc(100% + 40px);
+    left: -25px;
+    right: -25px;
+    width: calc(100% + 50px);
     display: block;
     height: 60px;
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0.6), transparent);

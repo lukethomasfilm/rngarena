@@ -1722,8 +1722,10 @@ export class RNGArena {
 
         if (this.tournament.isComplete()) {
             const winner = this.tournament.getWinner();
-            this.startButton.textContent = `${winner.toUpperCase()} WINS THE CROWN!`;
-            this.startButton.disabled = true;
+            if (this.startButton) {
+                this.startButton.textContent = `${winner.toUpperCase()} WINS THE CROWN!`;
+                this.startButton.disabled = true;
+            }
             this.chatSystem.addChatMessage("CROWN WINNER!");
             this.chatSystem.addChatMessage("LEGENDARY!");
 
@@ -1749,7 +1751,11 @@ export class RNGArena {
             }, 500);
         } else {
             const roundInfo = this.tournament.getRoundInfo();
-            this.startButton.textContent = `CONTINUE ${roundInfo.name.toUpperCase()}`;
+            if (this.startButton) {
+
+                this.startButton.textContent = `CONTINUE ${roundInfo.name.toUpperCase()}`;
+
+            }
         }
     }
 

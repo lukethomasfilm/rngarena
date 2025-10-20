@@ -1180,7 +1180,7 @@ body {
 
 .battlefield-section.fullscreen .fighter-left,
 .battlefield-section.fullscreen .fighter-right {
-    bottom: 5% !important;
+    bottom: calc(5% - 35px) !important;
     width: 25% !important;
 }
 
@@ -1190,7 +1190,7 @@ body {
 }
 
 /* Only apply static transform when NOT entering */
-.battlefield-section.fullscreen .fighter-left:not(.fighter-entrance-left) {
+.battlefield-section.fullscreen .fighter-left:not(.fighter-entrance-left):not(.victory-center) {
     transform: translateX(-50%) !important;
 }
 
@@ -1200,7 +1200,7 @@ body {
 }
 
 /* Only apply static transform when NOT entering */
-.battlefield-section.fullscreen .fighter-right:not(.fighter-entrance-right) {
+.battlefield-section.fullscreen .fighter-right:not(.fighter-entrance-right):not(.victory-center) {
     transform: translateX(-50%) !important;
 }
 
@@ -1220,10 +1220,10 @@ body {
     /* Scale removed - now controlled by JavaScript per-character */
 }
 
-/* Scale the character images directly in fullscreen */
+/* Scale the character images directly in fullscreen - 20% bigger than normal */
 .battlefield-section.fullscreen .character-image {
-    width: 198px !important;
-    height: 252px !important;
+    width: 238px !important;
+    height: 302px !important;
 }
 
 .battlefield-fullscreen-close {
@@ -2036,12 +2036,12 @@ body {
     z-index: 1000;
     padding: 0 20px;
     gap: 2px;
-    transform: translateY(150%);
+    transform: translateY(100%);
     transition: transform 0.8s ease-out;
 }
 
 .nameplate-vs-container.visible {
-    transform: translateY(0);
+    transform: translateY(0) !important;
 }
 
 .nameplate {
@@ -4190,16 +4190,10 @@ body {
     animation: critScreenShake 0.4s ease-in-out;
 }
 
-/* Reduced shake for live chat view - shake specific elements only, not entire viewport */
-/* Shake the fighter sprites (not the positioned containers) */
-.chat-mode-battlefield-overlay.crit-shake .fighter-sprite {
-    animation: critShakeFighters 0.4s ease-in-out;
-}
-
-/* Shake damage numbers and critical text */
-.chat-mode-battlefield-overlay.crit-shake .damage-number,
-.chat-mode-battlefield-overlay.crit-shake .battle-status {
-    animation: critShakeFighters 0.4s ease-in-out;
+/* Live chat crit effect - shake ONLY the background image, not the container */
+/* This avoids any layout/scale conflicts by animating background-position */
+.chat-mode-battlefield-overlay.crit-shake .arena-viewport {
+    animation: critShakeBackgroundOnly 0.4s ease-in-out;
 }
 
 @keyframes critScreenShake {
@@ -4215,47 +4209,37 @@ body {
     90% { transform: translate(-2px, 2px); }
 }
 
-/* Subtle shake for fighters in live chat - use margin to avoid transform conflicts */
-@keyframes critShakeFighters {
+/* Shake background image only - no transform/layout changes */
+@keyframes critShakeBackgroundOnly {
     0%, 100% {
-        margin: 0;
-        filter: brightness(1);
+        background-position: center bottom;
     }
     10% {
-        margin: 0.5px 0 0 -1px;
-        filter: brightness(1.3);
+        background-position: calc(center - 3px) calc(bottom + 2px);
     }
     20% {
-        margin: -0.5px 0 0 1px;
-        filter: brightness(1.2);
+        background-position: calc(center + 3px) calc(bottom - 2px);
     }
     30% {
-        margin: -1px 0 0 -0.5px;
-        filter: brightness(1.3);
+        background-position: calc(center - 2px) calc(bottom - 2px);
     }
     40% {
-        margin: 1px 0 0 0.5px;
-        filter: brightness(1.2);
+        background-position: calc(center + 2px) calc(bottom + 2px);
     }
     50% {
-        margin: -0.5px 0 0 -1px;
-        filter: brightness(1.3);
+        background-position: calc(center - 3px) calc(bottom - 1px);
     }
     60% {
-        margin: 0.5px 0 0 1px;
-        filter: brightness(1.2);
+        background-position: calc(center + 3px) calc(bottom + 1px);
     }
     70% {
-        margin: 1px 0 0 -0.5px;
-        filter: brightness(1.1);
+        background-position: calc(center - 2px) calc(bottom + 2px);
     }
     80% {
-        margin: -1px 0 0 0.5px;
-        filter: brightness(1.1);
+        background-position: calc(center + 2px) calc(bottom - 1px);
     }
     90% {
-        margin: 0.5px 0 0 -0.5px;
-        filter: brightness(1.05);
+        background-position: calc(center - 1px) calc(bottom + 1px);
     }
 }
 

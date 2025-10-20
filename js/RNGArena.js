@@ -1159,16 +1159,12 @@ export class RNGArena {
             // Animate nameplates into view immediately
             const nameplateContainer = document.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
-                // CRITICAL: Clear any lingering classes and styles from previous victory animations
+                // Remove visible class first to ensure clean start
                 nameplateContainer.classList.remove('visible');
-                nameplateContainer.style.transform = '';
-                nameplateContainer.style.opacity = '';
-                nameplateContainer.style.transition = '';
 
-                // Force a reflow to ensure the browser recognizes the reset state
-                void nameplateContainer.offsetHeight;
+                // Clear any lingering inline styles from previous victory animations
+                nameplateContainer.removeAttribute('style');
 
-                // Small delay to ensure clean animation start
                 setTimeout(() => {
                     nameplateContainer.classList.add('visible');
 
@@ -1178,7 +1174,7 @@ export class RNGArena {
                         slideSound.volume = 0.4;
                         slideSound.play().catch(err => console.log('Slide sound failed:', err));
                     }
-                }, 50);
+                }, 100);
             }
         } else {
             // First round is a bye - keep nameplates hidden, let handleByeRound animate them

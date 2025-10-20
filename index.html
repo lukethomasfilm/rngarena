@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>RNG Arena</title>
+    <title>RNG: Legends</title>
     <meta name="description" content="Epic medieval tournament battles with turn-based combat and RNG mechanics">
     <meta name="theme-color" content="#1a1a2e">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -12,6 +12,80 @@
 </head>
 <body>
     <div class="dev-frame">
+        <!-- Home Screen -->
+        <div id="home-screen" class="game-screen">
+            <div class="home-container">
+                <!-- Home Screen Music -->
+                <audio id="home-music" autoplay loop muted>
+                    <source src="/sfx/RNG Home.mp3" type="audio/mpeg">
+                </audio>
+
+                <!-- Parallax Background Layers -->
+                <div class="parallax-clouds" data-speed="0.2"></div>
+                <div class="parallax-logo"></div>
+                <div class="parallax-castle" data-speed="0.4"></div>
+                <div class="parallax-trees" data-speed="0.6"></div>
+
+                <!-- Characters at Bottom -->
+                <div class="home-characters">
+                    <img src="/images/Home Screen/Aphrodite.png" alt="Aphrodite" class="home-character home-aphrodite" data-speed="0.5">
+                    <img src="/images/Home Screen/hero.png" alt="Hero" class="home-character home-hero" data-speed="0.7">
+                    <img src="/images/Home Screen/black knight.png" alt="Black Knight" class="home-character home-black-knight" data-speed="0.5">
+                </div>
+
+                <!-- Currency Display (Top Left) -->
+                <div class="home-currency">
+                    <div class="home-currency-item">
+                        <img src="/images/effects/Gold Coin.webp" alt="Gold" class="home-currency-icon">
+                        <span id="home-gold-display-top" class="home-currency-value">0</span>
+                    </div>
+                    <div class="home-currency-item">
+                        <span class="home-currency-icon-gem">💎</span>
+                        <span id="home-gems-display" class="home-currency-value">0</span>
+                    </div>
+                </div>
+
+                <!-- Countdown Timer (Top Right) -->
+                <div class="home-countdown-timer" id="home-countdown-timer">
+                    <div class="countdown-label">Tournament starts in</div>
+                    <div class="countdown-time">00:00:10</div>
+                </div>
+
+                <!-- PVP Button (Top Right, below countdown) -->
+                <button id="home-pvp-btn" class="home-pvp-btn">
+                    <img src="/images/Home Screen/pvp-button .png" alt="PVP Mode">
+                </button>
+
+                <!-- PVE Button (Top Left, below currency) -->
+                <button id="home-pve-btn" class="home-corner-btn home-pve-btn">
+                    <img src="/images/Home Screen/pve-button.png" alt="PVE Tournament">
+                </button>
+
+                <!-- Store Button (Top Left, below PVE) -->
+                <button id="home-store-btn" class="home-corner-btn home-store-btn">
+                    <img src="/images/Home Screen/store-button.png" alt="Store">
+                </button>
+
+                <!-- Battle Pass Button (Top Left, below store) -->
+                <button id="home-battlepass-btn" class="home-corner-btn home-battlepass-btn">
+                    <img src="/images/Home Screen/battle-pass-button.png" alt="Battle Pass">
+                </button>
+
+                <!-- Settings and Audio (Bottom Right, above castle) -->
+                <div class="home-bottom-controls">
+                    <button id="home-settings-btn" class="home-small-btn">⚙️</button>
+                    <button id="home-audio-btn" class="home-small-btn">🔊</button>
+                </div>
+
+                <!-- Castle Button (Bottom Right Corner) -->
+                <button id="home-castle-btn" class="home-castle-menu-btn">
+                    <img src="/images/Home Screen/castle-button.png" alt="Castle">
+                </button>
+            </div>
+        </div>
+
+        <!-- PVE Tournament Screen -->
+        <div id="pve-tournament-screen" class="game-screen hidden">
         <div class="container">
             <!-- Left Side: Loot Container -->
             <div class="left-section">
@@ -69,7 +143,6 @@
                             <span class="crown-odds">1 in 16,384</span>
                         </div>
                     </div>
-                    <button id="start-battle" class="battle-btn">START TOURNAMENT</button>
                     <div class="battle-status"></div>
                     <div class="round-announcement"></div>
                     <div class="fighter-left">
@@ -123,7 +196,7 @@
                 <div class="control-grid">
                     <button id="settings-btn" class="control-btn">⚙️</button>
                     <button id="mute-audio" class="control-btn mute-btn">🔊</button>
-                    <button id="exit-game" class="control-btn exit-btn">❌</button>
+                    <button id="exit-game" class="control-btn exit-btn" title="Return to Home">←</button>
                     <label class="control-btn toggle-btn">
                         <input type="checkbox" id="daring-hero-checkbox">
                         <span class="toggle-slider"></span>
@@ -153,6 +226,7 @@
                 </div>
             </div>
         </div><!-- End container -->
+        </div><!-- End pve-tournament-screen -->
 
         <!-- Loot Claim Popup Overlay -->
         <div class="loot-claim-overlay hidden" id="loot-claim-overlay">

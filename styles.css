@@ -653,7 +653,7 @@ body {
 }
 
 /* Only apply static transform when NOT entering */
-.chat-mode-battlefield-overlay .fighter-left:not(.fighter-entrance-left) {
+.chat-mode-battlefield-overlay .fighter-left:not(.fighter-entrance-left):not(.victory-center) {
     transform: translateX(-220px) scale(0.9) !important;
 }
 
@@ -664,7 +664,7 @@ body {
 }
 
 /* Only apply static transform when NOT entering */
-.chat-mode-battlefield-overlay .fighter-right:not(.fighter-entrance-right) {
+.chat-mode-battlefield-overlay .fighter-right:not(.fighter-entrance-right):not(.victory-center) {
     transform: translateX(60px) scale(0.9) !important;
 }
 
@@ -2037,7 +2037,7 @@ body {
     padding: 0 20px;
     gap: 2px;
     transform: translateY(150%);
-    transition: transform 1s ease-out;
+    transition: transform 0.8s ease-out;
 }
 
 .nameplate-vs-container.visible {
@@ -2714,9 +2714,25 @@ body {
     transform: translateX(-100%);
 }
 
+/* Normal view: resting position after entrance - must match animation end state */
+/* Animation ends at translateX(0) scale(0.8), so we preserve that */
+/* Need !important to override default translateX(-100%) */
+/* Fullscreen/chat rules have higher specificity so they will still override this */
+.fighter-left:not(.fighter-entrance-left):not(.victory-center) {
+    transform: translateX(0) scale(0.8) !important;
+}
+
 .fighter-right {
     right: 8%; /* Move slightly towards center */
     transform: translateX(100%);
+}
+
+/* Normal view: resting position after entrance - must match animation end state */
+/* Animation ends at translateX(0) scale(0.8), so we preserve that */
+/* Need !important to override default translateX(100%) */
+/* Fullscreen/chat rules have higher specificity so they will still override this */
+.fighter-right:not(.fighter-entrance-right):not(.victory-center) {
+    transform: translateX(0) scale(0.8) !important;
 }
 
 .fighter-sprite {
@@ -4174,9 +4190,16 @@ body {
     animation: critScreenShake 0.4s ease-in-out;
 }
 
-/* Reduced shake for live chat view */
-.chat-mode-battlefield-overlay.crit-shake {
-    animation: critScreenShakeLiveChat 0.4s ease-in-out;
+/* Reduced shake for live chat view - shake specific elements only, not entire viewport */
+/* Shake the fighter sprites (not the positioned containers) */
+.chat-mode-battlefield-overlay.crit-shake .fighter-sprite {
+    animation: critShakeFighters 0.4s ease-in-out;
+}
+
+/* Shake damage numbers and critical text */
+.chat-mode-battlefield-overlay.crit-shake .damage-number,
+.chat-mode-battlefield-overlay.crit-shake .battle-status {
+    animation: critShakeFighters 0.4s ease-in-out;
 }
 
 @keyframes critScreenShake {
@@ -4192,17 +4215,48 @@ body {
     90% { transform: translate(-2px, 2px); }
 }
 
-@keyframes critScreenShakeLiveChat {
-    0%, 100% { transform: translate(0, 0); }
-    10% { transform: translate(-1px, 0.5px); }
-    20% { transform: translate(1px, -0.5px); }
-    30% { transform: translate(-0.5px, -1px); }
-    40% { transform: translate(0.5px, 1px); }
-    50% { transform: translate(-1px, -0.5px); }
-    60% { transform: translate(1px, 0.5px); }
-    70% { transform: translate(-0.5px, 1px); }
-    80% { transform: translate(0.5px, -1px); }
-    90% { transform: translate(-0.5px, 0.5px); }
+/* Subtle shake for fighters in live chat - use margin to avoid transform conflicts */
+@keyframes critShakeFighters {
+    0%, 100% {
+        margin: 0;
+        filter: brightness(1);
+    }
+    10% {
+        margin: 0.5px 0 0 -1px;
+        filter: brightness(1.3);
+    }
+    20% {
+        margin: -0.5px 0 0 1px;
+        filter: brightness(1.2);
+    }
+    30% {
+        margin: -1px 0 0 -0.5px;
+        filter: brightness(1.3);
+    }
+    40% {
+        margin: 1px 0 0 0.5px;
+        filter: brightness(1.2);
+    }
+    50% {
+        margin: -0.5px 0 0 -1px;
+        filter: brightness(1.3);
+    }
+    60% {
+        margin: 0.5px 0 0 1px;
+        filter: brightness(1.2);
+    }
+    70% {
+        margin: 1px 0 0 -0.5px;
+        filter: brightness(1.1);
+    }
+    80% {
+        margin: -1px 0 0 0.5px;
+        filter: brightness(1.1);
+    }
+    90% {
+        margin: 0.5px 0 0 -0.5px;
+        filter: brightness(1.05);
+    }
 }
 
 /* Low HP red glow effect - target by ID */
@@ -5270,3 +5324,486 @@ body {
 }
 
 /* Optimized animations - reduce repaints and use transform/opacity for better performance */
+
+/* ========================================
+   GAME SCREEN NAVIGATION
+   ======================================== */
+
+.game-screen {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.game-screen.hidden {
+    display: none !important;
+}
+
+/* ========================================
+   HOME SCREEN
+   ======================================== */
+
+.home-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: #1a1a2e;
+    border-radius: 20px;
+}
+
+/* Parallax Background Layers */
+.parallax-background,
+.parallax-clouds,
+.parallax-castle,
+.parallax-trees {
+    position: absolute;
+    top: -5%;
+    left: -5%;
+    width: 110%;
+    height: 110%;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+}
+
+.parallax-clouds {
+    z-index: 2;
+}
+
+.parallax-clouds::before,
+.parallax-clouds::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/Home Screen/background_clouds.png');
+    background-size: 200% auto;
+    background-repeat: repeat-x;
+}
+
+.parallax-clouds::before {
+    animation: cloudDrift1 120s linear infinite;
+}
+
+.parallax-clouds::after {
+    animation: cloudDrift2 120s linear infinite;
+}
+
+.parallax-logo {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/Home Screen/RNG_Legends.png');
+    background-size: auto 60%;
+    background-position: center 20%;
+    background-repeat: no-repeat;
+    z-index: 2;
+}
+
+.parallax-castle {
+    background-image: url('/images/Home Screen/background_castle.png');
+    background-size: 130% auto;
+    background-position: calc(50% + 70px) center;
+    z-index: 3;
+}
+
+.parallax-trees {
+    background-image: url('/images/Home Screen/background_trees.png');
+    background-size: 96%;
+    background-position: center calc(45% - 45px);
+    z-index: 4;
+}
+
+/* Cloud drift animations - both move left continuously with overlap */
+@keyframes cloudDrift1 {
+    0% {
+        background-position: 150% center;
+        opacity: 1;
+    }
+    35% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.3;
+    }
+    65% {
+        opacity: 0;
+    }
+    100% {
+        background-position: -150% center;
+        opacity: 0;
+    }
+}
+
+@keyframes cloudDrift2 {
+    0% {
+        background-position: 150% center;
+        opacity: 0;
+    }
+    35% {
+        opacity: 0;
+    }
+    50% {
+        opacity: 0.7;
+    }
+    65% {
+        opacity: 1;
+    }
+    85% {
+        opacity: 1;
+    }
+    100% {
+        background-position: -150% center;
+        opacity: 1;
+    }
+}
+
+/* Characters at Bottom */
+.home-characters {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 50%;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    z-index: 5;
+    pointer-events: none;
+}
+
+.home-character {
+    position: absolute;
+    bottom: -10%;
+    height: 168%;
+    width: auto;
+    transition: transform 0.1s ease-out;
+    will-change: transform;
+}
+
+.home-aphrodite {
+    left: 25%;
+    z-index: 5;
+    bottom: calc(-10% - 15px);
+}
+
+.home-hero {
+    left: calc(50% - 20px);
+    transform: translateX(-50%);
+    z-index: 6;
+    height: 240%;
+    bottom: calc(-10% - 80px);
+}
+
+.home-black-knight {
+    right: 25%;
+    z-index: 5;
+}
+
+
+/* Currency Display - Top Left */
+.home-currency {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    z-index: 20;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    padding: 8px 12px;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 215, 0, 0.4);
+}
+
+.home-currency-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.home-currency-item:not(:last-child) {
+    padding-right: 10px;
+    border-right: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.home-currency-icon {
+    width: 19px;
+    height: 19px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.home-currency-icon-gem {
+    font-size: 20px;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.home-currency-value {
+    font-size: 18px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow: 0 0 8px rgba(255, 215, 0, 0.6), 2px 2px 4px rgba(0, 0, 0, 0.8);
+    min-width: 30px;
+}
+
+/* Countdown Timer - Top Right */
+.home-countdown-timer {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 20;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+}
+
+.countdown-label {
+    font-size: 14px;
+    font-weight: normal;
+    color: #c0c0c0;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    white-space: nowrap;
+}
+
+.countdown-time {
+    font-size: 24px;
+    font-weight: bold;
+    color: #ffd700;
+    text-shadow:
+        0 0 10px rgba(255, 215, 0, 0.8),
+        2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* PVP Button - Top Right (below countdown) */
+.home-pvp-btn {
+    position: absolute;
+    top: 70px;
+    right: 15px;
+    z-index: 20;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.home-pvp-btn img {
+    width: 90px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+}
+
+.home-pvp-btn:hover {
+    transform: translateY(-3px);
+}
+
+.home-pvp-btn:hover img {
+    filter: drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+}
+
+.home-pvp-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Corner Buttons */
+.home-corner-btn {
+    position: absolute;
+    z-index: 20;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.home-pve-btn {
+    top: 160px;
+    right: 15px;
+}
+
+.home-store-btn {
+    top: 70px;
+    left: 15px;
+}
+
+.home-battlepass-btn {
+    top: 160px;
+    left: 15px;
+}
+
+.home-corner-btn img {
+    width: 90px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+}
+
+.home-corner-btn:hover {
+    transform: translateY(-3px);
+}
+
+.home-corner-btn:hover img {
+    filter: drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+}
+
+.home-corner-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Bottom Controls - Settings and Audio */
+.home-bottom-controls {
+    position: absolute;
+    bottom: 15px;
+    left: 15px;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.home-small-btn {
+    width: 45px;
+    height: 45px;
+    font-size: 22px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.home-small-btn:hover {
+    transform: translateY(-3px);
+    border-color: #ffd700;
+    box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4);
+    background: rgba(0, 0, 0, 0.85);
+}
+
+.home-small-btn:active {
+    transform: translateY(-1px);
+}
+
+.home-content {
+    position: relative;
+    z-index: 20;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 20px;
+    max-width: 90%;
+}
+
+.home-title {
+    font-size: 48px;
+    font-weight: bold;
+    color: #ffd700;
+    text-align: center;
+    text-shadow:
+        0 0 10px rgba(255, 215, 0, 0.8),
+        0 0 20px rgba(255, 215, 0, 0.6),
+        3px 3px 6px rgba(0, 0, 0, 0.8);
+    letter-spacing: 4px;
+    margin-bottom: 10px;
+}
+
+.home-subtitle {
+    font-size: 18px;
+    color: #c0c0c0;
+    text-align: center;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    margin-bottom: 20px;
+}
+
+.home-menu {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    margin: 20px 0;
+}
+
+.home-castle-menu-btn {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    z-index: 20;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.home-castle-menu-btn img {
+    width: 90px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+}
+
+.home-castle-menu-btn:hover {
+    transform: translateY(-3px);
+}
+
+.home-castle-menu-btn:hover img {
+    filter: drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+}
+
+.home-castle-menu-btn:active {
+    transform: translateY(-1px);
+}
+
+.home-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px 20px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 2px solid rgba(255, 215, 0, 0.5);
+    border-radius: 8px;
+    min-width: 280px;
+}
+
+.home-stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+}
+
+.home-stat-label {
+    color: #c0c0c0;
+    font-weight: normal;
+}
+
+.home-stat-value {
+    color: #ffd700;
+    font-weight: bold;
+    font-size: 18px;
+}

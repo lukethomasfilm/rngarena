@@ -1165,6 +1165,9 @@ export class RNGArena {
                 // Clear any lingering inline styles from previous victory animations
                 nameplateContainer.removeAttribute('style');
 
+                // Force browser to recognize the reset state
+                nameplateContainer.offsetHeight;
+
                 setTimeout(() => {
                     nameplateContainer.classList.add('visible');
 

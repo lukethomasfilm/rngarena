@@ -1714,7 +1714,11 @@ export class RNGArena {
     }
 
     enableRestart() {
-        this.startButton.disabled = false;
+        // Guard against null startButton (can happen in different navigation    
+   contexts)
+   if (this.startButton) {
+       this.startButton.disabled = false;
+   }
 
         if (this.tournament.isComplete()) {
             const winner = this.tournament.getWinner();

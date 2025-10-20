@@ -2680,6 +2680,11 @@ export class RNGArena {
             const coin = document.createElement('img');
             coin.className = 'victory-coin';
             coin.src = '/images/effects/Gold Coin.webp';
+
+            // Random stagger for visual variety
+            const randomDelay = Math.random() * 0.5; // 0-500ms delay
+            const randomDuration = 2.5 + Math.random() * 1; // 2.5-3.5s duration
+
             coin.style.cssText = `
                 position: absolute;
                 left: ${Math.random() * 100}%;
@@ -2688,11 +2693,13 @@ export class RNGArena {
                 height: auto;
                 z-index: 3;
                 pointer-events: none;
+                animation-delay: ${randomDelay}s;
+                animation-duration: ${randomDuration}s, 1s;
             `;
             this.arenaViewport.appendChild(coin);
 
-            // Remove coin after animation completes
-            setTimeout(() => coin.remove(), 3000);
+            // Remove coin after animation completes (account for longest possible duration)
+            setTimeout(() => coin.remove(), 4000);
         }, 150); // Spawn a coin every 150ms
     }
 

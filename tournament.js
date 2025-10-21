@@ -321,10 +321,19 @@ class TournamentBracket {
 
         this.processInitialByes();
 
-        // TEMPORARY: Force second round bye for testing
-        // Ensure hero wins round 1 and gets bye in round 2
-        this.bracket[1][0] = 'Daring Hero'; // Hero advances to round 2
-        this.bracket[1][1] = null; // Opponent position is null (bye)
+        // TEMPORARY: Ensure hero has an opponent in round 1 (not an auto-bye)
+        if (!this.bracket[0][1]) {
+            // If position 1 is null, move someone there
+            for (let i = 2; i < this.bracket[0].length; i++) {
+                if (this.bracket[0][i]) {
+                    this.bracket[0][1] = this.bracket[0][i];
+                    this.bracket[0][i] = null;
+                    break;
+                }
+            }
+        }
+
+        // Note: Round 2 bye is forced in advanceToNextMatch() after round 1 completes
 
         // Don't automatically advance currentRound - let handleByeRound() handle it
         // The bye will be detected by hasFollowedCharacterBye() when startBattle() is called
@@ -476,6 +485,12 @@ class TournamentBracket {
     advanceToNextMatch() {
         // Simulate remaining matches in current round
         this.simulateRemainingMatches();
+
+        // TEMPORARY: Force bye in round 2 after round 1 completes
+        if (this.currentRound === 1) {
+            // Ensure position 1 of round 2 is null (bye for hero)
+            this.bracket[1][1] = null;
+        }
 
         // Check if current round is complete
         const currentRoundMatches = this.bracket[this.currentRound - 1];

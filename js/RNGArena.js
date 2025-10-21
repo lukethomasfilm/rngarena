@@ -1654,23 +1654,31 @@ export class RNGArena {
         // Animation handles opacity transition from 0 to 1
         setTimeout(() => {
             if (this.leftFighter) {
+                // Clear inline opacity so animation can control it
+                this.leftFighter.style.opacity = '';
                 this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
 
                 // Remove entrance class after animation completes
                 // CSS :not(.fighter-entrance-left) rule will automatically apply the correct transform
                 const removeLeftEntrance = () => {
                     this.leftFighter.classList.remove(UI_CONFIG.ENTRANCE_LEFT);
+                    // Ensure fighter stays visible after animation
+                    this.leftFighter.style.opacity = '1';
                     this.leftFighter.removeEventListener('animationend', removeLeftEntrance);
                 };
                 this.leftFighter.addEventListener('animationend', removeLeftEntrance);
             }
             if (this.rightFighter) {
+                // Clear inline opacity so animation can control it
+                this.rightFighter.style.opacity = '';
                 this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
 
                 // Remove entrance class after animation completes
                 // CSS :not(.fighter-entrance-right) rule will automatically apply the correct transform
                 const removeRightEntrance = () => {
                     this.rightFighter.classList.remove(UI_CONFIG.ENTRANCE_RIGHT);
+                    // Ensure fighter stays visible after animation
+                    this.rightFighter.style.opacity = '1';
                     this.rightFighter.removeEventListener('animationend', removeRightEntrance);
                 };
                 this.rightFighter.addEventListener('animationend', removeRightEntrance);

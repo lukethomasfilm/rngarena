@@ -1619,7 +1619,36 @@ export class RNGArena {
         if (this.rightFighter) this.rightFighter.style.opacity = '0';
 
         this.updateByeDisplay(byeInfo);
-        this.completeBackgroundSwitch();
+
+        // Handle background transition (same logic as normal battles)
+        if (this.bgOverlay) {
+            // There's an existing overlay from previous battle - switch background while black
+            this.backgrounds.forEach(bg => {
+                this.arenaViewport.classList.remove(bg);
+            });
+            this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
+            const newBg = this.backgrounds[this.currentBgIndex];
+            this.arenaViewport.classList.add(newBg);
+            this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
+            this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
+
+            // Fade out overlay to reveal new background
+            setTimeout(() => {
+                if (this.bgOverlay) {
+                    this.bgOverlay.style.transition = 'opacity 0.5s ease-in-out';
+                    this.bgOverlay.style.opacity = '0';
+                    setTimeout(() => {
+                        if (this.bgOverlay) {
+                            this.bgOverlay.remove();
+                            this.bgOverlay = null;
+                        }
+                    }, 500);
+                }
+            }, 50);
+        } else {
+            // No overlay, do normal background switch
+            this.completeBackgroundSwitch();
+        }
 
         // Start fighter entrance animations
         // Animation handles opacity transition from 0 to 1
@@ -1698,9 +1727,19 @@ export class RNGArena {
                 nameplateContainer.style.transition = 'opacity 1.5s ease-out';
                 nameplateContainer.style.opacity = '0';
             }
+
+            // Start background fade-to-black transition (same as normal battles)
+            this.startBackgroundFadeOut();
+            // Also trigger chat mode transition
+            this.triggerChatModeTransition();
         }, 8500);
 
-        // Advance after 10 seconds (8.5 seconds display + 1.5 seconds fade-out)
+        // Complete background switch when overlay is fully black (after 1.5s fade)
+        setTimeout(() => {
+            this.completeBackgroundSwitch();
+        }, 10000); // 8500ms + 1500ms = 10000ms
+
+        // Advance after overlay fades back out (after another 0.5s)
         setTimeout(() => {
             this.tournament.advanceToNextMatch();
             this.updateOdds();
@@ -1713,7 +1752,7 @@ export class RNGArena {
             } else {
                 this.enableRestart();
             }
-        }, 10000);
+        }, 10500); // 10000ms + 500ms = 10500ms
     }
 
     handleNoMatch() {

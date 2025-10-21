@@ -2689,9 +2689,9 @@ export class RNGArena {
             coin.className = 'victory-coin';
             coin.src = '/images/effects/Gold Coin.webp';
 
-            // Random stagger for visual variety
-            const randomDelay = Math.random() * 0.5; // 0-500ms delay
-            const randomDuration = 2.5 + Math.random() * 1; // 2.5-3.5s duration
+            // Increased randomization for better stagger effect
+            const randomDelay = Math.random() * 1.2; // 0-1200ms delay
+            const randomDuration = 2 + Math.random() * 2; // 2-4s duration
 
             coin.style.cssText = `
                 position: absolute;
@@ -2706,8 +2706,8 @@ export class RNGArena {
             this.arenaViewport.appendChild(coin);
 
             // Remove coin after animation completes (account for longest possible duration)
-            setTimeout(() => coin.remove(), 4000);
-        }, 150); // Spawn a coin every 150ms
+            setTimeout(() => coin.remove(), 5500);
+        }, 100); // Spawn a coin every 100ms (faster spawn rate)
     }
 
     /**

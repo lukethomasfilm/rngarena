@@ -309,9 +309,6 @@ class TournamentBracket {
             firstRound[i] = restOfRound[i - 1]; // Replace with shuffled values
         }
 
-        // TEMPORARY: Force first round bye for testing
-        firstRound[1] = null;
-
         this.bracket.push(firstRound);
 
         // Generate subsequent rounds
@@ -323,6 +320,11 @@ class TournamentBracket {
         }
 
         this.processInitialByes();
+
+        // TEMPORARY: Force second round bye for testing
+        // Ensure hero wins round 1 and gets bye in round 2
+        this.bracket[1][0] = 'Daring Hero'; // Hero advances to round 2
+        this.bracket[1][1] = null; // Opponent position is null (bye)
 
         // Don't automatically advance currentRound - let handleByeRound() handle it
         // The bye will be detected by hasFollowedCharacterBye() when startBattle() is called

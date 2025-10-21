@@ -1325,6 +1325,11 @@ export class RNGArena {
                 this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
             }
 
+            // Reset and update fighters BEFORE fading overlay out (prevents flash)
+            this.resetFighters();
+            this.cleanupCombatElements();
+            this.updateMatchDisplay(match);
+
             // Now fade out the overlay to reveal new fighters
             setTimeout(() => {
                 if (this.bgOverlay) {
@@ -1341,14 +1346,14 @@ export class RNGArena {
         } else {
             // No overlay, do normal background switch
             this.completeBackgroundSwitch();
+
+            // Reset fighters
+            this.resetFighters();
+            this.cleanupCombatElements();
+
+            // Update display
+            this.updateMatchDisplay(match);
         }
-
-        // Reset fighters
-        this.resetFighters();
-        this.cleanupCombatElements();
-
-        // Update display
-        this.updateMatchDisplay(match);
 
         // Start fighter entrances
         setTimeout(() => this.fighterEntrance(), GAME_CONFIG.TIMING.FIGHTER_ENTRANCE_DELAY);
@@ -1847,36 +1852,20 @@ export class RNGArena {
     }
 
     updateByeDisplay(byeInfo) {
-        if (byeInfo.position === 'left') {
-            this.leftFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
-            const leftTitles = this.tournament.getCharacterTitles(byeInfo.character);
-            this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
-            this.updateFighterSprite(this.leftFighter, byeInfo.character);
+        // ALWAYS show hero on LEFT, Lady Luck on RIGHT (loser's side)
+        this.leftFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
+        const leftTitles = this.tournament.getCharacterTitles(byeInfo.character);
+        this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
+        this.updateFighterSprite(this.leftFighter, byeInfo.character);
 
-            // Show Lady Luck on the right
-            this.rightFighterNameEl.textContent = 'Lady Luck';
-            this.rightFighterTitlesEl.textContent = 'Bringer of Fortune';
-            this.updateFighterSprite(this.rightFighter, 'Lady Luck');
+        // Show Lady Luck on the right (loser's side)
+        this.rightFighterNameEl.textContent = 'Lady Luck';
+        this.rightFighterTitlesEl.textContent = 'Bringer of Fortune';
+        this.updateFighterSprite(this.rightFighter, 'Lady Luck');
 
-            // Add green styling to right card
-            if (this.rightFighterCard) {
-                this.rightFighterCard.classList.add('lady-bye-chance');
-            }
-        } else {
-            this.rightFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
-            const rightTitles = this.tournament.getCharacterTitles(byeInfo.character);
-            this.rightFighterTitlesEl.textContent = rightTitles.join(' • ');
-            this.updateFighterSprite(this.rightFighter, byeInfo.character);
-
-            // Show Lady Luck on the left
-            this.leftFighterNameEl.textContent = 'Lady Luck';
-            this.leftFighterTitlesEl.textContent = 'Bringer of Fortune';
-            this.updateFighterSprite(this.leftFighter, 'Lady Luck');
-
-            // Add green styling to left card
-            if (this.leftFighterCard) {
-                this.leftFighterCard.classList.add('lady-bye-chance');
-            }
+        // Add green styling to right card
+        if (this.rightFighterCard) {
+            this.rightFighterCard.classList.add('lady-bye-chance');
         }
 
         const match = { participant1: null, participant2: null };

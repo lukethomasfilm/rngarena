@@ -309,6 +309,9 @@ class TournamentBracket {
             firstRound[i] = restOfRound[i - 1]; // Replace with shuffled values
         }
 
+        // TEMPORARY: Force first round bye for testing
+        firstRound[1] = null;
+
         this.bracket.push(firstRound);
 
         // Generate subsequent rounds

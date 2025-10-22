@@ -546,6 +546,81 @@ Examples:
 
 ---
 
+## 🚨 CRITICAL: PVE MODE PROTECTION
+
+### **⚠️ WARNING: DO NOT MODIFY PVE CODE WITHOUT EXPLICIT REVIEW ⚠️**
+
+**The PVE tournament system is PRODUCTION-READY and fully tested. Any changes to home screen navigation, GameManager, or related systems MUST NOT affect PVE functionality.**
+
+#### Protected PVE Components:
+- `js/RNGArena.js` - Core PVE battle system
+  - Lines 1232-1785: `startBattle()`, `handleByeRound()`, `fighterEntrance()`, `executeFight()`
+  - **DO NOT MODIFY** battle flow, timing, or transition logic without explicit testing
+
+- `tournament.js` - Tournament bracket logic
+  - **DO NOT MODIFY** bracket generation, match advancement, or bye round handling
+
+- `js/CombatSystem.js` - Combat mechanics
+  - **DO NOT MODIFY** turn-based combat, damage calculations, or victory conditions
+
+- `styles.css` - PVE animations and transitions
+  - Lines 887-905: Chat gradient (carefully tuned)
+  - **DO NOT MODIFY** fighter entrance/exit animations, fade-to-black transitions, or combat effects
+
+#### **What Happens If You Break PVE Code:**
+
+**🔴 BREAKING PVE WILL CAUSE:**
+- **Invisible fighters** during entrance animations
+- **Flash/glitch effects** between rounds
+- **Tournament progression failures** (rounds not advancing)
+- **Bye round crashes** or infinite loops
+- **Victory screen failures** (black screen, no winner display)
+- **Chat mode desync** between battlefield and live chat
+- **Fighter positioning bugs** (overlapping, wrong sides)
+- **Audio/timing desync** during transitions
+
+#### Safe Development Rules:
+
+✅ **SAFE:** Adding new home screen features in isolated components
+✅ **SAFE:** Creating new navigation screens (PVP, Settings, etc.)
+✅ **SAFE:** Adding new CSS classes for home screen elements
+✅ **SAFE:** Modifying `GameManager.js` screen switching logic (with testing)
+
+❌ **DANGEROUS:** Changing `RNGArena.js` battle timing constants
+❌ **DANGEROUS:** Modifying fighter entrance/exit animations
+❌ **DANGEROUS:** Altering tournament bracket structure
+❌ **DANGEROUS:** Changing fade-to-black overlay behavior
+❌ **DANGEROUS:** Modifying null checks on `this.startButton` or fighter elements
+
+#### Testing Requirements Before Touching PVE:
+
+**If you MUST modify any PVE-related code, you MUST test:**
+1. ✅ Full tournament from Round 1 to Finals
+2. ✅ Bye rounds (natural tournament byes, not forced)
+3. ✅ Victory screen displays correctly
+4. ✅ All transitions are smooth (no flashing/glitching)
+5. ✅ Live chat mode stays in sync
+6. ✅ Fighters are visible during all entrance animations
+7. ✅ No console errors
+8. ✅ Auto-continue works through entire tournament
+9. ✅ Home screen navigation doesn't break PVE state
+
+#### Emergency Rollback:
+
+**If PVE breaks after a change:**
+```bash
+# Check git log to find last working commit
+git log --oneline
+
+# Revert to last stable PVE commit
+git checkout <commit-hash> -- js/RNGArena.js tournament.js styles.css
+
+# Test PVE works
+# Then carefully reapply home screen changes WITHOUT touching PVE code
+```
+
+---
+
 ## 🚨 Things to NEVER Do
 
 ### ❌ DON'T: Mix Concerns
@@ -753,5 +828,380 @@ Portrait: 390×844 (after rotation)
 
 ---
 
-**Last Updated:** 2025-10-03
-**Next Review:** When adding 3+ new systems or before major feature
+---
+
+## 🐉 PVE SCREEN SYSTEM (2025-10-22)
+
+**Timestamp:** 2025-10-22 12:05 AM
+**Status:** Production-ready foundation for PVE battles
+
+### Overview
+Complete PVE screen implementation with battle map, 9 monster icons, navigation system, and placeholder battle handlers. Ready for tournament-style PVE battles against monsters.
+
+---
+
+### Architecture
+
+#### Screen Structure
+```
+index.html
+└── #pve-screen (game-screen)
+    └── .pve-container
+        ├── .pve-battle-map (background image)
+        │   ├── 9x .pve-monster-btn (positioned icons)
+        │   │   ├── #pve-wood-dummy
+        │   │   ├── #pve-raccoon
+        │   │   ├── #pve-goblin
+        │   │   ├── #pve-ram
+        │   │   ├── #pve-eagle
+        │   │   ├── #pve-serpent
+        │   │   ├── #pve-nymph
+        │   │   ├── #pve-minitaur
+        │   │   └── #pve-dragon (special boss styling)
+        └── .pve-back-btn (returns to home)
+```
+
+#### File Changes
+
+**index.html (lines 166-204)**
+- New `#pve-screen` section
+- Battle map container with background
+- 9 positioned monster buttons with data attributes
+- Back button for navigation
+
+**styles.css (lines 6393-6524)**
+- `.pve-container` - Full screen container
+- `.pve-battle-map` - Background image (Battle-map.png, cover sizing)
+- `.pve-monster-btn` - Circular buttons (80px) with golden glow
+- `.pve-monster-btn:hover` - Scale 1.15, pulse animation, golden glow
+- `#pve-dragon` - Special boss styling (100px, red glow)
+- `.pve-back-btn` - Standard back button (matches store)
+- `@keyframes pulse` - Glowing pulse effect on hover
+
+**js/RNGArena.js**
+- Line 305-309: PVE button navigation handler
+- Line 454-460: PVE back button handler
+- Line 462-470: Monster button click handlers
+- Line 660-666: PVE screen audio handling in `navigateToScreen()`
+- Line 691-706: `startMonsterBattle()` method (placeholder for future battles)
+
+**js/GameManager.js**
+- No changes needed - existing `navigateTo()` method handles 'pve' screen
+
+---
+
+### Monster Icon Positioning
+
+Based on `RNG-Arena-Layout-filled.png` reference, icons positioned to match natural map layout:
+
+| Monster | Position | Notes |
+|---------|----------|-------|
+| Wood Dummy | 5% left, 60% top | Tutorial/starter enemy |
+| Raccoon | 13% left, 35% top | Early game |
+| Goblin | 22% left, 75% top | Bottom left area |
+| Ram | 35% left, 25% top | Upper center-left |
+| Eagle | 45% left, 50% top | Central position |
+| Serpent | 58% left, 30% top | Upper center-right |
+| Nymph | 72% left, 60% top | Right side |
+| Minitaur | 82% left, 35% top | Far right upper |
+| Dragon | 88% left, 15% top | Final boss, top right corner |
+
+**CSS Transform:** All buttons use `transform: translate(-50%, -50%)` to center icon on coordinates
+
+---
+
+### Styling System
+
+#### Monster Button States
+
+**Base State:**
+```css
+width: 80px;
+height: 80px;
+border: 3px solid rgba(255, 215, 0, 0.6); /* Golden */
+background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%);
+box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.3);
+```
+
+**Hover State:**
+```css
+transform: translate(-50%, -50%) scale(1.15);
+border-color: #ffd700; /* Bright gold */
+background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 215, 0, 0.2) 100%);
+animation: pulse 1.5s ease-in-out infinite;
+```
+
+**Dragon Boss (Special):**
+```css
+width: 100px; /* Larger than others */
+height: 100px;
+border-color: rgba(255, 50, 50, 0.8); /* Red border */
+box-shadow: 0 0 25px rgba(255, 50, 50, 0.5); /* Red glow */
+```
+
+#### Pulse Animation
+```css
+@keyframes pulse {
+    0%, 100% { box-shadow: ..., 0 0 30px rgba(255, 215, 0, 0.6), ...; }
+    50% { box-shadow: ..., 0 0 40px rgba(255, 215, 0, 0.9), ...; }
+}
+```
+
+---
+
+### Navigation Flow
+
+#### User Journey
+```
+Home Screen
+    ↓ (click PVE button)
+PVE Screen (battle map visible)
+    ↓ (click monster icon)
+Battle Alert ("Battle with [monster] coming soon!")
+    ↓ (click BACK button)
+Home Screen (music volume restored)
+```
+
+#### Audio Handling
+```javascript
+// PVE screen (in navigateToScreen)
+if (screenName === 'pve') {
+    // Keep home music playing softly
+    if (!this.audioMuted && this.homeMusic) {
+        this.homeMusic.volume = 0.3;
+    }
+}
+
+// Home screen
+if (screenName === 'home') {
+    // Restore full volume
+    if (!this.audioMuted && this.homeMusic) {
+        this.homeMusic.volume = 1.0;
+    }
+}
+```
+
+---
+
+### Battle System (Future Implementation)
+
+#### Current Placeholder
+```javascript
+startMonsterBattle(monsterName) {
+    console.log(`⚔️ Starting PVE battle with ${monsterName}`);
+    alert(`Battle with ${monsterName} coming soon!\n\nThis will launch a tournament-style battle against this monster.`);
+}
+```
+
+#### Planned Implementation
+```javascript
+startMonsterBattle(monsterName) {
+    // 1. Create custom tournament with monster as opponent
+    const monsterFighter = {
+        name: monsterName,
+        sprite: `/images/pve/${monsterName}.png`,
+        stats: MONSTER_STATS[monsterName] // From constants.js
+    };
+
+    // 2. Set PVE mode flag
+    this.isPVEMode = true;
+    this.currentMonster = monsterFighter;
+
+    // 3. Navigate to pvp-tournament screen (reuse existing system)
+    this.navigateToScreen('pvp-tournament');
+
+    // 4. CombatSystem will use monster sprite instead of knight
+    // 5. Award PVE-specific rewards on victory
+    // 6. Track PVE progress/unlocks
+}
+```
+
+#### Integration Points
+- **Tournament System:** Use existing bracket for 1v1 PVE battle
+- **Combat System:** Replace right fighter sprite with monster icon
+- **Loot System:** Award PVE-specific rewards (monster drops)
+- **Progress Tracking:** Unlock higher-tier monsters after victories
+
+---
+
+### Assets
+
+#### Battle Map
+- **File:** `/images/pve/Battle-map.png`
+- **Type:** Isometric fantasy landscape with lake, mountains, forests
+- **Usage:** Full screen background (`background-size: cover`)
+
+#### Monster Icons (9 total)
+```
+/images/pve/
+├── wood-dummy.png    - Training dummy (starter)
+├── raccoon.png       - Forest creature
+├── goblin.png        - Goblin enemy
+├── ram.png          - Mountain ram
+├── eagle.png        - Flying enemy
+├── serpent.png      - Snake/serpent
+├── nymph.png        - Nature spirit
+├── minitaur.png     - Minotaur/bull warrior
+└── dragon.png       - Final boss
+```
+
+#### Layout Reference
+- **File:** `/images/pve/RNG-Arena-Layout-filled.png`
+- **Purpose:** Shows where each monster icon should be placed on map
+- **Used for:** Positioning coordinates during implementation
+
+---
+
+### Battle Pass Dev Preview Fix
+
+**Timestamp:** Same session (2025-10-22 12:05 AM)
+
+**Issue:** Battle pass image extending beyond dev preview phone frame
+
+**Solution:**
+```css
+/* styles.css lines 998-1007 */
+.battlepass-dev-image {
+    max-width: 90%;
+    max-height: 30%;  /* Constrain very wide image */
+    width: auto;
+    height: auto;
+    object-fit: contain;
+}
+```
+
+**Why:** Battle pass image is extremely wide (horizontal banner). Changed from width-based to max-height constraint to prevent vertical overflow.
+
+---
+
+### Testing Checklist
+
+Before marking PVE complete, verified:
+- [x] PVE button navigates to PVE screen
+- [x] Battle map displays correctly (full screen, centered)
+- [x] All 9 monster icons positioned correctly per reference layout
+- [x] Monster icons have golden glow effect
+- [x] Dragon boss has red glow (special styling)
+- [x] Hover effects work (scale, pulse animation)
+- [x] Click handlers registered for all monsters
+- [x] Alert appears when clicking monster
+- [x] Back button returns to home screen
+- [x] Home music volume adjusts correctly
+- [x] No console errors
+- [x] Battle pass preview fixed in dev frame
+
+---
+
+### Future Enhancements
+
+#### Short Term
+- [ ] Add monster stats to constants.js
+- [ ] Implement actual PVE battles (reuse tournament system)
+- [ ] Add monster health bars on battle map
+- [ ] Lock higher-tier monsters (progressive unlocking)
+- [ ] Add "LOCKED" overlay on inaccessible monsters
+
+#### Medium Term
+- [ ] Monster-specific combat animations
+- [ ] PVE rewards system (monster drops, materials)
+- [ ] Boss battle mechanics (special abilities)
+- [ ] Victory rewards display after PVE battle
+- [ ] Monster bestiary/info screen
+
+#### Long Term
+- [ ] Multiple difficulty tiers per monster
+- [ ] Monster capture/collection system
+- [ ] PVE campaign/story mode
+- [ ] Daily PVE challenges
+- [ ] Leaderboards for PVE speed runs
+
+---
+
+### Code Quality Notes
+
+#### Follows Architecture Principles
+- ✅ Separation of concerns (PVE screen isolated from PVP)
+- ✅ Reuses existing navigation system (`navigateToScreen()`)
+- ✅ No magic numbers (all dimensions explicit)
+- ✅ Proper event handler cleanup on navigation
+- ✅ Clear naming conventions (`pve-monster-btn`, `startMonsterBattle`)
+
+#### Performance Considerations
+- ✅ Single background image (no sprite sheets needed yet)
+- ✅ CSS transforms for hover (GPU accelerated)
+- ✅ No JavaScript animations (pure CSS)
+- ✅ Minimal DOM elements (9 buttons + container)
+- ✅ No active polling or timers in PVE screen
+
+#### Maintainability
+- ✅ All PVE styles in dedicated section (lines 6393-6524)
+- ✅ All PVE HTML in one block (lines 166-204)
+- ✅ Monster data attributes for future expansion (`data-monster="dragon"`)
+- ✅ Placeholder method ready for battle implementation
+- ✅ Comments explain future integration points
+
+---
+
+### Known Limitations
+
+1. **No Monster Stats Yet**
+   - Monsters don't have HP, attack, defense values
+   - Will need `MONSTER_STATS` in constants.js
+
+2. **No Progressive Unlocking**
+   - All monsters clickable immediately
+   - Should lock higher-tier monsters until earlier ones defeated
+
+3. **No Visual Feedback**
+   - No health bars or level indicators on map
+   - Could add small HP badges above icons
+
+4. **Placeholder Battle System**
+   - Shows alert instead of launching battle
+   - Needs integration with tournament/combat systems
+
+5. **No PVE Progress Tracking**
+   - No win/loss record for PVE
+   - No unlocked monsters tracking
+   - Could extend GameManager for PVE stats
+
+---
+
+### Git Commit Strategy
+
+**Commit 1: Battle Pass Fix**
+```bash
+git add styles.css
+git commit -m "Fix battle pass image sizing in dev preview
+
+- Constrain max-height to 30% for very wide image
+- Prevents vertical overflow in phone frame
+- styles.css:998-1007"
+```
+
+**Commit 2: PVE Screen Implementation**
+```bash
+git add index.html styles.css js/RNGArena.js
+git commit -m "Add PVE screen with battle map and 9 monster icons
+
+- Create #pve-screen with battle map background
+- Position 9 monsters per layout reference (wood-dummy to dragon)
+- Golden circular buttons with hover effects and pulse animation
+- Special red boss styling for dragon
+- Link PVE button to navigate to screen
+- Add back button and audio handling
+- Placeholder startMonsterBattle() for future integration
+
+Files modified:
+- index.html: 166-204 (PVE screen HTML)
+- styles.css: 6393-6524 (PVE styles)
+- js/RNGArena.js: Multiple sections for navigation/handlers
+
+🎮 Generated with Claude Code
+Co-Authored-By: Claude <noreply@anthropic.com>"
+```
+
+---
+
+**Last Updated:** 2025-10-22 12:05 AM
+**Next Review:** When implementing actual PVE battle system

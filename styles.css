@@ -51,6 +51,17 @@ body {
     display: none !important;
 }
 
+/* Dev Panel Title */
+.dev-panel-title {
+    max-width: 844px;
+    margin: 20px auto 5px;
+    text-align: center;
+    font-size: 14px;
+    font-weight: bold;
+    color: #666;
+    letter-spacing: 2px;
+}
+
 /* Dev Preview Toggle Button */
 .dev-toggle-container {
     max-width: 844px;
@@ -61,7 +72,7 @@ body {
     padding: 0 10px;
 }
 
-.dev-preview-toggle-btn, .fast-forward-btn {
+.dev-preview-toggle-btn, .fast-forward-btn, .start-tournament-btn, .dev-mute-btn {
     padding: 8px 24px;
     background: linear-gradient(135deg, #333, #222);
     border: 1px solid #444;
@@ -73,7 +84,7 @@ body {
     transition: all 0.3s ease;
 }
 
-.dev-preview-toggle-btn:hover, .fast-forward-btn:hover {
+.dev-preview-toggle-btn:hover, .fast-forward-btn:hover, .start-tournament-btn:hover, .dev-mute-btn:hover {
     background: linear-gradient(135deg, #444, #333);
     color: #aaa;
     border-color: #555;
@@ -83,6 +94,18 @@ body {
     background: linear-gradient(135deg, #4CAF50, #388E3C);
     color: #fff;
     border-color: #4CAF50;
+}
+
+.start-tournament-btn {
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    color: #000;
+    border-color: #FFD700;
+}
+
+.start-tournament-btn:hover {
+    background: linear-gradient(135deg, #FFA500, #FF8C00);
+    color: #000;
+    border-color: #FFA500;
 }
 
 /* Dev Preview Wrapper */
@@ -920,6 +943,97 @@ body {
     font-size: 12px;
     color: #888;
     white-space: nowrap;
+}
+
+/* Battle Pass Dev Frame */
+.battlepass-dev-frame {
+    width: 844px;
+    height: 600px;
+    background: #0a0a0a;
+    border-radius: 25px;
+    padding: 8px;
+    margin: 20px auto;
+    box-shadow:
+        0 0 30px rgba(0,0,0,0.8),
+        inset 0 0 0 2px #555;
+    position: relative;
+    overflow: hidden;
+}
+
+.battlepass-dev-frame::before {
+    content: "🎫 Battle Pass Preview";
+    position: absolute;
+    top: -35px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 12px;
+    color: #888;
+    white-space: nowrap;
+}
+
+.battlepass-dev-container {
+    height: 584px;
+    width: 828px;
+    margin: 0;
+    background: linear-gradient(135deg, #2a2a2a, #1a1a1a);
+    border-radius: 18px;
+    overflow: hidden;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.battlepass-dev-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.battlepass-dev-image {
+    max-width: 90%;
+    max-height: 30%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    position: relative;
+    z-index: 2;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+.battlepass-dev-close-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.battlepass-dev-close-btn:hover {
+    background: rgba(255, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.1);
+}
+
+.battlepass-dev-close-btn:active {
+    transform: scale(0.95);
 }
 
 .chat-mode-container-dev {
@@ -5321,6 +5435,10 @@ body {
     display: block;
     width: 100%;
     height: 100%;
+    max-width: 844px; /* Phone preview frame width */
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 20px; /* Rounded edges for phone frame */
 }
 
 .game-screen.hidden {
@@ -5329,6 +5447,150 @@ body {
 
 /* ========================================
    HOME SCREEN
+   ======================================== */
+
+/* ========================================
+   LOADING SCREEN STYLES
+   ======================================== */
+
+.loading-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    background: #1a1a2e;
+}
+
+.loading-bar-container {
+    position: absolute;
+    bottom: calc(20% - 25px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 400px;
+    height: 30px;
+    background: linear-gradient(135deg, #8a9ba8 0%, #c0c8d0 25%, #8a9ba8 50%, #c0c8d0 75%, #8a9ba8 100%);
+    border: 3px solid #495057;
+    border-radius: 15px;
+    overflow: hidden;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+    box-shadow:
+        inset 0 3px 6px rgba(0, 0, 0, 0.4),
+        inset 0 -2px 4px rgba(255, 255, 255, 0.2),
+        0 4px 12px rgba(0, 0, 0, 0.6),
+        0 8px 20px rgba(0, 0, 0, 0.4);
+}
+
+.loading-bar-fill {
+    width: 0%;
+    height: 100%;
+    background: linear-gradient(90deg, #1e3a8a 0%, #3b82f6 25%, #60a5fa 50%, #3b82f6 75%, #1e3a8a 100%);
+    transition: width 0.1s linear;
+    box-shadow:
+        0 0 25px rgba(59, 130, 246, 1),
+        0 0 40px rgba(59, 130, 246, 0.6),
+        inset 0 0 15px rgba(147, 197, 253, 0.8),
+        inset 0 2px 4px rgba(255, 255, 255, 0.4);
+    animation: magicPulse 2s ease-in-out infinite;
+}
+
+@keyframes magicPulse {
+    0%, 100% {
+        filter: brightness(1);
+    }
+    50% {
+        filter: brightness(1.3);
+    }
+}
+
+.start-btn {
+    position: absolute;
+    bottom: calc(20% - 25px);
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 10px 30px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #1a1a2e;
+    background: linear-gradient(135deg, #d4af37 0%, #f4d03f 100%);
+    border: 2px solid #d4af37;
+    border-radius: 8px;
+    cursor: pointer;
+    z-index: 1000;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    box-shadow:
+        0 4px 12px rgba(212, 175, 55, 0.6),
+        0 6px 20px rgba(0, 0, 0, 0.4),
+        inset 0 1px 2px rgba(255, 255, 255, 0.3),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s ease;
+    animation: fadeInScale 0.5s ease-out forwards;
+}
+
+/* Loading Screen Mute Button */
+.loading-mute-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 40px;
+    height: 40px;
+    font-size: 20px;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(5px);
+    opacity: 0.6;
+}
+
+.loading-mute-btn:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.5);
+    transform: scale(1.1);
+}
+
+.loading-mute-btn:active {
+    transform: scale(0.95);
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) scale(1);
+    }
+}
+
+.start-btn:hover {
+    transform: translateX(-50%) scale(1.05);
+    box-shadow:
+        0 6px 16px rgba(212, 175, 55, 0.8),
+        0 8px 24px rgba(0, 0, 0, 0.5),
+        inset 0 1px 2px rgba(255, 255, 255, 0.4),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.start-btn:active {
+    transform: translateX(-50%) scale(0.98);
+    box-shadow:
+        0 2px 6px rgba(212, 175, 55, 0.4),
+        inset 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================
+   HOME SCREEN STYLES
    ======================================== */
 
 .home-container {
@@ -5341,7 +5603,34 @@ body {
     position: relative;
     overflow: hidden;
     background: #1a1a2e;
-    border-radius: 20px;
+}
+
+.town-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/Home Screen/Town.png');
+    background-size: cover;
+    background-position: center;
+    animation: townSubtleMove 60s ease-in-out infinite;
+    z-index: 1;
+}
+
+@keyframes townSubtleMove {
+    0%, 100% {
+        transform: scale(1) translate(0, 0);
+    }
+    25% {
+        transform: scale(1.02) translate(-1%, 0.5%);
+    }
+    50% {
+        transform: scale(1.03) translate(0.5%, -0.5%);
+    }
+    75% {
+        transform: scale(1.02) translate(-0.5%, 0.5%);
+    }
 }
 
 /* Parallax Background Layers */
@@ -5363,27 +5652,24 @@ body {
 
 .parallax-clouds {
     z-index: 2;
+    top: -70px; /* Moved up 70px total (was -20px, now +50px more) */
 }
 
-.parallax-clouds::before,
-.parallax-clouds::after {
+.parallax-clouds::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background-image: url('/images/Home Screen/background_clouds.png');
-    background-size: 200% auto;
-    background-repeat: repeat-x;
-}
-
-.parallax-clouds::before {
-    animation: cloudDrift1 120s linear infinite;
+    right: 0;
+    bottom: 0;
+    background: url('/images/Home Screen/background_blended.png') repeat-x center;
+    background-size: 2000px auto; /* Fixed pixel size for consistent tiling */
+    animation: cloudDriftBackground 120s linear infinite;
+    will-change: background-position;
 }
 
 .parallax-clouds::after {
-    animation: cloudDrift2 120s linear infinite;
+    display: none;
 }
 
 .parallax-logo {
@@ -5393,67 +5679,37 @@ body {
     width: 100%;
     height: 100%;
     background-image: url('/images/Home Screen/RNG_Legends.png');
-    background-size: auto 60%;
-    background-position: center 20%;
+    background-size: auto 48%; /* 20% smaller: 60% * 0.8 = 48% */
+    background-position: center calc(20% - 30px); /* Moved up 30px */
     background-repeat: no-repeat;
+    opacity: 0.8; /* 80% opacity - looks in the distance */
     z-index: 2;
+    will-change: transform; /* GPU acceleration hint for parallax */
 }
 
 .parallax-castle {
     background-image: url('/images/Home Screen/background_castle.png');
     background-size: 130% auto;
-    background-position: calc(50% + 70px) center;
+    background-position: calc(50% + 110px) center; /* Moved right 40px (was +70px, now +110px) */
     z-index: 3;
+    will-change: transform; /* GPU acceleration hint */
 }
 
 .parallax-trees {
     background-image: url('/images/Home Screen/background_trees.png');
     background-size: 96%;
-    background-position: center calc(45% - 45px);
+    background-position: center calc(45% - 25px); /* Lowered by 20px (was -45px, now -25px) */
     z-index: 4;
+    will-change: transform; /* GPU acceleration hint */
 }
 
-/* Cloud drift animations - both move left continuously with overlap */
-@keyframes cloudDrift1 {
-    0% {
-        background-position: 150% center;
-        opacity: 1;
+/* Cloud drift using background-position (not transform) for native scrolling */
+@keyframes cloudDriftBackground {
+    from {
+        background-position: 0px center;
     }
-    35% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.3;
-    }
-    65% {
-        opacity: 0;
-    }
-    100% {
-        background-position: -150% center;
-        opacity: 0;
-    }
-}
-
-@keyframes cloudDrift2 {
-    0% {
-        background-position: 150% center;
-        opacity: 0;
-    }
-    35% {
-        opacity: 0;
-    }
-    50% {
-        opacity: 0.7;
-    }
-    65% {
-        opacity: 1;
-    }
-    85% {
-        opacity: 1;
-    }
-    100% {
-        background-position: -150% center;
-        opacity: 1;
+    to {
+        background-position: -2000px center; /* Move exactly one tile width */
     }
 }
 
@@ -5473,7 +5729,7 @@ body {
 
 .home-character {
     position: absolute;
-    bottom: -10%;
+    bottom: calc(-10% - 65px); /* Moved down 65px total (40px + 25px) */
     height: 168%;
     width: auto;
     transition: transform 0.1s ease-out;
@@ -5483,7 +5739,7 @@ body {
 .home-aphrodite {
     left: 25%;
     z-index: 5;
-    bottom: calc(-10% - 15px);
+    bottom: calc(-10% - 80px); /* Moved down 65px total (40px + 25px) */
 }
 
 .home-hero {
@@ -5491,7 +5747,7 @@ body {
     transform: translateX(-50%);
     z-index: 6;
     height: 240%;
-    bottom: calc(-10% - 80px);
+    bottom: calc(-10% - 145px); /* Moved down 65px total (40px + 25px) */
 }
 
 .home-black-knight {
@@ -5500,12 +5756,8 @@ body {
 }
 
 
-/* Currency Display - Top Left */
+/* Currency Display - Top Right */
 .home-currency {
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    z-index: 20;
     display: flex;
     flex-direction: row;
     gap: 10px;
@@ -5545,20 +5797,23 @@ body {
     min-width: 30px;
 }
 
-/* Countdown Timer - Top Right */
+/* Countdown Timer - Top Center Dropdown Tab */
 .home-countdown-timer {
     position: absolute;
-    top: 15px;
-    right: 15px;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%);
     z-index: 20;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 8px 16px;
-    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.8);
+    padding: 12px 20px 10px 20px;
+    border-radius: 0 0 12px 12px;
     border: 2px solid rgba(255, 215, 0, 0.5);
+    border-top: none;
     display: flex;
     flex-direction: row;
     align-items: center;
     gap: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 .countdown-label {
@@ -5578,11 +5833,37 @@ body {
         2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
+/* Dominion Button - Top Left */
+.home-dominion-btn {
+    display: none; /* Hidden - now on bottom bar */
+}
+
+.home-dominion-btn img {
+    width: 61px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+}
+
+.home-dominion-btn:hover {
+    transform: translateY(-3px);
+}
+
+.home-dominion-btn:hover img {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+}
+
+.home-dominion-btn:active {
+    transform: translateY(-1px);
+}
+
 /* PVP Button - Top Right (below countdown) */
 .home-pvp-btn {
+    display: none; /* Hidden - now on bottom bar */
     position: absolute;
     top: 70px;
-    right: 15px;
+    right: 520px;
     z-index: 20;
     background: none;
     border: none;
@@ -5595,7 +5876,7 @@ body {
     width: 90px;
     height: auto;
     display: block;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
     transition: all 0.3s ease;
 }
 
@@ -5604,7 +5885,7 @@ body {
 }
 
 .home-pvp-btn:hover img {
-    filter: drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
 }
 
 .home-pvp-btn:active {
@@ -5623,25 +5904,84 @@ body {
 }
 
 .home-pve-btn {
-    top: 160px;
-    right: 15px;
+    display: none; /* Hidden - now on bottom bar */
+}
+
+.home-pve-btn img {
+    width: 72px !important;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) !important;
+}
+
+.home-pve-btn:hover img {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6)) !important;
 }
 
 .home-store-btn {
-    top: 70px;
-    left: 15px;
+    display: none; /* Hidden - now on bottom bar */
+}
+
+.home-store-btn img {
+    width: 65px !important;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4)) !important;
+}
+
+.home-store-btn:hover img {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6)) !important;
+}
+
+.home-guilds-btn {
+    display: none; /* Hidden - now on bottom bar */
+    position: absolute;
+    top: calc(35% - 40px);
+    right: 150px;
+    z-index: 20;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.home-guilds-btn img {
+    width: 72px !important;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+}
+
+.home-guilds-btn:hover {
+    transform: translateY(-3px);
+}
+
+.home-guilds-btn:hover img {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+}
+
+.home-guilds-btn:active {
+    transform: translateY(-1px);
 }
 
 .home-battlepass-btn {
-    top: 160px;
+    bottom: 70px;
     left: 15px;
+    top: auto;
+    right: auto;
+}
+
+.home-battlepass-btn img {
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+.home-battlepass-btn:hover img {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
 }
 
 .home-corner-btn img {
     width: 90px;
     height: auto;
     display: block;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
     transition: all 0.3s ease;
 }
 
@@ -5650,21 +5990,119 @@ body {
 }
 
 .home-corner-btn:hover img {
-    filter: drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
 }
 
 .home-corner-btn:active {
     transform: translateY(-1px);
 }
 
-/* Bottom Controls - Settings and Audio */
-.home-bottom-controls {
+/* Bottom Navigation Bar */
+.home-bottom-bar {
     position: absolute;
-    bottom: 15px;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 62px;
+    background: linear-gradient(180deg, rgba(90, 90, 90, 0.95) 0%, rgba(70, 70, 70, 0.95) 100%);
+    border-top: 3px solid rgba(120, 120, 120, 0.8);
+    box-shadow:
+        0 -4px 20px rgba(0, 0, 0, 0.6),
+        inset 0 2px 4px rgba(255, 255, 255, 0.1),
+        inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    padding: 0 20px;
+}
+
+.home-bar-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 3px;
+    height: 100%;
+}
+
+.home-bar-btn img {
+    width: 50px;
+    height: auto;
+    filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.6)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+    margin-bottom: 3px;
+}
+
+/* PVP icon - 12% + 15% bigger */
+#home-pvp-btn-bar img {
+    width: 64px !important;
+}
+
+/* Dominion icon - 10% smaller */
+#home-dominion-btn-bar img {
+    width: 45px !important;
+}
+
+.home-bar-label {
+    font-size: 11px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    color: rgba(200, 200, 200, 0.9);
+    text-shadow:
+        1px 1px 2px rgba(0, 0, 0, 0.8),
+        -1px -1px 1px rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+.home-bar-btn:hover {
+    transform: translateY(-5px);
+}
+
+.home-bar-btn:hover img {
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 1)) drop-shadow(0 6px 12px rgba(255, 215, 0, 0.6));
+}
+
+.home-bar-btn:hover .home-bar-label {
+    color: rgba(255, 215, 0, 1);
+    text-shadow:
+        1px 1px 2px rgba(0, 0, 0, 0.9),
+        -1px -1px 1px rgba(255, 255, 255, 0.4),
+        0 0 8px rgba(255, 215, 0, 0.5);
+}
+
+.home-bar-btn:active {
+    transform: translateY(-2px);
+}
+
+/* Top Left Controls - Settings and Audio */
+.home-top-left-controls {
+    position: absolute;
+    top: 15px;
     left: 15px;
     z-index: 20;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Top Right Controls - Currency */
+.home-top-right-controls {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+    z-index: 20;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
     gap: 10px;
 }
 
@@ -5735,22 +6173,14 @@ body {
 }
 
 .home-castle-menu-btn {
-    position: absolute;
-    bottom: 10px;
-    right: 15px;
-    z-index: 20;
-    background: none;
-    border: none;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    padding: 0;
+    display: none; /* Hidden - now on bottom bar */
 }
 
 .home-castle-menu-btn img {
-    width: 90px;
+    width: 72px;
     height: auto;
     display: block;
-    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
     transition: all 0.3s ease;
 }
 
@@ -5759,7 +6189,7 @@ body {
 }
 
 .home-castle-menu-btn:hover img {
-    filter: drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
 }
 
 .home-castle-menu-btn:active {
@@ -5794,4 +6224,301 @@ body {
     color: #ffd700;
     font-weight: bold;
     font-size: 18px;
+}
+
+/* ========================================
+   STORE SCREEN
+   ======================================== */
+
+.store-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.store-display {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.store-image {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 106%;
+    height: auto;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+}
+
+/* Hover effects removed - parallax handles movement */
+
+.store-battlepass-btn {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 20;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 0;
+}
+
+.store-battlepass-btn img {
+    width: 90px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+    transition: all 0.3s ease;
+}
+
+.store-battlepass-btn:hover {
+    transform: translateY(-3px);
+}
+
+.store-battlepass-btn:hover img {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 1)) drop-shadow(0 6px 16px rgba(255, 215, 0, 0.6));
+}
+
+.store-battlepass-btn:active {
+    transform: translateY(-1px);
+}
+
+/* Battle Pass Overlay */
+.battlepass-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.battlepass-overlay.hidden {
+    display: none;
+}
+
+.battlepass-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+}
+
+.battlepass-image {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+    width: auto;
+    height: auto;
+    z-index: 2;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.8);
+}
+
+.battlepass-close-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    width: 40px;
+    height: 40px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    color: #fff;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.battlepass-close-btn:hover {
+    background: rgba(255, 0, 0, 0.8);
+    border-color: rgba(255, 255, 255, 0.6);
+    transform: scale(1.1);
+}
+
+.battlepass-close-btn:active {
+    transform: scale(0.95);
+}
+
+.store-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.store-back-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: #ffd700;
+    transform: translateX(-3px);
+    box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4);
+}
+
+.store-back-btn:active {
+    transform: translateX(-1px);
+}
+
+/* ============================================
+   PVE SCREEN STYLES
+   ============================================ */
+
+.pve-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.pve-battle-map {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/pve/Battle-map.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.pve-monster-btn {
+    position: absolute;
+    width: 80px;
+    height: 80px;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.2) 0%, rgba(0, 0, 0, 0.3) 100%);
+    border: 3px solid rgba(255, 215, 0, 0.6);
+    border-radius: 50%;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.6),
+        0 0 20px rgba(255, 215, 0, 0.3),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+    transform: translate(-50%, -50%);
+    z-index: 10;
+}
+
+.pve-monster-btn img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+    transition: all 0.3s ease;
+}
+
+.pve-monster-btn:hover {
+    transform: translate(-50%, -50%) scale(1.15);
+    border-color: #ffd700;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.3) 0%, rgba(255, 215, 0, 0.2) 100%);
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.8),
+        0 0 30px rgba(255, 215, 0, 0.6),
+        inset 0 2px 6px rgba(255, 255, 255, 0.3);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.pve-monster-btn:hover img {
+    filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8)) drop-shadow(0 4px 8px rgba(0, 0, 0, 0.6));
+}
+
+.pve-monster-btn:active {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+/* Special styling for dragon (final boss) */
+#pve-dragon {
+    width: 100px;
+    height: 100px;
+    border-color: rgba(255, 50, 50, 0.8);
+    box-shadow:
+        0 4px 12px rgba(0, 0, 0, 0.6),
+        0 0 25px rgba(255, 50, 50, 0.5),
+        inset 0 2px 4px rgba(255, 255, 255, 0.2);
+}
+
+#pve-dragon:hover {
+    border-color: #ff3232;
+    box-shadow:
+        0 6px 20px rgba(0, 0, 0, 0.8),
+        0 0 40px rgba(255, 50, 50, 0.8),
+        inset 0 2px 6px rgba(255, 255, 255, 0.3);
+}
+
+.pve-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 12px 24px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+.pve-back-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: #ffd700;
+    transform: translateX(-3px);
+    box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4);
+}
+
+.pve-back-btn:active {
+    transform: translateX(-1px);
+}
+
+@keyframes pulse {
+    0%, 100% {
+        box-shadow:
+            0 6px 20px rgba(0, 0, 0, 0.8),
+            0 0 30px rgba(255, 215, 0, 0.6),
+            inset 0 2px 6px rgba(255, 255, 255, 0.3);
+    }
+    50% {
+        box-shadow:
+            0 6px 20px rgba(0, 0, 0, 0.8),
+            0 0 40px rgba(255, 215, 0, 0.9),
+            inset 0 2px 6px rgba(255, 255, 255, 0.3);
+    }
 }

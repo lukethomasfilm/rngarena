@@ -12,17 +12,17 @@
 </head>
 <body>
     <div class="dev-frame">
-        <!-- Home Screen -->
-        <div id="home-screen" class="game-screen">
-            <div class="home-container">
-                <!-- Home Screen Music -->
-                <audio id="home-music" autoplay loop muted>
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="game-screen">
+            <div class="loading-container">
+                <!-- Loading Music -->
+                <audio id="home-music" loop>
                     <source src="/sfx/RNG Home.mp3" type="audio/mpeg">
                 </audio>
 
                 <!-- Parallax Background Layers -->
-                <div class="parallax-clouds" data-speed="0.2"></div>
-                <div class="parallax-logo"></div>
+                <div class="parallax-clouds" data-speed="0.15"></div>
+                <div class="parallax-logo" data-speed="0.2"></div>
                 <div class="parallax-castle" data-speed="0.4"></div>
                 <div class="parallax-trees" data-speed="0.6"></div>
 
@@ -33,59 +33,178 @@
                     <img src="/images/Home Screen/black knight.png" alt="Black Knight" class="home-character home-black-knight" data-speed="0.5">
                 </div>
 
-                <!-- Currency Display (Top Left) -->
-                <div class="home-currency">
-                    <div class="home-currency-item">
-                        <img src="/images/effects/Gold Coin.webp" alt="Gold" class="home-currency-icon">
-                        <span id="home-gold-display-top" class="home-currency-value">0</span>
-                    </div>
-                    <div class="home-currency-item">
-                        <span class="home-currency-icon-gem">💎</span>
-                        <span id="home-gems-display" class="home-currency-value">0</span>
-                    </div>
+                <!-- Loading Bar -->
+                <div class="loading-bar-container">
+                    <div class="loading-bar-fill" id="loading-bar-fill"></div>
                 </div>
 
-                <!-- Countdown Timer (Top Right) -->
+                <!-- Start Button (hidden initially) -->
+                <button id="start-btn" class="start-btn hidden">START</button>
+
+                <!-- Mute Button -->
+                <button id="mute-btn" class="loading-mute-btn">🔇</button>
+            </div>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="home-screen" class="game-screen hidden">
+            <div class="home-container">
+                <!-- Town Background -->
+                <div class="town-background"></div>
+
+                <!-- Countdown Timer (Top Center) -->
                 <div class="home-countdown-timer" id="home-countdown-timer">
-                    <div class="countdown-label">Tournament starts in</div>
-                    <div class="countdown-time">00:00:10</div>
+                    <div class="countdown-label">Daily Tournament starts in</div>
+                    <div class="countdown-time">02:31:40</div>
                 </div>
+
+                <!-- Dominion Button (Top Left) -->
+                <button id="home-dominion-btn" class="home-dominion-btn">
+                    <img src="/images/Home Screen/Dominion.png" alt="Dominion">
+                </button>
+
+                <!-- Castle Button (Top Right) -->
+                <button id="home-castle-btn" class="home-castle-menu-btn">
+                    <img src="/images/Home Screen/castle-icon.png" alt="Castle">
+                </button>
 
                 <!-- PVP Button (Top Right, below countdown) -->
                 <button id="home-pvp-btn" class="home-pvp-btn">
-                    <img src="/images/Home Screen/pvp-button .png" alt="PVP Mode">
+                    <img src="/images/Home Screen/PVP.png" alt="PVP Mode">
                 </button>
 
                 <!-- PVE Button (Top Left, below currency) -->
                 <button id="home-pve-btn" class="home-corner-btn home-pve-btn">
-                    <img src="/images/Home Screen/pve-button.png" alt="PVE Tournament">
+                    <img src="/images/Home Screen/PVE.png" alt="PVE Tournament">
                 </button>
 
-                <!-- Store Button (Top Left, below PVE) -->
+                <!-- Store Button (Center) -->
                 <button id="home-store-btn" class="home-corner-btn home-store-btn">
-                    <img src="/images/Home Screen/store-button.png" alt="Store">
+                    <img src="/images/Home Screen/store.png" alt="Store">
                 </button>
 
-                <!-- Battle Pass Button (Top Left, below store) -->
-                <button id="home-battlepass-btn" class="home-corner-btn home-battlepass-btn">
-                    <img src="/images/Home Screen/battle-pass-button.png" alt="Battle Pass">
+                <!-- Guilds Button (Between Store and Castle) -->
+                <button id="home-guilds-btn" class="home-corner-btn home-guilds-btn">
+                    <img src="/images/Home Screen/Guilds.png" alt="Guilds">
                 </button>
 
-                <!-- Settings and Audio (Bottom Right, above castle) -->
-                <div class="home-bottom-controls">
+                <!-- Bottom Navigation Bar -->
+                <div class="home-bottom-bar">
+                    <button id="home-dominion-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/Dominion.png" alt="Dominion">
+                        <span class="home-bar-label">DOMINION</span>
+                    </button>
+                    <button id="home-guilds-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/Guilds.png" alt="Guilds">
+                        <span class="home-bar-label">GUILDS</span>
+                    </button>
+                    <button id="home-pve-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/PVE.png" alt="PVE">
+                        <span class="home-bar-label">PVE</span>
+                    </button>
+                    <button id="home-store-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/store.png" alt="Store">
+                        <span class="home-bar-label">STORE</span>
+                    </button>
+                    <button id="home-pvp-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/PVP.png" alt="PVP">
+                        <span class="home-bar-label">PVP</span>
+                    </button>
+                    <button id="home-castle-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/castle-icon.png" alt="Castle">
+                        <span class="home-bar-label">CASTLE</span>
+                    </button>
+                </div>
+
+                <!-- Top Left Controls - Settings and Audio -->
+                <div class="home-top-left-controls">
                     <button id="home-settings-btn" class="home-small-btn">⚙️</button>
                     <button id="home-audio-btn" class="home-small-btn">🔊</button>
                 </div>
 
-                <!-- Castle Button (Bottom Right Corner) -->
-                <button id="home-castle-btn" class="home-castle-menu-btn">
-                    <img src="/images/Home Screen/castle-button.png" alt="Castle">
-                </button>
+                <!-- Top Right Controls - Currency -->
+                <div class="home-top-right-controls">
+                    <div class="home-currency">
+                        <div class="home-currency-item">
+                            <img src="/images/effects/Gold Coin.webp" alt="Gold" class="home-currency-icon">
+                            <span id="home-gold-display-top" class="home-currency-value">10,000</span>
+                        </div>
+                        <div class="home-currency-item">
+                            <span class="home-currency-icon-gem">💎</span>
+                            <span id="home-gems-display" class="home-currency-value">120</span>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- PVE Tournament Screen -->
-        <div id="pve-tournament-screen" class="game-screen hidden">
+        <!-- Battle Pass Overlay -->
+        <div id="battlepass-overlay" class="battlepass-overlay hidden">
+            <div class="battlepass-background"></div>
+            <button id="battlepass-close-btn" class="battlepass-close-btn">✕</button>
+            <img src="/images/Home Screen/battle-pass.png" alt="Battle Pass" class="battlepass-image">
+        </div>
+
+        <!-- Store Screen -->
+        <div id="store-screen" class="game-screen hidden">
+            <div class="store-container">
+                <!-- Main Store Display -->
+                <div class="store-display">
+                    <img id="store-main-image" src="/images/shop/shop.png" alt="Store" class="store-image" data-speed="0.8">
+                </div>
+
+                <!-- Battle Pass Button -->
+                <button id="store-battlepass-btn" class="store-battlepass-btn">
+                    <img src="/images/Home Screen/Pass.png" alt="Battle Pass">
+                </button>
+
+                <!-- Back Button -->
+                <button id="store-back-btn" class="store-back-btn">← BACK</button>
+            </div>
+        </div>
+
+        <!-- PVE Screen -->
+        <div id="pve-screen" class="game-screen hidden">
+            <div class="pve-container">
+                <!-- Battle Map Background -->
+                <div class="pve-battle-map">
+                    <!-- Monster Icons positioned on map -->
+                    <button class="pve-monster-btn" id="pve-wood-dummy" data-monster="wood-dummy" style="left: 5%; top: 60%;">
+                        <img src="/images/pve/wood-dummy.png" alt="Wood Dummy">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-raccoon" data-monster="raccoon" style="left: 13%; top: 35%;">
+                        <img src="/images/pve/raccoon.png" alt="Raccoon">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-goblin" data-monster="goblin" style="left: 22%; top: 75%;">
+                        <img src="/images/pve/goblin.png" alt="Goblin">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-ram" data-monster="ram" style="left: 35%; top: 25%;">
+                        <img src="/images/pve/ram.png" alt="Ram">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-eagle" data-monster="eagle" style="left: 45%; top: 50%;">
+                        <img src="/images/pve/eagle.png" alt="Eagle">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-serpent" data-monster="serpent" style="left: 58%; top: 30%;">
+                        <img src="/images/pve/serpent.png" alt="Serpent">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-nymph" data-monster="nymph" style="left: 72%; top: 60%;">
+                        <img src="/images/pve/nymph.png" alt="Nymph">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-minitaur" data-monster="minitaur" style="left: 82%; top: 35%;">
+                        <img src="/images/pve/minitaur.png" alt="Minitaur">
+                    </button>
+                    <button class="pve-monster-btn" id="pve-dragon" data-monster="dragon" style="left: 88%; top: 15%;">
+                        <img src="/images/pve/dragon.png" alt="Dragon">
+                    </button>
+                </div>
+
+                <!-- Back Button -->
+                <button id="pve-back-btn" class="pve-back-btn">← BACK</button>
+            </div>
+        </div>
+
+        <!-- PVP Tournament Screen -->
+        <div id="pvp-tournament-screen" class="game-screen hidden">
         <div class="container">
             <!-- Left Side: Loot Container -->
             <div class="left-section">
@@ -226,7 +345,7 @@
                 </div>
             </div>
         </div><!-- End container -->
-        </div><!-- End pve-tournament-screen -->
+        </div><!-- End pvp-tournament-screen -->
 
         <!-- Loot Claim Popup Overlay -->
         <div class="loot-claim-overlay hidden" id="loot-claim-overlay">
@@ -295,10 +414,13 @@
         </div>
     </div>
 
-    <!-- Dev Preview Toggle Button -->
+    <!-- Dev Panel -->
+    <div class="dev-panel-title">DEV PANEL</div>
     <div class="dev-toggle-container">
+        <button id="start-tournament-btn" class="start-tournament-btn">🏆 START TOURNAMENT</button>
         <button id="fast-forward-btn" class="fast-forward-btn">⏩ 4x Fast Forward</button>
         <button id="dev-preview-toggle" class="dev-preview-toggle-btn">▼ Show Dev Previews</button>
+        <button id="dev-mute-btn" class="dev-mute-btn">🔇 MUTED</button>
     </div>
 
     <!-- Dev Preview Wrapper -->
@@ -308,6 +430,7 @@
             <button class="dev-tab active" data-tab="bracket">📊 Bracket</button>
             <button class="dev-tab" data-tab="loot">🎁 Loot</button>
             <button class="dev-tab" data-tab="chat">💬 Live Chat</button>
+            <button class="dev-tab" data-tab="battlepass">🎫 Battle Pass</button>
         </div>
 
         <!-- Bracket Development Frame -->
@@ -378,6 +501,15 @@
             </div>
         </div>
     </div>
+
+    <!-- Battle Pass Development Frame -->
+    <div class="battlepass-dev-frame dev-frame-tab hidden" data-frame="battlepass">
+        <div class="battlepass-dev-container">
+            <div class="battlepass-dev-background"></div>
+            <button class="battlepass-dev-close-btn">✕</button>
+            <img src="/images/Home Screen/battle-pass.png" alt="Battle Pass" class="battlepass-dev-image">
+        </div>
+    </div>
     </div><!-- End dev-preview-wrapper -->
 
     <!-- Game Scripts - ES6 Modules -->
@@ -392,6 +524,84 @@
 
         // Wait for DOM to be fully loaded
         document.addEventListener('DOMContentLoaded', () => {
+            // Loading Screen Logic
+            const loadingScreen = document.getElementById('loading-screen');
+            const homeScreen = document.getElementById('home-screen');
+            const loadingBarFill = document.getElementById('loading-bar-fill');
+            const startBtn = document.getElementById('start-btn');
+            const loadingBar = document.querySelector('.loading-bar-container');
+
+            // Animate loading bar over 2.5 seconds
+            let progress = 0;
+            const duration = 2500; // 2.5 seconds
+            const interval = 25; // Update every 25ms
+            const increment = (100 / duration) * interval;
+
+            const loadingInterval = setInterval(() => {
+                progress += increment;
+                if (progress >= 100) {
+                    progress = 100;
+                    clearInterval(loadingInterval);
+
+                    // Hide loading bar and show start button
+                    setTimeout(() => {
+                        loadingBar.style.opacity = '0';
+                        setTimeout(() => {
+                            loadingBar.style.display = 'none';
+                            startBtn.classList.remove('hidden');
+                        }, 300);
+                    }, 200);
+                }
+                loadingBarFill.style.width = progress + '%';
+            }, interval);
+
+            // Reload page before cloud animation completes (loading screen only)
+            // Animation is 120s, reload at 115s to avoid seeing the seam
+            let reloadTimer = setTimeout(() => {
+                // Only reload if still on loading screen
+                if (!loadingScreen.classList.contains('hidden')) {
+                    location.reload();
+                }
+            }, 115000); // 115 seconds
+
+            // Start button click handler
+            startBtn.addEventListener('click', () => {
+                // Cancel reload timer when leaving loading screen
+                clearTimeout(reloadTimer);
+                loadingScreen.classList.add('hidden');
+                homeScreen.classList.remove('hidden');
+            });
+
+            // Initialize audio as muted
+            const homeMusic = document.getElementById('home-music');
+            homeMusic.muted = true;
+
+            // Loading screen mute button functionality
+            const muteBtn = document.getElementById('mute-btn');
+            const devMuteBtn = document.getElementById('dev-mute-btn');
+            let isMuted = true; // Start muted
+
+            if (muteBtn) {
+                muteBtn.addEventListener('click', () => {
+                    isMuted = !isMuted;
+                    homeMusic.muted = isMuted;
+                    muteBtn.textContent = isMuted ? '🔇' : '🔊';
+
+                    // Update dev button too
+                    if (devMuteBtn) {
+                        devMuteBtn.textContent = isMuted ? '🔇 MUTED' : '🔊 UNMUTED';
+                        devMuteBtn.classList.toggle('active', !isMuted);
+                    }
+
+                    // Ensure audio plays when unmuted
+                    if (!isMuted) {
+                        homeMusic.play().catch(err => {
+                            console.log('Audio play prevented:', err);
+                        });
+                    }
+                });
+            }
+
             // Dev Preview Toggle functionality
             const toggleBtn = document.getElementById('dev-preview-toggle');
             const previewWrapper = document.getElementById('dev-preview-wrapper');
@@ -421,6 +631,28 @@
 
                         console.log('⏩ Fast forward', isFastForward ? 'ENABLED (4x)' : 'DISABLED (1x)');
                         console.log('   Turn delay:', window.GAME_CONFIG.TIMING.TURN_DELAY, 'ms');
+                    }
+                });
+            }
+
+            // Dev Panel Mute Button (uses homeMusic and devMuteBtn already declared above)
+            if (devMuteBtn && homeMusic) {
+                devMuteBtn.addEventListener('click', () => {
+                    isMuted = !isMuted;
+                    homeMusic.muted = isMuted;
+
+                    // Update both buttons
+                    devMuteBtn.textContent = isMuted ? '🔇 MUTED' : '🔊 UNMUTED';
+                    devMuteBtn.classList.toggle('active', !isMuted);
+                    if (muteBtn) {
+                        muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                    }
+
+                    // Try to play if unmuting
+                    if (!isMuted) {
+                        homeMusic.play().catch(err => {
+                            console.log('Audio play prevented:', err);
+                        });
                     }
                 });
             }

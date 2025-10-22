@@ -5,7 +5,7 @@
 export class GameManager {
     constructor() {
         // Current game state
-        this.currentScreen = 'home'; // 'home', 'castle', 'map', 'pve-tournament'
+        this.currentScreen = 'home'; // 'home', 'castle', 'map', 'pvp-tournament'
 
         // Player session data (resets on refresh)
         this.player = {
@@ -17,8 +17,8 @@ export class GameManager {
                 criticalHits: 0
             },
             sessionCurrency: {
-                gold: 0,
-                gems: 0
+                gold: 10000,
+                gems: 120
             },
             currentRun: null // Active tournament data if in progress
         };
@@ -28,7 +28,7 @@ export class GameManager {
             home: null,
             castle: null,
             map: null,
-            pveTournament: null
+            pvpTournament: null
         };
 
         console.log('🎮 GameManager initialized - Session started');
@@ -96,9 +96,9 @@ export class GameManager {
     }
 
     /**
-     * Start PVE tournament
+     * Start PVP tournament
      */
-    startPVETournament() {
+    startPVPTournament() {
         this.player.currentRun = {
             startTime: Date.now(),
             round: 1,
@@ -106,13 +106,13 @@ export class GameManager {
             isComplete: false
         };
         this.updateStats('tournamentsPlayed', 1);
-        this.navigateTo('pve-tournament');
+        this.navigateTo('pvp-tournament');
     }
 
     /**
-     * Complete PVE tournament
+     * Complete PVP tournament
      */
-    completePVETournament(won, roundReached) {
+    completePVPTournament(won, roundReached) {
         if (!this.player.currentRun) return;
 
         this.player.currentRun.isComplete = true;
@@ -126,6 +126,13 @@ export class GameManager {
         }
 
         this.player.currentRun = null;
+    }
+
+    /**
+     * Get current screen name
+     */
+    getCurrentScreen() {
+        return this.currentScreen;
     }
 
     /**
@@ -151,8 +158,8 @@ export class GameManager {
             criticalHits: 0
         };
         this.player.sessionCurrency = {
-            gold: 0,
-            gems: 0
+            gold: 10000,
+            gems: 120
         };
         this.player.currentRun = null;
         this.navigateTo('home');

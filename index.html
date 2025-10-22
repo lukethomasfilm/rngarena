@@ -21,16 +21,16 @@
                 </audio>
 
                 <!-- Parallax Background Layers -->
-                <div class="parallax-clouds" data-speed="0.15"></div>
-                <div class="parallax-logo" data-speed="0.2"></div>
-                <div class="parallax-castle" data-speed="0.4"></div>
-                <div class="parallax-trees" data-speed="0.6"></div>
+                <div class="parallax-clouds" data-speed="0.225"></div>
+                <div class="parallax-logo" data-speed="0.3"></div>
+                <div class="parallax-castle" data-speed="0.6"></div>
+                <div class="parallax-trees" data-speed="0.9"></div>
 
                 <!-- Characters at Bottom -->
                 <div class="home-characters">
-                    <img src="/images/Home Screen/Aphrodite.png" alt="Aphrodite" class="home-character home-aphrodite" data-speed="0.5">
-                    <img src="/images/Home Screen/hero.png" alt="Hero" class="home-character home-hero" data-speed="0.7">
-                    <img src="/images/Home Screen/black knight.png" alt="Black Knight" class="home-character home-black-knight" data-speed="0.5">
+                    <img src="/images/Home Screen/Aphrodite.png" alt="Aphrodite" class="home-character home-aphrodite" data-speed="0.75">
+                    <img src="/images/Home Screen/hero.png" alt="Hero" class="home-character home-hero" data-speed="1.05">
+                    <img src="/images/Home Screen/black knight.png" alt="Black Knight" class="home-character home-black-knight" data-speed="0.75">
                 </div>
 
                 <!-- Loading Bar -->
@@ -102,13 +102,13 @@
                         <img src="/images/Home Screen/PVE.png" alt="PVE">
                         <span class="home-bar-label">PVE</span>
                     </button>
-                    <button id="home-store-btn-bar" class="home-bar-btn">
-                        <img src="/images/Home Screen/store.png" alt="Store">
-                        <span class="home-bar-label">STORE</span>
-                    </button>
                     <button id="home-pvp-btn-bar" class="home-bar-btn">
                         <img src="/images/Home Screen/PVP.png" alt="PVP">
                         <span class="home-bar-label">PVP</span>
+                    </button>
+                    <button id="home-store-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/store.png" alt="Store">
+                        <span class="home-bar-label">STORE</span>
                     </button>
                     <button id="home-castle-btn-bar" class="home-bar-btn">
                         <img src="/images/Home Screen/castle-icon.png" alt="Castle">
@@ -159,7 +159,33 @@
                 </button>
 
                 <!-- Back Button -->
-                <button id="store-back-btn" class="store-back-btn">← BACK</button>
+                <button id="store-back-btn" class="store-back-btn">←</button>
+            </div>
+        </div>
+
+        <!-- Dominion Screen -->
+        <div id="dominion-screen" class="game-screen hidden">
+            <div class="dominion-container">
+                <!-- Dominion Map Background -->
+                <div class="dominion-map" id="dominion-map"></div>
+
+                <!-- Map Navigation Buttons (Tab Style) -->
+                <button class="dominion-nav-tab dominion-nav-up" id="dominion-nav-up">▲</button>
+                <button class="dominion-nav-tab dominion-nav-down" id="dominion-nav-down">▼</button>
+                <button class="dominion-nav-tab dominion-nav-left" id="dominion-nav-left">◄</button>
+                <button class="dominion-nav-tab dominion-nav-right" id="dominion-nav-right">►</button>
+
+                <!-- Zoom Controls (Bottom Left) -->
+                <div class="dominion-zoom-controls">
+                    <button class="dominion-zoom-btn" id="dominion-zoom-in">+</button>
+                    <button class="dominion-zoom-btn" id="dominion-zoom-out">−</button>
+                </div>
+
+                <!-- Directions Image (Top Right) -->
+                <img src="/images/Dominion/directions.png" alt="Map Directions" class="dominion-directions">
+
+                <!-- Back Button -->
+                <button id="dominion-back-btn" class="dominion-back-btn">←</button>
             </div>
         </div>
 
@@ -169,39 +195,146 @@
                 <!-- Battle Map Background -->
                 <div class="pve-battle-map">
                     <!-- Monster Icons positioned on map -->
-                    <button class="pve-monster-btn" id="pve-wood-dummy" data-monster="wood-dummy" style="left: 5%; top: 60%;">
+                    <button class="pve-monster-btn" id="pve-wood-dummy" data-monster="wood-dummy" style="left: calc(22% - 5px); top: calc(75% + 20px);">
                         <img src="/images/pve/wood-dummy.png" alt="Wood Dummy">
                     </button>
-                    <button class="pve-monster-btn" id="pve-raccoon" data-monster="raccoon" style="left: 13%; top: 35%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-raccoon" data-monster="raccoon" style="left: 13%; top: 35%;">
                         <img src="/images/pve/raccoon.png" alt="Raccoon">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn" id="pve-goblin" data-monster="goblin" style="left: 22%; top: 75%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-goblin" data-monster="goblin" style="left: calc(58% - 20px); top: calc(30% - 45px);">
                         <img src="/images/pve/goblin.png" alt="Goblin">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn" id="pve-ram" data-monster="ram" style="left: 35%; top: 25%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-ram" data-monster="ram" style="left: calc(35% - 45px); top: calc(25% - 25px);">
                         <img src="/images/pve/ram.png" alt="Ram">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn" id="pve-eagle" data-monster="eagle" style="left: 45%; top: 50%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-eagle" data-monster="eagle" style="left: calc(45% - 35px); top: calc(50% - 35px);">
                         <img src="/images/pve/eagle.png" alt="Eagle">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn" id="pve-serpent" data-monster="serpent" style="left: 58%; top: 30%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-serpent" data-monster="serpent" style="left: calc(5% + 410px); top: 60%;">
                         <img src="/images/pve/serpent.png" alt="Serpent">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn" id="pve-nymph" data-monster="nymph" style="left: 72%; top: 60%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-nymph" data-monster="nymph" style="left: calc(82% + 40px); top: calc(35% + 60px);">
                         <img src="/images/pve/nymph.png" alt="Nymph">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn" id="pve-minitaur" data-monster="minitaur" style="left: 82%; top: 35%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-minitaur" data-monster="minitaur" style="left: calc(72% - 20px); top: calc(60% + 40px);">
                         <img src="/images/pve/minitaur.png" alt="Minitaur">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn" id="pve-dragon" data-monster="dragon" style="left: 88%; top: 15%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-dragon" data-monster="dragon" style="left: calc(88% + 10px); top: calc(15% + 10px);">
                         <img src="/images/pve/dragon.png" alt="Dragon">
+                        <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
                 </div>
 
                 <!-- Back Button -->
-                <button id="pve-back-btn" class="pve-back-btn">← BACK</button>
+                <button id="pve-back-btn" class="pve-back-btn">←</button>
             </div>
         </div>
+
+        <!-- PVE Battle Screen -->
+        <div id="pve-battle-screen" class="game-screen hidden">
+        <div class="container">
+            <!-- Left Side: Loot Container -->
+            <div class="left-section">
+                <div class="loot-container">
+                    <div class="loot-header-top"></div>
+                    <div class="loot-content">
+                        <div id="pve-loot-box" class="treasure-chest">
+                            <img src="/images/Loot/chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image">
+                            <button id="pve-claim-loot-btn" class="claim-loot-btn hidden">CLAIM LOOT</button>
+                        </div>
+                    </div>
+                    <div class="loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
+                </div>
+            </div>
+
+            <!-- Center: Battlefield Section -->
+            <div class="battlefield-section">
+                <button class="battlefield-fullscreen-close">✕</button>
+                <div class="arena-viewport wood-castle" id="pve-arena-viewport">
+                    <!-- Top Progress - Hero vs Monster -->
+                    <div class="top-progress">
+                        <!-- Hero HP Bar (Left) -->
+                        <div class="hp-bar left-hp">
+                            <div class="hp-bar-background"></div>
+                            <div class="hp-bar-fill" id="pve-hero-hp-fill"></div>
+                            <div class="hp-text" id="pve-hero-hp-text">10/10</div>
+                        </div>
+
+                        <div class="progress-container">
+                            <div class="progress-label">PVE Battle</div>
+                        </div>
+
+                        <!-- Monster HP Bar (Right) -->
+                        <div class="hp-bar right-hp">
+                            <div class="hp-bar-background"></div>
+                            <div class="hp-bar-fill" id="pve-monster-hp-fill"></div>
+                            <div class="hp-text" id="pve-monster-hp-text">40/40</div>
+                        </div>
+                    </div>
+
+                    <div class="battle-status" id="pve-battle-status"></div>
+                    <div class="round-announcement" id="pve-round-announcement"></div>
+
+                    <!-- Hero Fighter (Left) -->
+                    <div class="fighter-left">
+                        <div class="fighter-sprite left-sprite" id="pve-hero-sprite">
+                        </div>
+                    </div>
+
+                    <!-- Monster Fighter (Right) -->
+                    <div class="fighter-right">
+                        <div class="fighter-sprite right-sprite" id="pve-monster-sprite">
+                        </div>
+                    </div>
+
+                    <!-- Nameplates with VS -->
+                    <div class="nameplate-vs-container">
+                        <div class="nameplate left-nameplate">
+                            <div class="nameplate-name" id="pve-hero-name">DARING HERO</div>
+                            <div class="nameplate-titles" id="pve-hero-titles"></div>
+                        </div>
+
+                        <div class="vs-display">VS</div>
+
+                        <div class="nameplate right-nameplate">
+                            <div class="nameplate-name" id="pve-monster-name">WOOD DUMMY</div>
+                            <div class="nameplate-titles" id="pve-monster-titles"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Side: Empty (no bracket) -->
+            <div class="right-section pve-right-empty">
+            </div>
+
+            <!-- Bottom Left: Controls -->
+            <div class="bottom-left-section">
+                <div class="control-grid">
+                    <button id="pve-settings-btn" class="control-btn">⚙️</button>
+                    <button id="pve-mute-audio" class="control-btn mute-btn">🔊</button>
+                    <button id="pve-exit-game" class="control-btn exit-btn" title="Return to PVE Map">←</button>
+                    <button id="pve-fast-forward" class="control-btn">⏩</button>
+                </div>
+            </div>
+
+            <!-- Bottom Right: MAIN + Fullscreen Only -->
+            <div class="bottom-right-section">
+                <div class="view-grid pve-view-grid">
+                    <button id="pve-main-view" class="view-btn">MAIN</button>
+                    <button id="pve-fullscreen-btn" class="view-btn">⛶</button>
+                </div>
+            </div>
+        </div><!-- End container -->
+        </div><!-- End pve-battle-screen -->
 
         <!-- PVP Tournament Screen -->
         <div id="pvp-tournament-screen" class="game-screen hidden">
@@ -531,6 +664,13 @@
             const startBtn = document.getElementById('start-btn');
             const loadingBar = document.querySelector('.loading-bar-container');
 
+            console.log('🎮 Loading screen elements:', { loadingScreen, loadingBarFill, startBtn, loadingBar });
+
+            if (!loadingBarFill) {
+                console.error('❌ Loading bar fill element not found!');
+                return;
+            }
+
             // Animate loading bar over 2.5 seconds
             let progress = 0;
             const duration = 2500; // 2.5 seconds
@@ -545,29 +685,42 @@
 
                     // Hide loading bar and show start button
                     setTimeout(() => {
-                        loadingBar.style.opacity = '0';
+                        if (loadingBar) loadingBar.style.opacity = '0';
                         setTimeout(() => {
-                            loadingBar.style.display = 'none';
-                            startBtn.classList.remove('hidden');
+                            if (loadingBar) loadingBar.style.display = 'none';
+                            if (startBtn) startBtn.classList.remove('hidden');
                         }, 300);
                     }, 200);
                 }
                 loadingBarFill.style.width = progress + '%';
             }, interval);
 
-            // Reload page before cloud animation completes (loading screen only)
-            // Animation is 120s, reload at 115s to avoid seeing the seam
-            let reloadTimer = setTimeout(() => {
-                // Only reload if still on loading screen
-                if (!loadingScreen.classList.contains('hidden')) {
-                    location.reload();
+            // Reset cloud animation seamlessly before it completes to avoid dark seam
+            // Reset at 50s if the dark gap appears around 60s
+            const resetCloudAnimation = () => {
+                const clouds = loadingScreen.querySelector('.parallax-clouds');
+                if (clouds && !loadingScreen.classList.contains('hidden')) {
+                    // Force animation restart by toggling a class
+                    clouds.classList.add('reset-animation');
+                    // Trigger reflow
+                    void clouds.offsetHeight;
+                    // Remove class to restart animation
+                    clouds.classList.remove('reset-animation');
                 }
-            }, 115000); // 115 seconds
+            };
+
+            // Reset animation every 50 seconds to avoid dark seam
+            let cloudResetInterval = setInterval(() => {
+                if (loadingScreen.classList.contains('hidden')) {
+                    clearInterval(cloudResetInterval);
+                } else {
+                    resetCloudAnimation();
+                }
+            }, 50000);
 
             // Start button click handler
             startBtn.addEventListener('click', () => {
-                // Cancel reload timer when leaving loading screen
-                clearTimeout(reloadTimer);
+                clearInterval(cloudResetInterval);
                 loadingScreen.classList.add('hidden');
                 homeScreen.classList.remove('hidden');
             });

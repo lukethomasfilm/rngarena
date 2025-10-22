@@ -4,7 +4,6 @@ import { LootSystem } from './LootSystem.js';
 import { CombatSystem } from './CombatSystem.js';
 import { BracketSystem } from './BracketSystem.js';
 import { GameManager } from './GameManager.js';
-import { PVEBattleSystem } from './pve/PVEBattleSystem.js';
 import {
     GAME_CONFIG,
     ARENA_CONFIG,
@@ -17,34 +16,8 @@ import {
 } from './constants.js';
 
 /**
- * ═══════════════════════════════════════════════════════════════════════════
- * RNGArena - PVP Tournament System
- * ═══════════════════════════════════════════════════════════════════════════
- *
- * ARCHITECTURAL SEPARATION:
- * -------------------------
- * This class handles EXCLUSIVELY PVP tournament functionality.
- * All DOM element references are scoped to #pvp-tournament-screen.
- *
- * PVE System (COMPLETELY SEPARATE):
- * - Located in: js/pve/PVEBattleSystem.js & js/pve/PVECombatSystem.js
- * - Screens: #pve-screen (map), #pve-battle-screen (battle)
- * - Elements: All use pve- prefix (pve-hero-sprite, pve-monster-sprite, etc.)
- *
- * CRITICAL RULES:
- * ---------------
- * 1. NEVER use document.querySelector() for shared class names
- *    (e.g., .fighter-left, .arena-viewport, .nameplate-vs-container)
- *
- * 2. ALWAYS scope selectors: this.pvpScreen.querySelector()
- *
- * 3. Store all PVP element references in constructor with pvpScreen scoping
- *
- * 4. PVE system is self-contained - RNGArena never touches PVE elements
- *
- * This separation prevents cross-contamination bugs where PVP code
- * accidentally manipulates PVE elements or vice versa.
- * ═══════════════════════════════════════════════════════════════════════════
+ * RNGArena - Main game controller
+ * Coordinates all systems and manages game flow
  */
 export class RNGArena {
     constructor() {
@@ -72,22 +45,14 @@ export class RNGArena {
         this.ladyLuckFrame = 1; // Current frame (1-4)
         this.ladyLuckAnimationInterval = null; // Animation interval ID
 
-        // DOM Elements - ALL scoped to PVP tournament screen to avoid conflicts with PVE
-        // CRITICAL: This ensures RNGArena only manipulates PVP elements, never PVE
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        if (!pvpScreen) {
-            console.error('❌ PVP tournament screen not found! RNGArena cannot initialize.');
-            return;
-        }
-
-        this.pvpScreen = pvpScreen; // Store reference for future use
-        this.leftFighter = pvpScreen.querySelector('.fighter-left');
-        this.rightFighter = pvpScreen.querySelector('.fighter-right');
-        this.battleStatus = pvpScreen.querySelector('.battle-status');
-        this.roundAnnouncement = pvpScreen.querySelector('.round-announcement');
+        // DOM Elements
+        this.leftFighter = document.querySelector('.fighter-left');
+        this.rightFighter = document.querySelector('.fighter-right');
+        this.battleStatus = document.querySelector('.battle-status');
+        this.roundAnnouncement = document.querySelector('.round-announcement');
         this.startButton = document.getElementById('start-battle');
         this.chatMessages = document.getElementById('chat-messages');
-        this.arenaViewport = pvpScreen.querySelector('.arena-viewport');
+        this.arenaViewport = document.querySelector('.arena-viewport');
         this.progressSegments = document.getElementById('progress-segments');
         this.heroProgressIndicator = document.getElementById('hero-progress-indicator');
         this.leftFighterNameEl = document.getElementById('left-nameplate-name');
@@ -96,11 +61,11 @@ export class RNGArena {
         this.countdownTimer = document.getElementById('countdown-timer');
         this.leftFighterTitlesEl = document.getElementById('left-nameplate-titles');
         this.rightFighterTitlesEl = document.getElementById('right-nameplate-titles');
-        this.leftFighterCard = pvpScreen.querySelector('.left-fighter-card');
-        this.rightFighterCard = pvpScreen.querySelector('.right-fighter-card');
+        this.leftFighterCard = document.querySelector('.left-fighter-card');
+        this.rightFighterCard = document.querySelector('.right-fighter-card');
         this.bracketDisplay = document.getElementById('bracket-display');
         this.overlayBracketDisplay = document.getElementById('overlay-bracket-display');
-        this.bracketViewport = pvpScreen.querySelector('.bracket-viewport');
+        this.bracketViewport = document.querySelector('.bracket-viewport');
         this.bracketSlider = document.getElementById('bracket-slider');
         this.zoomInBtn = document.getElementById('zoom-in');
         this.zoomOutBtn = document.getElementById('zoom-out');
@@ -109,15 +74,8 @@ export class RNGArena {
         this.overlayZoomOutBtn = document.getElementById('overlay-zoom-out');
         this.overlayZoomLevel = document.getElementById('overlay-zoom-level');
         this.overlayBracketSlider = document.getElementById('overlay-bracket-slider');
-        this.chatContainer = pvpScreen.querySelector('.chat-container');
+        this.chatContainer = document.querySelector('.chat-container');
         this.chatInput = document.getElementById('chat-input');
-
-        // Additional PVP-specific elements (scoped to prevent PVE conflicts)
-        this.nameplateVsContainer = pvpScreen.querySelector('.nameplate-vs-container');
-        this.leftNameplate = pvpScreen.querySelector('.left-nameplate');
-        this.rightNameplate = pvpScreen.querySelector('.right-nameplate');
-        this.crownOdds = pvpScreen.querySelector('.crown-odds');
-        this.lootHeaderBottom = pvpScreen.querySelector('.loot-header-bottom');
         this.sendChatBtn = document.getElementById('send-chat');
 
         // Initialize Systems
@@ -126,7 +84,6 @@ export class RNGArena {
         this.emojiSystem = new EmojiSystem(this.arenaViewport);
         this.lootSystem = new LootSystem();
         this.bracketSystem = new BracketSystem(this.bracketDisplay, this.tournament);
-        this.pveBattleSystem = new PVEBattleSystem(); // PVE battle system
 
         // Combat system will be initialized per battle
         this.combatSystem = null;
@@ -181,7 +138,7 @@ export class RNGArena {
         if (this.homeMusic) {
             console.log('🎵 Home music element found (autoplay muted in HTML)');
 
-            // Set volume (half volume)
+            // Set volume
             this.homeMusic.volume = 0.5;
 
             // Wait for the audio to be ready to play
@@ -191,22 +148,25 @@ export class RNGArena {
                 console.log('   - muted:', this.homeMusic.muted);
                 console.log('   - readyState:', this.homeMusic.readyState);
 
-                // Ensure it's playing (muted - user can unmute with button)
+                // Ensure it's playing (autoplay might have failed)
                 if (this.homeMusic.paused) {
                     this.homeMusic.play()
                         .then(() => {
-                            console.log('✅ Started playing (muted - use button to unmute)');
+                            console.log('✅ Started playing (was paused)');
+                            this.homeMusic.muted = false;
+                            console.log('✅ Unmuted - music now audible');
                         })
                         .catch(err => {
                             console.log('⚠️ Autoplay blocked by browser. Music will start on first interaction.');
 
                             // Add multiple interaction listeners as fallback
                             const playOnInteraction = (eventType) => {
-                                console.log(`🎵 User interaction detected (${eventType}) - starting music (muted)...`);
+                                console.log(`🎵 User interaction detected (${eventType}) - starting music...`);
                                 if (this.homeMusic && this.homeMusic.paused) {
                                     this.homeMusic.play()
                                         .then(() => {
-                                            console.log('✅ Home music now playing (muted - use button to unmute)');
+                                            this.homeMusic.muted = false;
+                                            console.log('✅ Home music now playing!');
 
                                             // Remove all listeners
                                             document.removeEventListener('click', clickHandler, true);
@@ -227,8 +187,9 @@ export class RNGArena {
                             document.addEventListener('touchstart', touchHandler, true);
                         });
                 } else {
-                    // Already playing (stays muted until user clicks button)
-                    console.log('✅ Already playing (muted - use button to unmute)');
+                    // Already playing (autoplay worked), just unmute
+                    this.homeMusic.muted = false;
+                    console.log('✅ Already playing, just unmuted');
                 }
             };
 
@@ -301,7 +262,7 @@ export class RNGArena {
                 const currentScreen = this.gameManager.getCurrentScreen();
                 if (currentScreen === 'home' && this.homeMusic) {
                     this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                } else if (currentScreen === 'pvp-tournament') {
+                } else if (currentScreen === 'pve-tournament') {
                     this.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
                 }
                 muteBtn.textContent = '🔊';
@@ -320,53 +281,44 @@ export class RNGArena {
      * Initialize home screen navigation and buttons
      */
     initHomeScreen() {
-        // Bottom bar buttons (new IDs with -bar suffix)
-        const pvpBtn = document.getElementById('home-pvp-btn-bar');
-        const pveBtn = document.getElementById('home-pve-btn-bar');
-        const storeBtn = document.getElementById('home-store-btn-bar');
-        const castleBtn = document.getElementById('home-castle-btn-bar');
-        const dominionBtn = document.getElementById('home-dominion-btn-bar');
-        const guildsBtn = document.getElementById('home-guilds-btn-bar');
-
-        // Top buttons
+        const pvpBtn = document.getElementById('home-pvp-btn');
+        const pveBtn = document.getElementById('home-pve-btn');
+        const storeBtn = document.getElementById('home-store-btn');
+        const battlepassBtn = document.getElementById('home-battlepass-btn');
+        const castleBtn = document.getElementById('home-castle-btn');
         const settingsBtn = document.getElementById('home-settings-btn');
         const audioBtn = document.getElementById('home-audio-btn');
+        const exitBtn = document.getElementById('exit-game');
 
         // PVP button launches the tournament
         if (pvpBtn) {
             pvpBtn.addEventListener('click', () => {
-                this.navigateToScreen('pvp-tournament');
+                this.navigateToScreen('pve-tournament');
             });
         }
 
-        // PVE button - navigate to PVE screen
+        // PVE button - future PVE mode
         if (pveBtn) {
             pveBtn.addEventListener('click', () => {
-                this.navigateToScreen('pve');
+                alert('PVE Mode coming soon!');
             });
         }
 
         if (storeBtn) {
             storeBtn.addEventListener('click', () => {
-                this.navigateToScreen('store');
+                alert('Store coming soon!');
+            });
+        }
+
+        if (battlepassBtn) {
+            battlepassBtn.addEventListener('click', () => {
+                alert('Battle Pass coming soon!');
             });
         }
 
         if (castleBtn) {
             castleBtn.addEventListener('click', () => {
                 alert('Castle screen coming soon!');
-            });
-        }
-
-        if (dominionBtn) {
-            dominionBtn.addEventListener('click', () => {
-                this.navigateToScreen('dominion');
-            });
-        }
-
-        if (guildsBtn) {
-            guildsBtn.addEventListener('click', () => {
-                alert('Guilds coming soon!');
             });
         }
 
@@ -390,7 +342,7 @@ export class RNGArena {
                     const currentScreen = this.gameManager.getCurrentScreen();
                     if (currentScreen === 'home' && this.homeMusic) {
                         this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                    } else if (currentScreen === 'pvp-tournament') {
+                    } else if (currentScreen === 'pve-tournament') {
                         this.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
                     }
                     audioBtn.textContent = '🔊';
@@ -403,271 +355,12 @@ export class RNGArena {
             });
         }
 
-        // Exit button is on PVP tournament screen, not home screen
-        // Event listener added in initBracketOverlay() instead
-
-        // START TOURNAMENT button - sets timer to 15s, opens PVP at 10s
-        const startTournamentBtn = document.getElementById('start-tournament-btn');
-        if (startTournamentBtn) {
-            startTournamentBtn.addEventListener('click', () => {
-                console.log('🏆 START TOURNAMENT clicked - setting timer to 15 seconds');
-
-                // Clear any existing tournament start timeout
-                if (this.startTournamentTimeout) {
-                    clearTimeout(this.startTournamentTimeout);
-                    this.startTournamentTimeout = null;
-                }
-
-                // Restart countdown with 15 seconds
-                this.startHomeCountdown(15);
-
-                // After 5 seconds (when timer hits 10), navigate to PVP
-                this.startTournamentTimeout = setTimeout(() => {
-                    console.log('🏆 Auto-launching PVP mode at 10 seconds');
-                    this.navigateToScreen('pvp-tournament');
-                    this.startTournamentTimeout = null;
-                }, 5000);
-            });
-        }
-
-        // Store screen event listeners
-        const storeBackBtn = document.getElementById('store-back-btn');
-        if (storeBackBtn) {
-            storeBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from store');
+        // Exit button returns to home screen
+        if (exitBtn) {
+            exitBtn.addEventListener('click', () => {
                 this.navigateToScreen('home');
             });
         }
-
-        // Battle Pass overlay
-        const battlepassBtn = document.getElementById('store-battlepass-btn');
-        const battlepassOverlay = document.getElementById('battlepass-overlay');
-        const battlepassCloseBtn = document.getElementById('battlepass-close-btn');
-        const battlepassBackground = document.querySelector('.battlepass-background');
-
-        if (battlepassBtn && battlepassOverlay) {
-            battlepassBtn.addEventListener('click', () => {
-                console.log('🎫 Opening Battle Pass');
-                battlepassOverlay.classList.remove('hidden');
-            });
-        }
-
-        if (battlepassCloseBtn && battlepassOverlay) {
-            battlepassCloseBtn.addEventListener('click', () => {
-                console.log('✕ Closing Battle Pass');
-                battlepassOverlay.classList.add('hidden');
-            });
-        }
-
-        if (battlepassBackground && battlepassOverlay) {
-            battlepassBackground.addEventListener('click', () => {
-                console.log('✕ Closing Battle Pass (background click)');
-                battlepassOverlay.classList.add('hidden');
-            });
-        }
-
-        const storeMainImage = document.getElementById('store-main-image');
-        if (storeMainImage) {
-            // Track current state
-            let isWaving = false;
-
-            storeMainImage.addEventListener('click', () => {
-                // Toggle between shop.png and shop2.png
-                if (isWaving) {
-                    storeMainImage.src = '/images/shop/shop.png';
-                    console.log('🏪 Switched to shop.png (not waving)');
-                } else {
-                    storeMainImage.src = '/images/shop/shop2.png';
-                    console.log('🏪 Switched to shop2.png (waving)');
-                }
-                isWaving = !isWaving;
-            });
-        }
-
-        // PVE screen event listeners
-        const pveBackBtn = document.getElementById('pve-back-btn');
-        if (pveBackBtn) {
-            pveBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from PVE');
-                this.navigateToScreen('home');
-            });
-        }
-
-        // PVE Monster button click handlers
-        const pveMonsterButtons = document.querySelectorAll('.pve-monster-btn');
-        pveMonsterButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                const monsterId = btn.dataset.monster;
-                const isLocked = btn.classList.contains('pve-locked');
-
-                if (!isLocked) {
-                    console.log(`🎯 Starting battle against: ${monsterId}`);
-                    this.pveBattleSystem.startBattle(monsterId);
-                } else {
-                    console.log(`🔒 Monster ${monsterId} is locked`);
-                }
-            });
-        });
-
-        // Dominion screen event listeners
-        const dominionBackBtn = document.getElementById('dominion-back-btn');
-        if (dominionBackBtn) {
-            dominionBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from Dominion');
-                this.navigateToScreen('home');
-            });
-        }
-
-        // Map navigation and zoom state
-        let mapPosX = 50; // Center X (percentage)
-        let mapPosY = 50; // Center Y (percentage)
-        let mapZoom = 200; // Zoom level (percentage)
-        const panStep = 10; // How much to move per click (percentage)
-        const zoomStep = 20; // How much to zoom per click (percentage)
-        const maxZoom = 400;
-        const minZoom = 100;
-
-        const updateMapPosition = () => {
-            const map = document.getElementById('dominion-map');
-            if (map) {
-                map.style.backgroundPosition = `${mapPosX}% ${mapPosY}%`;
-                map.style.backgroundSize = `${mapZoom}%`;
-                console.log(`🗺️ Map position: ${mapPosX}%, ${mapPosY}%, zoom: ${mapZoom}%`);
-            }
-        };
-
-        // Map navigation button handlers
-        const navUpBtn = document.getElementById('dominion-nav-up');
-        const navDownBtn = document.getElementById('dominion-nav-down');
-        const navLeftBtn = document.getElementById('dominion-nav-left');
-        const navRightBtn = document.getElementById('dominion-nav-right');
-        const zoomInBtn = document.getElementById('dominion-zoom-in');
-        const zoomOutBtn = document.getElementById('dominion-zoom-out');
-
-        if (navUpBtn) {
-            navUpBtn.addEventListener('click', () => {
-                mapPosY = Math.max(0, mapPosY - panStep);
-                updateMapPosition();
-            });
-        }
-
-        if (navDownBtn) {
-            navDownBtn.addEventListener('click', () => {
-                mapPosY = Math.min(100, mapPosY + panStep);
-                updateMapPosition();
-            });
-        }
-
-        if (navLeftBtn) {
-            navLeftBtn.addEventListener('click', () => {
-                mapPosX = Math.max(0, mapPosX - panStep);
-                updateMapPosition();
-            });
-        }
-
-        if (navRightBtn) {
-            navRightBtn.addEventListener('click', () => {
-                mapPosX = Math.min(100, mapPosX + panStep);
-                updateMapPosition();
-            });
-        }
-
-        if (zoomInBtn) {
-            zoomInBtn.addEventListener('click', () => {
-                mapZoom = Math.min(maxZoom, mapZoom + zoomStep);
-                updateMapPosition();
-            });
-        }
-
-        if (zoomOutBtn) {
-            zoomOutBtn.addEventListener('click', () => {
-                mapZoom = Math.max(minZoom, mapZoom - zoomStep);
-                updateMapPosition();
-            });
-        }
-
-        // Map drag functionality (mouse and touch)
-        const dominionMap = document.getElementById('dominion-map');
-        if (dominionMap) {
-            let isDragging = false;
-            let startX, startY;
-            let startPosX, startPosY;
-
-            // Mouse events
-            dominionMap.addEventListener('mousedown', (e) => {
-                isDragging = true;
-                startX = e.clientX;
-                startY = e.clientY;
-                startPosX = mapPosX;
-                startPosY = mapPosY;
-                dominionMap.style.cursor = 'grabbing';
-            });
-
-            document.addEventListener('mousemove', (e) => {
-                if (!isDragging) return;
-
-                const deltaX = e.clientX - startX;
-                const deltaY = e.clientY - startY;
-
-                // Convert pixel movement to percentage (negative because dragging right means map moves left)
-                const mapWidth = dominionMap.offsetWidth;
-                const mapHeight = dominionMap.offsetHeight;
-                const deltaPercentX = -(deltaX / mapWidth) * (mapZoom / 2);
-                const deltaPercentY = -(deltaY / mapHeight) * (mapZoom / 2);
-
-                mapPosX = Math.max(0, Math.min(100, startPosX + deltaPercentX));
-                mapPosY = Math.max(0, Math.min(100, startPosY + deltaPercentY));
-                updateMapPosition();
-            });
-
-            document.addEventListener('mouseup', () => {
-                if (isDragging) {
-                    isDragging = false;
-                    dominionMap.style.cursor = 'grab';
-                }
-            });
-
-            // Touch events
-            dominionMap.addEventListener('touchstart', (e) => {
-                if (e.touches.length === 1) {
-                    isDragging = true;
-                    const touch = e.touches[0];
-                    startX = touch.clientX;
-                    startY = touch.clientY;
-                    startPosX = mapPosX;
-                    startPosY = mapPosY;
-                    e.preventDefault();
-                }
-            });
-
-            dominionMap.addEventListener('touchmove', (e) => {
-                if (!isDragging || e.touches.length !== 1) return;
-
-                const touch = e.touches[0];
-                const deltaX = touch.clientX - startX;
-                const deltaY = touch.clientY - startY;
-
-                const mapWidth = dominionMap.offsetWidth;
-                const mapHeight = dominionMap.offsetHeight;
-                const deltaPercentX = -(deltaX / mapWidth) * (mapZoom / 2);
-                const deltaPercentY = -(deltaY / mapHeight) * (mapZoom / 2);
-
-                mapPosX = Math.max(0, Math.min(100, startPosX + deltaPercentX));
-                mapPosY = Math.max(0, Math.min(100, startPosY + deltaPercentY));
-                updateMapPosition();
-                e.preventDefault();
-            });
-
-            dominionMap.addEventListener('touchend', () => {
-                isDragging = false;
-            });
-
-            // Set initial cursor
-            dominionMap.style.cursor = 'grab';
-        }
-
-        // Monster button handlers - REMOVED (duplicate, see PVE screen event listeners above)
-        // Now handled by pveBattleSystem in the PVE screen event listeners section
 
         // Update home screen stats
         this.updateHomeScreenStats();
@@ -685,103 +378,64 @@ export class RNGArena {
      * Initialize mouse parallax effect for home screen
      */
     initParallax() {
-        const parallaxLayers = document.querySelectorAll('.parallax-logo, .parallax-castle, .parallax-trees');
+        const homeScreen = document.getElementById('home-screen');
+        const parallaxLayers = document.querySelectorAll('.parallax-castle, .parallax-trees');
         const characters = document.querySelectorAll('.home-character');
-        const storeImage = document.getElementById('store-main-image');
-        // No parallax buttons now - all moved to bottom bar
 
-        // Auto-drift animation using requestAnimationFrame
-        let startTime = Date.now();
-        let animationId = null;
+        if (!homeScreen) return;
 
-        const animateParallax = () => {
-            const currentScreen = this.gameManager.currentScreen;
+        homeScreen.addEventListener('mousemove', (e) => {
+            // Only apply parallax if on home screen
+            if (this.gameManager.currentScreen !== 'home') return;
 
-            // Only apply parallax if on home or store screen
-            if (currentScreen !== 'home' && currentScreen !== 'store') {
-                // Stop animation when not on parallax-enabled screens to save resources
-                if (animationId) {
-                    cancelAnimationFrame(animationId);
-                    animationId = null;
+            const rect = homeScreen.getBoundingClientRect();
+            const x = (e.clientX - rect.left) / rect.width;
+            const y = (e.clientY - rect.top) / rect.height;
+
+            // Convert to -1 to 1 range (centered at 0)
+            const xOffset = (x - 0.5) * 2;
+            const yOffset = (y - 0.5) * 2;
+
+            // Apply parallax to background layers
+            parallaxLayers.forEach(layer => {
+                const speed = parseFloat(layer.dataset.speed) || 0.5;
+                const moveX = xOffset * 10 * speed; // Max 10px movement scaled by speed
+                const moveY = yOffset * 10 * speed;
+
+                layer.style.transform = `translate(${moveX}px, ${moveY}px)`;
+            });
+
+            // Apply parallax to characters (faster movement, they're in front)
+            characters.forEach((char, index) => {
+                const speed = 0.8; // Characters move more than background
+                const moveX = xOffset * 10 * speed;
+                const moveY = yOffset * 10 * speed;
+
+                // Hero is centered, so use translateX(-50%) + parallax
+                if (char.classList.contains('home-hero')) {
+                    char.style.transform = `translateX(calc(-50% + ${moveX}px)) translateY(${moveY}px)`;
+                } else {
+                    char.style.transform = `translate(${moveX}px, ${moveY}px)`;
                 }
-                return;
-            }
+            });
+        });
 
-            const elapsed = (Date.now() - startTime) / 1000; // Time in seconds
-
-            // Create slow, smooth drift using sine waves
-            // Different frequencies for X and Y create organic movement
-            const xOffset = Math.sin(elapsed * 0.15) * 0.8; // Slow horizontal drift
-            const yOffset = Math.sin(elapsed * 0.1) * 0.5;  // Even slower vertical drift
-
-            // Apply parallax to home screen elements
-            if (currentScreen === 'home') {
-                // Apply parallax to background layers
-                parallaxLayers.forEach(layer => {
-                    const speed = parseFloat(layer.dataset.speed) || 0.5;
-                    const moveX = xOffset * 22.5 * speed; // Reduced by 50%: 22.5px max movement scaled by speed
-                    const moveY = yOffset * 15 * speed; // Reduced by 50%: 15px max vertical
-
-                    layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`; // Use translate3d for GPU acceleration
-                });
-
-                // Apply parallax to characters (faster movement, they're in front)
-                characters.forEach((char) => {
-                    // Hero in front gets more parallax than side characters
-                    const speed = char.classList.contains('home-hero') ? 1.0 : 0.7;
-                    const moveX = xOffset * 22.5 * speed;
-                    const moveY = yOffset * 15 * speed;
-
-                    // Hero is centered, so use translateX(-50%) + parallax
-                    if (char.classList.contains('home-hero')) {
-                        char.style.transform = `translateX(-50%) translate3d(${moveX}px, ${moveY}px, 0)`; // GPU accelerated
-                    } else {
-                        char.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`; // GPU accelerated
-                    }
-                });
-
-                // No parallax on home buttons now - all moved to bottom bar
-            }
-
-            // Apply parallax to store screen
-            if (currentScreen === 'store' && storeImage) {
-                const speed = parseFloat(storeImage.dataset.speed) || 0.3;
-                const moveX = xOffset * 22.5 * speed; // Reduced by 50%
-                const moveY = yOffset * 15 * speed;
-
-                // Preserve the centering transform
-                storeImage.style.transform = `translate(-50%, -50%) translate3d(${moveX}px, ${moveY}px, 0)`;
-            }
-
-            animationId = requestAnimationFrame(animateParallax);
-        };
-
-        // Start the animation loop
-        animationId = requestAnimationFrame(animateParallax);
-
-        // Store animation ID for cleanup
-        this.parallaxAnimationId = animationId;
-
-        console.log('🌄 Auto-drift parallax effect initialized');
+        console.log('🌄 Parallax effect initialized');
     }
 
     /**
      * Home screen countdown timer (decorative, loops continuously)
-     * @param {number} customStartTime - Optional custom start time in seconds (defaults to 9100 = 02:31:40)
      */
-    startHomeCountdown(customStartTime = null) {
+    startHomeCountdown() {
         const homeTimer = document.querySelector('#home-countdown-timer .countdown-time');
         if (!homeTimer) return;
 
-        // Start at custom time or default 02:31:40 (2 hours 31 minutes 40 seconds = 9100 seconds)
-        let timeRemaining = customStartTime !== null ? customStartTime : 9100;
-        const resetTime = customStartTime !== null ? customStartTime : 9100;
+        let timeRemaining = 10; // Start at 10 seconds
 
         const updateTimer = () => {
-            const hours = Math.floor(timeRemaining / 3600);
-            const minutes = Math.floor((timeRemaining % 3600) / 60);
+            const minutes = Math.floor(timeRemaining / 60);
             const seconds = timeRemaining % 60;
-            const formattedTime = `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            const formattedTime = `00:00:${seconds.toString().padStart(2, '0')}`;
             homeTimer.textContent = formattedTime;
         };
 
@@ -793,11 +447,11 @@ export class RNGArena {
             clearInterval(this.homeCountdownInterval);
         }
 
-        // Countdown interval - loops back to reset time when reaching 0
+        // Countdown interval - loops back to 10 when reaching 0
         this.homeCountdownInterval = setInterval(() => {
             timeRemaining--;
             if (timeRemaining < 0) {
-                timeRemaining = resetTime; // Reset to custom or default time
+                timeRemaining = 10; // Reset to 10
             }
             updateTimer();
         }, 1000);
@@ -824,68 +478,22 @@ export class RNGArena {
 
         // === HOME SCREEN ===
         if (screenName === 'home') {
-            // Stop ALL PVP activity completely
-            this.stopAllPVPActivity();
+            // Stop ALL PVE activity completely
+            this.stopAllPVEActivity();
 
-            // Resume home music if it was playing (respects mute state)
-            if (this.homeMusic) {
-                this.homeMusic.volume = 0.5; // Half volume
-
-                // Only restart if not already playing and not muted
-                if (this.homeMusic.paused && !this.homeMusic.muted) {
-                    this.homeMusic.currentTime = 0; // Start from beginning
-                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                }
+            // Play home music (if not muted)
+            if (!this.audioMuted && this.homeMusic) {
+                this.homeMusic.currentTime = 0; // Start from beginning
+                this.homeMusic.muted = false; // Ensure unmuted
+                this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
             }
 
             // Update home screen stats
             this.updateHomeScreenStats();
-
-            // Reset countdown timer to default (02:31:40)
-            this.startHomeCountdown();
         }
 
-        // === STORE SCREEN ===
-        else if (screenName === 'store') {
-            // Keep home music playing in background
-            if (this.homeMusic) {
-                this.homeMusic.volume = 0.5; // Half volume
-
-                // Start music if not playing and not muted
-                if (this.homeMusic.paused && !this.homeMusic.muted) {
-                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                }
-            }
-        }
-
-        // === PVE SCREEN ===
-        else if (screenName === 'pve') {
-            // Keep home music playing in background
-            if (this.homeMusic) {
-                this.homeMusic.volume = 0.5; // Half volume
-
-                // Start music if not playing and not muted
-                if (this.homeMusic.paused && !this.homeMusic.muted) {
-                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                }
-            }
-        }
-
-        // === DOMINION SCREEN ===
-        else if (screenName === 'dominion') {
-            // Keep home music playing in background
-            if (this.homeMusic) {
-                this.homeMusic.volume = 0.5; // Half volume
-
-                // Start music if not playing and not muted
-                if (this.homeMusic.paused && !this.homeMusic.muted) {
-                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                }
-            }
-        }
-
-        // === PVP TOURNAMENT SCREEN ===
-        else if (screenName === 'pvp-tournament') {
+        // === PVE TOURNAMENT SCREEN ===
+        else if (screenName === 'pve-tournament') {
             // Stop home music completely
             if (this.homeMusic) {
                 this.homeMusic.pause();
@@ -908,76 +516,33 @@ export class RNGArena {
     }
 
     /**
-     * Start a battle with a specific monster (PVE mode)
-     * DEPRECATED: Now handled by PVEBattleSystem
+     * Stop all PVE tournament activity and reset tournament state
      */
-    // startMonsterBattle(monsterName) - REMOVED, see PVEBattleSystem instead
-
-    /**
-     * Stop all PVP tournament activity and reset tournament state
-     */
-    stopAllPVPActivity() {
-        console.log('⏹️ Stopping ALL PVP activity...');
-
-        // CRITICAL: Stop auto-continue FIRST to prevent new battles from starting
-        this.autoContinue = false;
-
-        // CRITICAL: Stop combat immediately if active
-        if (this.combatSystem) {
-            this.combatSystem.combatEnded = true; // Stop combat progression
-            this.combatSystem.setMuted(true); // Mute all combat sounds immediately
-        }
-
-        // Stop all music and audio
+    stopAllPVEActivity() {
+        // Stop music
         this.backgroundMusic.pause();
         this.backgroundMusic.currentTime = 0;
 
-        // Stop active bye sound if playing
-        if (this.activeByeSound) {
-            this.activeByeSound.pause();
-            this.activeByeSound.currentTime = 0;
-            this.activeByeSound = null;
-        }
-
         // Stop countdown interval
-        if (this.pvpCountdownInterval) {
-            clearInterval(this.pvpCountdownInterval);
-            this.pvpCountdownInterval = null;
-        }
-
-        // Stop home countdown interval
-        if (this.homeCountdownInterval) {
-            clearInterval(this.homeCountdownInterval);
-            this.homeCountdownInterval = null;
+        if (this.pveCountdownInterval) {
+            clearInterval(this.pveCountdownInterval);
+            this.pveCountdownInterval = null;
         }
 
         // Stop Lady Luck animation
         this.stopLadyLuckAnimation();
 
-        // Stop emoji reactions and clear all floating emojis
+        // Stop emoji reactions
         if (this.emojiSystem) {
             this.emojiSystem.stopEmojiReactions();
-            this.emojiSystem.clearAllEmojis();
         }
 
         // Stop victory coin shower
         this.stopVictoryCoinShower();
 
-        // Stop chat mode syncing
-        if (this.chatModeSyncInterval) {
-            clearInterval(this.chatModeSyncInterval);
-            this.chatModeSyncInterval = null;
-        }
-
-        // Clear combat system reference (combat will stop when autoContinue is false)
+        // Stop combat system if active
         if (this.combatSystem) {
             this.combatSystem = null;
-        }
-
-        // Clear any active battle status displays
-        if (this.battleStatus) {
-            this.battleStatus.style.opacity = '0';
-            this.battleStatus.innerHTML = '';
         }
 
         // Reset ALL tournament state flags
@@ -993,10 +558,7 @@ export class RNGArena {
         // Reset fighters to initial state
         this.resetFighters();
 
-        // Clean up any combat elements
-        this.cleanupCombatElements();
-
-        console.log('✅ All PVP activity stopped and tournament state reset');
+        console.log('⏹️ All PVE activity stopped and tournament state reset');
     }
 
     /**
@@ -1007,10 +569,10 @@ export class RNGArena {
 
         // === STOP ALL ACTIVE ANIMATIONS/SOUNDS ===
 
-        // Stop PVP countdown timer
-        if (this.pvpCountdownInterval) {
-            clearInterval(this.pvpCountdownInterval);
-            this.pvpCountdownInterval = null;
+        // Stop PVE countdown timer
+        if (this.pveCountdownInterval) {
+            clearInterval(this.pveCountdownInterval);
+            this.pveCountdownInterval = null;
         }
 
         // Stop Lady Luck animation
@@ -1544,18 +1106,18 @@ export class RNGArena {
         updateTimer();
 
         // Clear any existing countdown interval
-        if (this.pvpCountdownInterval) {
-            clearInterval(this.pvpCountdownInterval);
+        if (this.pveCountdownInterval) {
+            clearInterval(this.pveCountdownInterval);
         }
 
         // Countdown interval
-        this.pvpCountdownInterval = setInterval(() => {
+        this.pveCountdownInterval = setInterval(() => {
             timeRemaining--;
             updateTimer();
 
             if (timeRemaining <= 0) {
-                clearInterval(this.pvpCountdownInterval);
-                this.pvpCountdownInterval = null;
+                clearInterval(this.pveCountdownInterval);
+                this.pveCountdownInterval = null;
                 // Hide countdown overlay
                 if (this.countdownOverlay) {
                     this.countdownOverlay.classList.add('hidden');
@@ -1604,8 +1166,8 @@ export class RNGArena {
                 // Note: Images will be loaded later by startBattle()
             }
 
-            // Animate nameplates into view immediately (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            // Animate nameplates into view immediately
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 // Remove visible class first to ensure clean start
                 nameplateContainer.classList.remove('visible');
@@ -1628,8 +1190,8 @@ export class RNGArena {
                 }, 100);
             }
         } else {
-            // First round is a bye - keep nameplates hidden, let handleByeRound animate them (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            // First round is a bye - keep nameplates hidden, let handleByeRound animate them
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 nameplateContainer.classList.remove('visible');
             }
@@ -1763,11 +1325,6 @@ export class RNGArena {
                 this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
             }
 
-            // Reset and update fighters BEFORE fading overlay out (prevents flash)
-            this.resetFighters();
-            this.cleanupCombatElements();
-            this.updateMatchDisplay(match);
-
             // Now fade out the overlay to reveal new fighters
             setTimeout(() => {
                 if (this.bgOverlay) {
@@ -1784,14 +1341,14 @@ export class RNGArena {
         } else {
             // No overlay, do normal background switch
             this.completeBackgroundSwitch();
-
-            // Reset fighters
-            this.resetFighters();
-            this.cleanupCombatElements();
-
-            // Update display
-            this.updateMatchDisplay(match);
         }
+
+        // Reset fighters
+        this.resetFighters();
+        this.cleanupCombatElements();
+
+        // Update display
+        this.updateMatchDisplay(match);
 
         // Start fighter entrances
         setTimeout(() => this.fighterEntrance(), GAME_CONFIG.TIMING.FIGHTER_ENTRANCE_DELAY);
@@ -1824,8 +1381,6 @@ export class RNGArena {
         // SIMPLIFIED: Both fighters ALWAYS enter from their sides
         // Animation handles opacity transition from 0 to 1
         if (this.leftFighter) {
-            // Clear inline opacity so animation can control it
-            this.leftFighter.style.opacity = '';
             this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
 
             // Remove entrance class after animation completes
@@ -1833,16 +1388,12 @@ export class RNGArena {
             // based on the current view (normal, fullscreen, or chat mode)
             const removeLeftEntrance = () => {
                 this.leftFighter.classList.remove(UI_CONFIG.ENTRANCE_LEFT);
-                // Ensure fighter stays visible after animation
-                this.leftFighter.style.opacity = '1';
                 this.leftFighter.removeEventListener('animationend', removeLeftEntrance);
             };
             this.leftFighter.addEventListener('animationend', removeLeftEntrance);
         }
 
         if (this.rightFighter) {
-            // Clear inline opacity so animation can control it
-            this.rightFighter.style.opacity = '';
             this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
 
             // Remove entrance class after animation completes
@@ -1850,8 +1401,6 @@ export class RNGArena {
             // based on the current view (normal, fullscreen, or chat mode)
             const removeRightEntrance = () => {
                 this.rightFighter.classList.remove(UI_CONFIG.ENTRANCE_RIGHT);
-                // Ensure fighter stays visible after animation
-                this.rightFighter.style.opacity = '1';
                 this.rightFighter.removeEventListener('animationend', removeRightEntrance);
             };
             this.rightFighter.addEventListener('animationend', removeRightEntrance);
@@ -2002,32 +1551,24 @@ export class RNGArena {
             const sound = new Audio(this.byeSoundPath);
             sound.volume = 0.75;
             sound.play().catch(err => console.log('Bye sound failed:', err));
-
-            // Store reference to pause it if navigating away
-            this.activeByeSound = sound;
-
             setTimeout(() => {
                 sound.pause();
                 sound.currentTime = 0;
-                this.activeByeSound = null;
             }, 2000);
 
             // Replay Lady Luck laugh after 1 second pause (at 3 seconds total)
             setTimeout(() => {
-                // Only play if tournament is still running (not navigated away)
-                if (!this.audioMuted && this.autoContinue) {
-                    const laughSound = new Audio('/sfx/game_female_soft_com_3-1760029620130.mp3');
-                    laughSound.volume = 0.6;
-                    laughSound.play().catch(err => console.log('Lady Luck laugh failed:', err));
-                }
+                const laughSound = new Audio('/sfx/game_female_soft_com_3-1760029620130.mp3');
+                laughSound.volume = 0.6;
+                laughSound.play().catch(err => console.log('Lady Luck laugh failed:', err));
             }, 3000); // 2000ms bye sound + 1000ms pause
         }
 
         this.battleStatus.innerHTML = '✨ LADY LUCK VISITS YOU! ✨<br><span style="font-size: 0.6em;">You get a bye and a free loot tier - lucky you!</span>';
         this.battleStatus.style.opacity = '0'; // Start hidden
 
-        // Hide nameplates initially to prevent animation jump (scoped to PVP)
-        const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+        // Hide nameplates initially to prevent animation jump
+        const nameplateContainer = document.querySelector('.nameplate-vs-container');
         if (nameplateContainer) {
             nameplateContainer.classList.remove('visible');
         }
@@ -2070,73 +1611,36 @@ export class RNGArena {
         if (this.rightFighter) this.rightFighter.style.opacity = '0';
 
         this.updateByeDisplay(byeInfo);
-
-        // Handle background transition (same logic as normal battles)
-        if (this.bgOverlay) {
-            // There's an existing overlay from previous battle - switch background while black
-            this.backgrounds.forEach(bg => {
-                this.arenaViewport.classList.remove(bg);
-            });
-            this.arenaViewport.classList.remove(ARENA_CONFIG.GOLD_BACKGROUND);
-            const newBg = this.backgrounds[this.currentBgIndex];
-            this.arenaViewport.classList.add(newBg);
-            this.currentBgIndex = (this.currentBgIndex + 1) % this.backgrounds.length;
-            this.chatSystem.addChatMessage(this.chatSystem.getArenaWelcomeMessage(newBg));
-
-            // Fade out overlay to reveal new background
-            setTimeout(() => {
-                if (this.bgOverlay) {
-                    this.bgOverlay.style.transition = 'opacity 0.5s ease-in-out';
-                    this.bgOverlay.style.opacity = '0';
-                    setTimeout(() => {
-                        if (this.bgOverlay) {
-                            this.bgOverlay.remove();
-                            this.bgOverlay = null;
-                        }
-                    }, 500);
-                }
-            }, 50);
-        } else {
-            // No overlay, do normal background switch
-            this.completeBackgroundSwitch();
-        }
+        this.completeBackgroundSwitch();
 
         // Start fighter entrance animations
         // Animation handles opacity transition from 0 to 1
         setTimeout(() => {
             if (this.leftFighter) {
-                // Clear inline opacity so animation can control it
-                this.leftFighter.style.opacity = '';
                 this.leftFighter.classList.add(UI_CONFIG.ENTRANCE_LEFT);
 
                 // Remove entrance class after animation completes
                 // CSS :not(.fighter-entrance-left) rule will automatically apply the correct transform
                 const removeLeftEntrance = () => {
                     this.leftFighter.classList.remove(UI_CONFIG.ENTRANCE_LEFT);
-                    // Ensure fighter stays visible after animation
-                    this.leftFighter.style.opacity = '1';
                     this.leftFighter.removeEventListener('animationend', removeLeftEntrance);
                 };
                 this.leftFighter.addEventListener('animationend', removeLeftEntrance);
             }
             if (this.rightFighter) {
-                // Clear inline opacity so animation can control it
-                this.rightFighter.style.opacity = '';
                 this.rightFighter.classList.add(UI_CONFIG.ENTRANCE_RIGHT);
 
                 // Remove entrance class after animation completes
                 // CSS :not(.fighter-entrance-right) rule will automatically apply the correct transform
                 const removeRightEntrance = () => {
                     this.rightFighter.classList.remove(UI_CONFIG.ENTRANCE_RIGHT);
-                    // Ensure fighter stays visible after animation
-                    this.rightFighter.style.opacity = '1';
                     this.rightFighter.removeEventListener('animationend', removeRightEntrance);
                 };
                 this.rightFighter.addEventListener('animationend', removeRightEntrance);
             }
 
-            // Show nameplates with smooth slide-up animation (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            // Show nameplates with smooth slide-up animation
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 setTimeout(() => {
                     nameplateContainer.classList.add('visible');
@@ -2180,53 +1684,28 @@ export class RNGArena {
                 }
             }
 
-            // Also fade out nameplates (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            // Also fade out nameplates
+            const nameplateContainer = document.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 nameplateContainer.style.transition = 'opacity 1.5s ease-out';
                 nameplateContainer.style.opacity = '0';
             }
-
-            // Start background fade-to-black transition (same as normal battles)
-            this.startBackgroundFadeOut();
-            // Also trigger chat mode transition
-            this.triggerChatModeTransition();
         }, 8500);
 
-        // Complete background switch when overlay is fully black (after 1.5s fade)
+        // Advance after 10 seconds (8.5 seconds display + 1.5 seconds fade-out)
         setTimeout(() => {
-            this.completeBackgroundSwitch();
-
-            // Update fighters WHILE screen is black (prevents flash)
             this.tournament.advanceToNextMatch();
             this.updateOdds();
             this.updateDisplay();
             this.renderBracket();
 
-            // Start next battle immediately while overlay is still black
-            // This matches the timing of normal battles where startBattle() handles the fade-out
             if (this.autoContinue && !this.tournament.isComplete()) {
-                // startBattle() will handle fading out the overlay and entrance animations
+                // Start next battle immediately (no delay)
                 this.startBattle();
             } else {
-                // If not auto-continuing, manually fade out the overlay
-                if (this.bgOverlay) {
-                    setTimeout(() => {
-                        if (this.bgOverlay) {
-                            this.bgOverlay.style.transition = 'opacity 0.5s ease-in-out';
-                            this.bgOverlay.style.opacity = '0';
-                            setTimeout(() => {
-                                if (this.bgOverlay) {
-                                    this.bgOverlay.remove();
-                                    this.bgOverlay = null;
-                                }
-                            }, 500);
-                        }
-                    }, 50);
-                }
                 this.enableRestart();
             }
-        }, 10000); // 8500ms + 1500ms = 10000ms
+        }, 10000);
     }
 
     handleNoMatch() {
@@ -2235,17 +1714,16 @@ export class RNGArena {
     }
 
     enableRestart() {
-        // Guard against null startButton (can happen in different navigation contexts)
-        if (this.startButton) {
-            this.startButton.disabled = false;
-        }
+        // Guard against null startButton (can happen in different navigation    
+   contexts)
+   if (this.startButton) {
+       this.startButton.disabled = false;
+   }
 
         if (this.tournament.isComplete()) {
             const winner = this.tournament.getWinner();
-            if (this.startButton) {
-                this.startButton.textContent = `${winner.toUpperCase()} WINS THE CROWN!`;
-                this.startButton.disabled = true;
-            }
+            this.startButton.textContent = `${winner.toUpperCase()} WINS THE CROWN!`;
+            this.startButton.disabled = true;
             this.chatSystem.addChatMessage("CROWN WINNER!");
             this.chatSystem.addChatMessage("LEGENDARY!");
 
@@ -2271,9 +1749,7 @@ export class RNGArena {
             }, 500);
         } else {
             const roundInfo = this.tournament.getRoundInfo();
-            if (this.startButton) {
-                this.startButton.textContent = `CONTINUE ${roundInfo.name.toUpperCase()}`;
-            }
+            this.startButton.textContent = `CONTINUE ${roundInfo.name.toUpperCase()}`;
         }
     }
 
@@ -2313,20 +1789,36 @@ export class RNGArena {
     }
 
     updateByeDisplay(byeInfo) {
-        // ALWAYS show hero on LEFT, Lady Luck on RIGHT (loser's side)
-        this.leftFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
-        const leftTitles = this.tournament.getCharacterTitles(byeInfo.character);
-        this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
-        this.updateFighterSprite(this.leftFighter, byeInfo.character);
+        if (byeInfo.position === 'left') {
+            this.leftFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
+            const leftTitles = this.tournament.getCharacterTitles(byeInfo.character);
+            this.leftFighterTitlesEl.textContent = leftTitles.join(' • ');
+            this.updateFighterSprite(this.leftFighter, byeInfo.character);
 
-        // Show Lady Luck on the right (loser's side)
-        this.rightFighterNameEl.textContent = 'Lady Luck';
-        this.rightFighterTitlesEl.textContent = 'Bringer of Fortune';
-        this.updateFighterSprite(this.rightFighter, 'Lady Luck');
+            // Show Lady Luck on the right
+            this.rightFighterNameEl.textContent = 'Lady Luck';
+            this.rightFighterTitlesEl.textContent = 'Bringer of Fortune';
+            this.updateFighterSprite(this.rightFighter, 'Lady Luck');
 
-        // Add green styling to right card
-        if (this.rightFighterCard) {
-            this.rightFighterCard.classList.add('lady-bye-chance');
+            // Add green styling to right card
+            if (this.rightFighterCard) {
+                this.rightFighterCard.classList.add('lady-bye-chance');
+            }
+        } else {
+            this.rightFighterNameEl.textContent = this.tournament.getCharacterName(byeInfo.character);
+            const rightTitles = this.tournament.getCharacterTitles(byeInfo.character);
+            this.rightFighterTitlesEl.textContent = rightTitles.join(' • ');
+            this.updateFighterSprite(this.rightFighter, byeInfo.character);
+
+            // Show Lady Luck on the left
+            this.leftFighterNameEl.textContent = 'Lady Luck';
+            this.leftFighterTitlesEl.textContent = 'Bringer of Fortune';
+            this.updateFighterSprite(this.leftFighter, 'Lady Luck');
+
+            // Add green styling to left card
+            if (this.leftFighterCard) {
+                this.leftFighterCard.classList.add('lady-bye-chance');
+            }
         }
 
         const match = { participant1: null, participant2: null };
@@ -2953,16 +2445,16 @@ export class RNGArena {
             el.style.setProperty('opacity', '0', 'important');
         });
 
-        // Also hide the nameplate-vs-container (scoped to PVP)
-        this.pvpScreen.querySelectorAll('.nameplate-vs-container').forEach(el => {
+        // Also hide the nameplate-vs-container - all instances
+        document.querySelectorAll('.nameplate-vs-container').forEach(el => {
             el.style.setProperty('transition', 'transform 1s ease-in, opacity 0.8s ease-in', 'important');
             el.style.setProperty('transform', 'translateY(300px)', 'important');
             el.style.setProperty('opacity', '0', 'important');
         });
 
-        // Find winner's nameplate and loser's nameplate (scoped to PVP)
-        const leftNameplate = this.pvpScreen.querySelector('.left-nameplate');
-        const rightNameplate = this.pvpScreen.querySelector('.right-nameplate');
+        // Find winner's nameplate and loser's nameplate
+        const leftNameplate = document.querySelector('.left-nameplate');
+        const rightNameplate = document.querySelector('.right-nameplate');
         let winnerNameplate = null;
         let loserNameplate = null;
 
@@ -3185,11 +2677,6 @@ export class RNGArena {
             const coin = document.createElement('img');
             coin.className = 'victory-coin';
             coin.src = '/images/effects/Gold Coin.webp';
-
-            // Increased randomization for better stagger effect
-            const randomDelay = Math.random() * 1.2; // 0-1200ms delay
-            const randomDuration = 2 + Math.random() * 2; // 2-4s duration
-
             coin.style.cssText = `
                 position: absolute;
                 left: ${Math.random() * 100}%;
@@ -3198,13 +2685,12 @@ export class RNGArena {
                 height: auto;
                 z-index: 3;
                 pointer-events: none;
-                animation: coinFall ${randomDuration}s linear forwards ${randomDelay}s, coinRotate 1s linear infinite ${randomDelay}s !important;
             `;
             this.arenaViewport.appendChild(coin);
 
-            // Remove coin after animation completes (account for longest possible duration)
-            setTimeout(() => coin.remove(), 5500);
-        }, 100); // Spawn a coin every 100ms (faster spawn rate)
+            // Remove coin after animation completes
+            setTimeout(() => coin.remove(), 3000);
+        }, 150); // Spawn a coin every 150ms
     }
 
     /**
@@ -3220,8 +2706,8 @@ export class RNGArena {
     // ===== Combat Cleanup =====
 
     cleanupCombatElements() {
-        // Remove combat text elements (scoped to PVP)
-        const leftNameplate = this.pvpScreen.querySelector('.left-nameplate');
+        // Remove combat text elements
+        const leftNameplate = document.querySelector('.left-nameplate');
         if (leftNameplate) {
             leftNameplate.querySelectorAll('.fighter-health').forEach(el => el.remove());
         }
@@ -3231,11 +2717,6 @@ export class RNGArena {
         }
         if (this.rightFighter) {
             this.rightFighter.querySelectorAll('.damage-number, .block-text, .parry-text, .miss-text').forEach(el => el.remove());
-        }
-
-        // CRITICAL: Remove crit-shake class from arena viewport (prevents lingering shake)
-        if (this.arenaViewport) {
-            this.arenaViewport.classList.remove('crit-shake');
         }
 
         // SIMPLIFIED: Clear any glow filters and animations from fighters
@@ -3272,24 +2753,24 @@ export class RNGArena {
             this.bgOverlay.style.display = '';
         }
 
-        // Restore tournament progress and odds (scoped to PVP)
-        const progressContainer = this.pvpScreen.querySelector('.progress-container');
+        // Restore tournament progress and odds
+        const progressContainer = document.querySelector('.progress-container');
         if (progressContainer) {
             progressContainer.style.transform = '';
             progressContainer.style.opacity = '1';
             progressContainer.style.transition = '';
         }
 
-        const oddsDisplay = this.pvpScreen.querySelector('.top-odds');
+        const oddsDisplay = document.querySelector('.top-odds');
         if (oddsDisplay) {
             oddsDisplay.style.transform = '';
             oddsDisplay.style.opacity = '1';
             oddsDisplay.style.transition = '';
         }
 
-        // Restore HP bars (scoped to PVP)
-        const leftHP = this.pvpScreen.querySelector('.left-hp');
-        const rightHP = this.pvpScreen.querySelector('.right-hp');
+        // Restore HP bars
+        const leftHP = document.querySelector('.left-hp');
+        const rightHP = document.querySelector('.right-hp');
         if (leftHP) {
             leftHP.style.transform = '';
             leftHP.style.opacity = '1';
@@ -3301,12 +2782,12 @@ export class RNGArena {
             rightHP.style.transition = '';
         }
 
-        this.pvpScreen.querySelectorAll('.fighter-health').forEach(hp => {
+        document.querySelectorAll('.fighter-health').forEach(hp => {
             hp.style.opacity = '1';
         });
 
-        // Restore nameplates (scoped to PVP)
-        this.pvpScreen.querySelectorAll('.left-nameplate, .right-nameplate').forEach(plate => {
+        // Restore nameplates
+        document.querySelectorAll('.left-nameplate, .right-nameplate').forEach(plate => {
             plate.style.display = '';
             plate.style.position = '';
             plate.style.left = '';
@@ -3318,8 +2799,8 @@ export class RNGArena {
             plate.style.transition = '';
         });
 
-        // Restore VS elements (scoped to PVP)
-        const vsDisplay = this.pvpScreen.querySelector('.vs-display');
+        // Restore VS elements
+        const vsDisplay = document.querySelector('.vs-display');
         if (vsDisplay) {
             vsDisplay.style.display = '';
             vsDisplay.style.transform = '';
@@ -3327,7 +2808,7 @@ export class RNGArena {
             vsDisplay.style.transition = '';
         }
 
-        const nameplateVsContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+        const nameplateVsContainer = document.querySelector('.nameplate-vs-container');
         if (nameplateVsContainer) {
             nameplateVsContainer.style.display = '';
             nameplateVsContainer.style.transform = '';
@@ -3872,10 +3353,9 @@ export class RNGArena {
             });
         }
 
-        // Fullscreen button - scope to PVP screen
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        const battlefieldSection = pvpScreen ? pvpScreen.querySelector('.battlefield-section') : null;
-        const fullscreenCloseBtn = pvpScreen ? pvpScreen.querySelector('.battlefield-fullscreen-close') : null;
+        // Fullscreen button
+        const battlefieldSection = document.querySelector('.battlefield-section');
+        const fullscreenCloseBtn = document.querySelector('.battlefield-fullscreen-close');
 
         if (fullscreenBtn && battlefieldSection) {
             fullscreenBtn.addEventListener('click', () => {
@@ -3896,22 +3376,13 @@ export class RNGArena {
                 // TODO: Open settings panel
             });
         }
-
-        // Exit button - returns to home screen
-        const exitBtn = document.getElementById('exit-game');
-        if (exitBtn) {
-            exitBtn.addEventListener('click', () => {
-                this.navigateToScreen('home');
-            });
-        }
     }
 
     // ===== Chat Mode Battlefield =====
 
     initChatModeBattlefield() {
         const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
-        // Get PVP arena viewport specifically (has 'castle' class, not 'wood-castle')
-        const arenaViewport = document.querySelector('#pvp-tournament-screen .arena-viewport.castle');
+        const arenaViewport = document.querySelector('.arena-viewport');
 
         if (!chatModeBattlefield || !arenaViewport) {
             console.log('Chat mode battlefield elements not found:', { chatModeBattlefield, arenaViewport });
@@ -4009,9 +3480,7 @@ export class RNGArena {
     }
 
     setupAnimationObservers() {
-        // Get PVP arena viewport specifically
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        const arenaViewport = pvpScreen ? pvpScreen.querySelector('.arena-viewport') : null;
+        const arenaViewport = document.querySelector('.arena-viewport');
         const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
 
         if (!arenaViewport || !chatModeBattlefield) return;
@@ -4205,9 +3674,7 @@ export class RNGArena {
 
     updateChatModeBattlefield() {
         const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
-        // Get PVP arena viewport specifically
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        const arenaViewport = pvpScreen ? pvpScreen.querySelector('.arena-viewport') : null;
+        const arenaViewport = document.querySelector('.arena-viewport');
 
         if (!chatModeBattlefield || !arenaViewport) return;
 

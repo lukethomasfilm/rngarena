@@ -19,6 +19,144 @@ body {
     display: none !important;
 }
 
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY - Keyboard Focus States
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Remove default outline and add custom focus styles */
+button:focus,
+input:focus,
+label:focus,
+.control-btn:focus,
+.view-btn:focus,
+.emoji-btn:focus {
+    outline: none;
+}
+
+/* Visible focus indicator for all interactive elements */
+button:focus-visible,
+input:focus-visible,
+label:focus-visible,
+.control-btn:focus-visible,
+.view-btn:focus-visible,
+.emoji-btn:focus-visible,
+.home-bar-btn:focus-visible,
+.home-corner-btn:focus-visible,
+.pve-monster-btn:focus-visible,
+.zoom-btn:focus-visible,
+.dominion-nav-tab:focus-visible {
+    outline: 3px solid #FFD700;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.3);
+    position: relative;
+    z-index: 100;
+}
+
+/* Enhanced focus for dark backgrounds */
+.battlefield-section button:focus-visible,
+.arena-viewport button:focus-visible {
+    outline-color: #FFA500;
+    box-shadow: 0 0 0 4px rgba(255, 165, 0, 0.5);
+}
+
+/* Focus for close buttons */
+.close-bracket-btn:focus-visible,
+.chat-mode-close-btn:focus-visible,
+.battlefield-fullscreen-close:focus-visible,
+.battlepass-close-btn:focus-visible {
+    outline: 3px solid #ff6b6b;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 4px rgba(255, 107, 107, 0.4);
+}
+
+/* Ensure keyboard navigation works for all buttons */
+button,
+label.control-btn,
+label.toggle-btn {
+    cursor: pointer;
+}
+
+/* Make all buttons keyboard accessible with Enter and Space */
+button,
+input[type="checkbox"],
+input[type="range"] {
+    -webkit-user-select: none;
+    user-select: none;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ACCESSIBILITY - Reduced Motion
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Respect user's motion preferences for accessibility */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Disable parallax effects */
+    .parallax-clouds,
+    .parallax-logo,
+    .parallax-castle,
+    .parallax-trees,
+    .home-character {
+        animation: none !important;
+        transform: none !important;
+    }
+
+    /* Disable fighter animations */
+    .fighter-left,
+    .fighter-right,
+    .fighter-attacking,
+    .fighter-defending,
+    .fighter-hit,
+    .fighter-crit-glow {
+        animation: none !important;
+        transform: none !important;
+    }
+
+    /* Disable shake/flash effects */
+    .crit-shake,
+    .arena-viewport.crit-shake {
+        animation: none !important;
+    }
+
+    /* Disable particle effects */
+    .slash-effect,
+    .damage-number,
+    .combat-text {
+        animation: none !important;
+        opacity: 1 !important;
+    }
+
+    /* Disable cloud animation */
+    .loading-bar-container,
+    .loading-bar-fill {
+        transition: none !important;
+    }
+
+    /* Disable nameplate animations */
+    .nameplate-vs-container,
+    .nameplate {
+        animation: none !important;
+        transition: none !important;
+    }
+
+    /* Reduce dev frame rotation */
+    .dev-frame.chat-mode-active {
+        transition: none !important;
+    }
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   End Accessibility
+   ═══════════════════════════════════════════════════════════════════════════ */
+
 /* Development Mobile Frame */
 .dev-frame {
     width: 844px;  /* iPhone 14/15 landscape width */

@@ -7,6 +7,7 @@
     <meta name="description" content="Epic medieval tournament battles with turn-based combat and RNG mechanics">
     <meta name="theme-color" content="#1a1a2e">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="manifest" href="/manifest.json">
     <link rel="preload" href="styles.css" as="style">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -42,7 +43,7 @@
                 <button id="start-btn" class="start-btn hidden">START</button>
 
                 <!-- Mute Button -->
-                <button id="mute-btn" class="loading-mute-btn">🔇</button>
+                <button id="mute-btn" class="loading-mute-btn" aria-label="Toggle audio mute">🔇</button>
             </div>
         </div>
 
@@ -59,32 +60,32 @@
                 </div>
 
                 <!-- Dominion Button (Top Left) -->
-                <button id="home-dominion-btn" class="home-dominion-btn">
+                <button id="home-dominion-btn" class="home-dominion-btn" aria-label="Open Dominion map">
                     <img src="/images/Home Screen/Dominion.png" alt="Dominion">
                 </button>
 
                 <!-- Castle Button (Top Right) -->
-                <button id="home-castle-btn" class="home-castle-menu-btn">
+                <button id="home-castle-btn" class="home-castle-menu-btn" aria-label="Open Castle menu">
                     <img src="/images/Home Screen/castle-icon.png" alt="Castle">
                 </button>
 
                 <!-- PVP Button (Top Right, below countdown) -->
-                <button id="home-pvp-btn" class="home-pvp-btn">
+                <button id="home-pvp-btn" class="home-pvp-btn" aria-label="Start PVP tournament">
                     <img src="/images/Home Screen/PVP.png" alt="PVP Mode">
                 </button>
 
                 <!-- PVE Button (Top Left, below currency) -->
-                <button id="home-pve-btn" class="home-corner-btn home-pve-btn">
+                <button id="home-pve-btn" class="home-corner-btn home-pve-btn" aria-label="Open PVE battle map">
                     <img src="/images/Home Screen/PVE.png" alt="PVE Tournament">
                 </button>
 
                 <!-- Store Button (Center) -->
-                <button id="home-store-btn" class="home-corner-btn home-store-btn">
+                <button id="home-store-btn" class="home-corner-btn home-store-btn" aria-label="Open store">
                     <img src="/images/Home Screen/store.png" alt="Store">
                 </button>
 
                 <!-- Guilds Button (Between Store and Castle) -->
-                <button id="home-guilds-btn" class="home-corner-btn home-guilds-btn">
+                <button id="home-guilds-btn" class="home-corner-btn home-guilds-btn" aria-label="Open guilds menu">
                     <img src="/images/Home Screen/Guilds.png" alt="Guilds">
                 </button>
 
@@ -118,15 +119,15 @@
 
                 <!-- Top Left Controls - Settings and Audio -->
                 <div class="home-top-left-controls">
-                    <button id="home-settings-btn" class="home-small-btn">⚙️</button>
-                    <button id="home-audio-btn" class="home-small-btn">🔊</button>
+                    <button id="home-settings-btn" class="home-small-btn" aria-label="Open settings">⚙️</button>
+                    <button id="home-audio-btn" class="home-small-btn" aria-label="Toggle audio">🔊</button>
                 </div>
 
                 <!-- Top Right Controls - Currency -->
                 <div class="home-top-right-controls">
                     <div class="home-currency">
                         <div class="home-currency-item">
-                            <img src="/images/effects/Gold Coin.webp" alt="Gold" class="home-currency-icon">
+                            <img src="/images/effects/Gold Coin.webp" alt="Gold" class="home-currency-icon" loading="lazy">
                             <span id="home-gold-display-top" class="home-currency-value">10,000</span>
                         </div>
                         <div class="home-currency-item">
@@ -141,8 +142,8 @@
         <!-- Battle Pass Overlay -->
         <div id="battlepass-overlay" class="battlepass-overlay hidden">
             <div class="battlepass-background"></div>
-            <button id="battlepass-close-btn" class="battlepass-close-btn">✕</button>
-            <img src="/images/Home Screen/battle-pass.png" alt="Battle Pass" class="battlepass-image">
+            <button id="battlepass-close-btn" class="battlepass-close-btn" aria-label="Close Battle Pass">✕</button>
+            <img src="/images/Home Screen/battle-pass.png" alt="Battle Pass" class="battlepass-image" loading="lazy">
         </div>
 
         <!-- Store Screen -->
@@ -150,16 +151,16 @@
             <div class="store-container">
                 <!-- Main Store Display -->
                 <div class="store-display">
-                    <img id="store-main-image" src="/images/shop/shop.png" alt="Store" class="store-image" data-speed="0.8">
+                    <img id="store-main-image" src="/images/shop/shop.png" alt="Store" class="store-image" data-speed="0.8" loading="lazy">
                 </div>
 
                 <!-- Battle Pass Button -->
-                <button id="store-battlepass-btn" class="store-battlepass-btn">
-                    <img src="/images/Home Screen/Pass.png" alt="Battle Pass">
+                <button id="store-battlepass-btn" class="store-battlepass-btn" aria-label="View Battle Pass">
+                    <img src="/images/Home Screen/Pass.png" alt="Battle Pass" loading="lazy">
                 </button>
 
                 <!-- Back Button -->
-                <button id="store-back-btn" class="store-back-btn">←</button>
+                <button id="store-back-btn" class="store-back-btn" aria-label="Return to home">←</button>
             </div>
         </div>
 
@@ -170,22 +171,22 @@
                 <div class="dominion-map" id="dominion-map"></div>
 
                 <!-- Map Navigation Buttons (Tab Style) -->
-                <button class="dominion-nav-tab dominion-nav-up" id="dominion-nav-up">▲</button>
-                <button class="dominion-nav-tab dominion-nav-down" id="dominion-nav-down">▼</button>
-                <button class="dominion-nav-tab dominion-nav-left" id="dominion-nav-left">◄</button>
-                <button class="dominion-nav-tab dominion-nav-right" id="dominion-nav-right">►</button>
+                <button class="dominion-nav-tab dominion-nav-up" id="dominion-nav-up" aria-label="Pan map up">▲</button>
+                <button class="dominion-nav-tab dominion-nav-down" id="dominion-nav-down" aria-label="Pan map down">▼</button>
+                <button class="dominion-nav-tab dominion-nav-left" id="dominion-nav-left" aria-label="Pan map left">◄</button>
+                <button class="dominion-nav-tab dominion-nav-right" id="dominion-nav-right" aria-label="Pan map right">►</button>
 
                 <!-- Zoom Controls (Bottom Left) -->
                 <div class="dominion-zoom-controls">
-                    <button class="dominion-zoom-btn" id="dominion-zoom-in">+</button>
-                    <button class="dominion-zoom-btn" id="dominion-zoom-out">−</button>
+                    <button class="dominion-zoom-btn" id="dominion-zoom-in" aria-label="Zoom in">+</button>
+                    <button class="dominion-zoom-btn" id="dominion-zoom-out" aria-label="Zoom out">−</button>
                 </div>
 
                 <!-- Directions Image (Top Right) -->
-                <img src="/images/Dominion/directions.png" alt="Map Directions" class="dominion-directions">
+                <img src="/images/Dominion/directions.png" alt="Map Directions" class="dominion-directions" loading="lazy">
 
                 <!-- Back Button -->
-                <button id="dominion-back-btn" class="dominion-back-btn">←</button>
+                <button id="dominion-back-btn" class="dominion-back-btn" aria-label="Return to home">←</button>
             </div>
         </div>
 
@@ -233,7 +234,7 @@
                 </div>
 
                 <!-- Back Button -->
-                <button id="pve-back-btn" class="pve-back-btn">←</button>
+                <button id="pve-back-btn" class="pve-back-btn" aria-label="Return to home">←</button>
             </div>
         </div>
 
@@ -246,8 +247,8 @@
                     <div class="loot-header-top"></div>
                     <div class="loot-content">
                         <div id="pve-loot-box" class="treasure-chest">
-                            <img src="/images/Loot/chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
-                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image">
+                            <img src="/images/Loot/chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow" loading="lazy">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image" loading="lazy">
                             <button id="pve-claim-loot-btn" class="claim-loot-btn hidden">CLAIM LOOT</button>
                         </div>
                     </div>
@@ -257,7 +258,7 @@
 
             <!-- Center: Battlefield Section -->
             <div class="battlefield-section">
-                <button class="battlefield-fullscreen-close">✕</button>
+                <button class="battlefield-fullscreen-close" aria-label="Exit fullscreen">✕</button>
                 <div class="arena-viewport wood-castle" id="pve-arena-viewport">
                     <!-- Top Progress - Hero vs Monster -->
                     <div class="top-progress">
@@ -319,10 +320,10 @@
             <!-- Bottom Left: Controls -->
             <div class="bottom-left-section">
                 <div class="control-grid">
-                    <button id="pve-settings-btn" class="control-btn">⚙️</button>
-                    <button id="pve-mute-audio" class="control-btn mute-btn">🔊</button>
-                    <button id="pve-exit-game" class="control-btn exit-btn" title="Return to PVE Map">←</button>
-                    <button id="pve-fast-forward" class="control-btn">⏩</button>
+                    <button id="pve-settings-btn" class="control-btn" aria-label="Open settings">⚙️</button>
+                    <button id="pve-mute-audio" class="control-btn mute-btn" aria-label="Toggle audio">🔊</button>
+                    <button id="pve-exit-game" class="control-btn exit-btn" title="Return to PVE Map" aria-label="Return to PVE map">←</button>
+                    <button id="pve-fast-forward" class="control-btn" aria-label="Fast forward">⏩</button>
                 </div>
             </div>
 
@@ -330,7 +331,7 @@
             <div class="bottom-right-section">
                 <div class="view-grid pve-view-grid">
                     <button id="pve-main-view" class="view-btn">MAIN</button>
-                    <button id="pve-fullscreen-btn" class="view-btn">⛶</button>
+                    <button id="pve-fullscreen-btn" class="view-btn" aria-label="Fullscreen mode">⛶</button>
                 </div>
             </div>
         </div><!-- End container -->
@@ -345,8 +346,8 @@
                     <div class="loot-header-top"></div>
                     <div class="loot-content">
                         <div id="loot-box" class="treasure-chest">
-                            <img src="/images/Loot/chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow">
-                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image">
+                            <img src="/images/Loot/chest_shadow.png" alt="Chest Shadow" class="loot-chest-shadow" loading="lazy">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="loot-chest-image" loading="lazy">
                             <button id="claim-loot-btn" class="claim-loot-btn hidden">CLAIM LOOT</button>
                         </div>
                     </div>
@@ -356,7 +357,7 @@
 
             <!-- Center: Battlefield Section -->
             <div class="battlefield-section">
-                <button class="battlefield-fullscreen-close">✕</button>
+                <button class="battlefield-fullscreen-close" aria-label="Exit fullscreen">✕</button>
                 <div class="arena-viewport castle">
                     <!-- Countdown Overlay -->
                     <div class="countdown-overlay" id="countdown-overlay">
@@ -446,10 +447,10 @@
             <!-- Bottom Left: 4-Button Control Grid -->
             <div class="bottom-left-section">
                 <div class="control-grid">
-                    <button id="settings-btn" class="control-btn">⚙️</button>
-                    <button id="mute-audio" class="control-btn mute-btn">🔊</button>
-                    <button id="exit-game" class="control-btn exit-btn" title="Return to Home">←</button>
-                    <label class="control-btn toggle-btn">
+                    <button id="settings-btn" class="control-btn" aria-label="Open settings">⚙️</button>
+                    <button id="mute-audio" class="control-btn mute-btn" aria-label="Toggle audio">🔊</button>
+                    <button id="exit-game" class="control-btn exit-btn" title="Return to Home" aria-label="Return to home">←</button>
+                    <label class="control-btn toggle-btn" aria-label="Enable Daring Hero mode">
                         <input type="checkbox" id="daring-hero-checkbox">
                         <span class="toggle-slider"></span>
                     </label>
@@ -473,8 +474,8 @@
                 <div class="view-grid">
                     <button id="chat-mode" class="view-btn">LIVE<br>CHAT</button>
                     <button id="bracket-mode" class="view-btn">BRACKET</button>
-                    <button id="fullscreen-btn" class="view-btn">⛶</button>
-                    <button class="view-btn shield-btn">🛡️</button>
+                    <button id="fullscreen-btn" class="view-btn" aria-label="Fullscreen mode">⛶</button>
+                    <button class="view-btn shield-btn" aria-label="Shield protection">🛡️</button>
                 </div>
             </div>
         </div><!-- End container -->
@@ -487,7 +488,7 @@
                     <div class="popup-loot-header-top"></div>
                     <div class="popup-loot-display">
                         <div id="popup-loot-box" class="popup-treasure-chest">
-                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="popup-loot-chest-image">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="popup-loot-chest-image" loading="lazy">
                         </div>
                     </div>
                     <div class="popup-loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
@@ -504,11 +505,11 @@
                         <span>TOURNAMENT BRACKET</span>
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div class="bracket-zoom-controls">
-                                <button id="overlay-zoom-out" class="zoom-btn">-</button>
+                                <button id="overlay-zoom-out" class="zoom-btn" aria-label="Zoom out">-</button>
                                 <span id="overlay-zoom-level">100%</span>
-                                <button id="overlay-zoom-in" class="zoom-btn">+</button>
+                                <button id="overlay-zoom-in" class="zoom-btn" aria-label="Zoom in">+</button>
                             </div>
-                            <button id="close-bracket" class="close-bracket-btn">✕</button>
+                            <button id="close-bracket" class="close-bracket-btn" aria-label="Close bracket">✕</button>
                         </div>
                     </div>
                     <div class="bracket-content">
@@ -528,9 +529,9 @@
             <div class="chat-mode-overlay-content">
                 <!-- Top Control Bar -->
                 <div class="chat-mode-top-bar">
-                    <button id="chat-mode-settings-btn" class="chat-mode-control-btn">⚙️</button>
-                    <button id="chat-mode-mute-btn" class="chat-mode-control-btn">🔊</button>
-                    <button class="chat-mode-control-btn chat-mode-close-btn" id="close-chat-mode-overlay">✕</button>
+                    <button id="chat-mode-settings-btn" class="chat-mode-control-btn" aria-label="Open settings">⚙️</button>
+                    <button id="chat-mode-mute-btn" class="chat-mode-control-btn" aria-label="Toggle audio">🔊</button>
+                    <button class="chat-mode-control-btn chat-mode-close-btn" id="close-chat-mode-overlay" aria-label="Close live chat">✕</button>
                 </div>
                 <div class="chat-mode-battlefield-overlay" id="chat-mode-battlefield-overlay">
                     <!-- Battlefield will be cloned here -->
@@ -550,10 +551,10 @@
     <!-- Dev Panel -->
     <div class="dev-panel-title">DEV PANEL</div>
     <div class="dev-toggle-container">
-        <button id="start-tournament-btn" class="start-tournament-btn">🏆 START TOURNAMENT</button>
-        <button id="fast-forward-btn" class="fast-forward-btn">⏩ 4x Fast Forward</button>
-        <button id="dev-preview-toggle" class="dev-preview-toggle-btn">▼ Show Dev Previews</button>
-        <button id="dev-mute-btn" class="dev-mute-btn">🔇 MUTED</button>
+        <button id="start-tournament-btn" class="start-tournament-btn" aria-label="Start PVP tournament">🏆 START TOURNAMENT</button>
+        <button id="fast-forward-btn" class="fast-forward-btn" aria-label="Toggle 4x fast forward">⏩ 4x Fast Forward</button>
+        <button id="dev-preview-toggle" class="dev-preview-toggle-btn" aria-label="Toggle dev previews">▼ Show Dev Previews</button>
+        <button id="dev-mute-btn" class="dev-mute-btn" aria-label="Toggle audio mute">🔇 MUTED</button>
     </div>
 
     <!-- Dev Preview Wrapper -->
@@ -574,9 +575,9 @@
                     <span>TOURNAMENT BRACKET</span>
                     <div style="display: flex; align-items: center; gap: 10px;">
                         <div class="bracket-zoom-controls">
-                            <button id="zoom-out" class="zoom-btn">-</button>
+                            <button id="zoom-out" class="zoom-btn" aria-label="Zoom out">-</button>
                             <span id="zoom-level">100%</span>
-                            <button id="zoom-in" class="zoom-btn">+</button>
+                            <button id="zoom-in" class="zoom-btn" aria-label="Zoom in">+</button>
                         </div>
                         <span class="accordion-toggle">▼</span>
                     </div>
@@ -601,7 +602,7 @@
                     <div class="dev-loot-header-top"></div>
                     <div class="dev-loot-display">
                         <div id="dev-loot-box" class="dev-treasure-chest">
-                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="dev-loot-chest-image">
+                            <img src="/images/Loot/chest_08.png" alt="Treasure Chest" class="dev-loot-chest-image" loading="lazy">
                         </div>
                     </div>
                     <div class="dev-loot-header-bottom">WOOD CHEST<br>COMMON LOOT</div>
@@ -612,7 +613,7 @@
 
     <!-- Live Chat Preview Frame -->
     <div class="chat-mode-dev-frame dev-frame-tab hidden" id="chat-mode-frame" data-frame="chat">
-        <button class="chat-mode-close-btn" id="close-chat-mode">✕</button>
+        <button class="chat-mode-close-btn" id="close-chat-mode" aria-label="Close live chat">✕</button>
         <div class="chat-mode-container-dev">
             <div class="chat-mode-viewport-dev">
                 <!-- Top: Battlefield Clone -->
@@ -639,8 +640,8 @@
     <div class="battlepass-dev-frame dev-frame-tab hidden" data-frame="battlepass">
         <div class="battlepass-dev-container">
             <div class="battlepass-dev-background"></div>
-            <button class="battlepass-dev-close-btn">✕</button>
-            <img src="/images/Home Screen/battle-pass.png" alt="Battle Pass" class="battlepass-dev-image">
+            <button class="battlepass-dev-close-btn" aria-label="Close Battle Pass">✕</button>
+            <img src="/images/Home Screen/battle-pass.png" alt="Battle Pass" class="battlepass-dev-image" loading="lazy">
         </div>
     </div>
     </div><!-- End dev-preview-wrapper -->
@@ -820,6 +821,62 @@
                 }
             }, 500);
         });
+
+        // ═══════════════════════════════════════════════════════════════════
+        // Global Error Handlers - Catch unhandled errors and rejections
+        // ═══════════════════════════════════════════════════════════════════
+
+        // Handle uncaught JavaScript errors
+        window.addEventListener('error', (event) => {
+            console.error('🚨 Uncaught Error:', {
+                message: event.message,
+                filename: event.filename,
+                line: event.lineno,
+                column: event.colno,
+                error: event.error,
+                stack: event.error?.stack
+            });
+
+            // In production, you would send this to a logging service like Sentry
+            // For now, we just log to console in dev mode
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                // Development mode - show in console (already logged above)
+            } else {
+                // Production mode - send to logging service
+                // sendToLoggingService(errorData);
+            }
+
+            // Prevent default browser error handling
+            // Remove this line if you want browser to also show errors
+            // event.preventDefault();
+        });
+
+        // Handle unhandled promise rejections
+        window.addEventListener('unhandledrejection', (event) => {
+            console.error('🚨 Unhandled Promise Rejection:', {
+                reason: event.reason,
+                promise: event.promise,
+                stack: event.reason?.stack
+            });
+
+            // In production, you would send this to a logging service
+            if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+                // Development mode - show in console (already logged above)
+            } else {
+                // Production mode - send to logging service
+                // sendToLoggingService(rejectionData);
+            }
+
+            // Prevent default browser handling
+            // event.preventDefault();
+        });
+
+        // Optional: Handle handled rejections that might still be useful to log
+        window.addEventListener('rejectionhandled', (event) => {
+            console.log('ℹ️ Promise rejection handled (late):', event.reason);
+        });
+
+        console.log('✅ Global error handlers initialized');
     </script>
 
 </body>

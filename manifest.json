@@ -1,0 +1,38 @@
+{
+  "name": "RNG: Legends - Epic Tournament Battles",
+  "short_name": "RNG Legends",
+  "description": "Epic medieval tournament battles with turn-based combat and RNG mechanics. Battle monsters in PVE mode or compete in PVP tournaments!",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a2e",
+  "theme_color": "#1a1a2e",
+  "orientation": "landscape",
+  "categories": ["games", "entertainment"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/images/Home Screen/hero.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/images/Home Screen/background_blended.png",
+      "sizes": "1920x1080",
+      "type": "image/png",
+      "label": "Home screen with tournament countdown"
+    }
+  ],
+  "related_applications": [],
+  "prefer_related_applications": false,
+  "scope": "/",
+  "lang": "en-US",
+  "dir": "ltr"
+}

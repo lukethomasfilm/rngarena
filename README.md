@@ -112,6 +112,173 @@ The game is fully responsive and optimized for:
 - **CSS Grid/Flexbox** - Modern responsive layout
 - **CSS Custom Properties** - Maintainable theming system
 
+## 🧪 Testing
+
+### Running Tests
+
+```bash
+# Run unit tests (when available)
+npm run test
+
+# Run end-to-end tests (when available)
+npm run test:e2e
+
+# Run linter to check code quality
+npm run lint
+
+# Format code
+npm run format
+```
+
+### Manual Testing Checklist
+
+Before submitting changes, test these flows:
+
+- [ ] **Loading Screen** - Music starts muted, unmute button works
+- [ ] **Home Navigation** - All menu buttons navigate correctly
+- [ ] **PVP Tournament** - Start tournament, verify combat animations
+- [ ] **PVE Battles** - Fight Wood Dummy, verify all animations and audio
+- [ ] **Loot Claim** - Popup appears and closes correctly
+- [ ] **Fullscreen Mode** - Enter/exit fullscreen works
+- [ ] **Audio Controls** - Mute/unmute persists across screens
+- [ ] **Keyboard Navigation** - Tab through buttons, Enter/Space to activate
+- [ ] **No Console Errors** - Check browser console for errors
+
+### Accessibility Testing
+
+- [ ] Screen reader compatibility (use NVDA/JAWS/VoiceOver)
+- [ ] Keyboard-only navigation (no mouse required)
+- [ ] Focus indicators visible on all interactive elements
+- [ ] Motion reduced when `prefers-reduced-motion` is enabled
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### Dev Server Won't Start
+
+**Problem:** `npm run dev` fails or port is already in use
+
+**Solutions:**
+```bash
+# Kill process using port 8000
+npx kill-port 8000
+
+# Or use a different port
+npm run dev -- --port 3000
+```
+
+#### Audio Won't Play
+
+**Problem:** Music doesn't play after unmuting
+
+**Solutions:**
+- Click the unmute button (🔊) on the loading screen
+- Check browser autoplay policies (Chrome/Safari may block)
+- Ensure audio files exist in `/sfx/` directory
+- Check browser console for audio loading errors
+
+#### Images Not Loading
+
+**Problem:** Background images or sprites don't appear
+
+**Solutions:**
+- Verify image paths start with `/images/` (not `./images/`)
+- Check that images exist in `public/images/` directory
+- Clear browser cache (Ctrl+Shift+R / Cmd+Shift+R)
+- Check browser console for 404 errors
+
+#### PVP/PVE Cross-Contamination
+
+**Problem:** PVP affects PVE or vice versa
+
+**Solutions:**
+- Ensure all PVP selectors use `pvpScreen.querySelector()`
+- Ensure all PVE elements use `pve-` prefixed IDs
+- Check DEVELOPER_NOTES.md for architectural separation rules
+- Verify no global `document.querySelector()` calls for shared classes
+
+#### Animations Not Working
+
+**Problem:** Combat animations don't play
+
+**Solutions:**
+- Ensure `prefers-reduced-motion` is not set in OS settings
+- Check that CSS animation classes are applied to fighter containers, not sprites
+- Verify fighter sprites have `opacity: 1` after setup
+- Check browser console for JavaScript errors
+
+#### Build Errors
+
+**Problem:** `npm run build` fails
+
+**Solutions:**
+```bash
+# Clear node_modules and reinstall
+rm -rf node_modules package-lock.json
+npm install
+
+# Clear Vite cache
+rm -rf dist .vite
+
+# Try building again
+npm run build
+```
+
+### Debug Mode
+
+Enable debug logging in browser console:
+
+```javascript
+// In browser console
+localStorage.setItem('debug', 'true')
+location.reload()
+```
+
+View game state:
+
+```javascript
+// Access game instance
+window.arena
+
+// View current state
+window.arena.currentRound
+window.arena.following
+```
+
+### Performance Issues
+
+If the game runs slowly:
+
+1. **Reduce Animations** - Enable "reduce motion" in OS accessibility settings
+2. **Close Other Tabs** - Free up browser memory
+3. **Disable Browser Extensions** - Some extensions interfere with animations
+4. **Check Console** - Look for performance warnings
+
+### Browser Compatibility
+
+**Supported Browsers:**
+- Chrome 90+ ✅
+- Firefox 88+ ✅
+- Safari 14+ ✅
+- Edge 90+ ✅
+
+**Known Issues:**
+- Safari may require user interaction before playing audio
+- Older browsers may not support CSS Grid properly
+
+### Getting Help
+
+If you encounter issues not covered here:
+
+1. Check [DEVELOPER_NOTES.md](./DEVELOPER_NOTES.md) for detailed architecture info
+2. Search existing [GitHub Issues](../../issues)
+3. Create a new issue with:
+   - Browser and version
+   - Steps to reproduce
+   - Console error messages
+   - Screenshots if applicable
+
 ## 🚀 Deployment
 
 The built files in `dist/` can be deployed to any static hosting service:
@@ -120,6 +287,15 @@ The built files in `dist/` can be deployed to any static hosting service:
 - Netlify
 - Vercel
 - AWS S3 + CloudFront
+
+### Deployment Checklist
+
+- [ ] Run `npm run build`
+- [ ] Test the production build with `npm run preview`
+- [ ] Verify no console errors
+- [ ] Test on mobile devices
+- [ ] Ensure all assets load correctly (images, audio)
+- [ ] Configure HTTPS for PWA installation support
 
 ## 📄 License
 

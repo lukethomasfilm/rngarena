@@ -5,7 +5,7 @@
 export class GameManager {
     constructor() {
         // Current game state
-        this.currentScreen = 'home'; // 'home', 'castle', 'map', 'pvp-tournament'
+        this.currentScreen = 'home'; // 'home', 'castle', 'map', 'pvp', 'tournament'
 
         // Player session data (resets on refresh)
         this.player = {
@@ -106,7 +106,7 @@ export class GameManager {
             isComplete: false
         };
         this.updateStats('tournamentsPlayed', 1);
-        this.navigateTo('pvp-tournament');
+        this.navigateTo('tournament');
     }
 
     /**

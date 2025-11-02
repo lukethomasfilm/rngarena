@@ -154,6 +154,62 @@ input[type="range"] {
 }
 
 /* ═══════════════════════════════════════════════════════════════════════════
+   UX Icon Images - Size images to match emoji buttons they replaced
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Generic icon image sizing */
+.icon-img {
+    display: inline-block;
+    vertical-align: middle;
+    pointer-events: none;
+}
+
+/* Control button icons (PVE/PVP battle controls) */
+.control-btn .icon-img {
+    width: 1.1rem;
+    height: 1.1rem;
+}
+
+/* Home screen small buttons (settings, audio) */
+.home-small-btn .icon-img {
+    width: 22px;
+    height: 22px;
+}
+
+/* Loading screen mute button */
+.loading-mute-btn .icon-img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Back buttons (store, dominion, pve) */
+.store-back-btn .icon-img,
+.dominion-back-btn .icon-img,
+.pve-back-btn .icon-img {
+    width: 24px;
+    height: 16px;
+    vertical-align: middle;
+    display: inline-block;
+}
+
+/* Chat mode overlay buttons */
+.chat-mode-control-btn .icon-img {
+    width: 20px;
+    height: 20px;
+}
+
+/* Dev panel mute button */
+.dev-mute-btn .icon-img {
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   End UX Icons
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ═══════════════════════════════════════════════════════════════════════════
    End Accessibility
    ═══════════════════════════════════════════════════════════════════════════ */
 
@@ -210,7 +266,7 @@ input[type="range"] {
     padding: 0 10px;
 }
 
-.dev-preview-toggle-btn, .fast-forward-btn, .start-tournament-btn, .dev-mute-btn {
+.dev-preview-toggle-btn, .fast-forward-btn, .start-tournament-btn, .dev-mute-btn, .pve-dev-unlock {
     padding: 8px 24px;
     background: linear-gradient(135deg, #333, #222);
     border: 1px solid #444;
@@ -222,7 +278,7 @@ input[type="range"] {
     transition: all 0.3s ease;
 }
 
-.dev-preview-toggle-btn:hover, .fast-forward-btn:hover, .start-tournament-btn:hover, .dev-mute-btn:hover {
+.dev-preview-toggle-btn:hover, .fast-forward-btn:hover, .start-tournament-btn:hover, .dev-mute-btn:hover, .pve-dev-unlock:hover {
     background: linear-gradient(135deg, #444, #333);
     color: #aaa;
     border-color: #555;
@@ -415,7 +471,7 @@ input[type="range"] {
 
 /* Popup Loot Container (for actual popup) */
 .popup-loot-container {
-    height: 95%;
+    height: 80.75%;
     aspect-ratio: 1;
     display: flex;
     flex-direction: column;
@@ -1436,8 +1492,14 @@ input[type="range"] {
 
 .battlefield-section.fullscreen .fighter-left,
 .battlefield-section.fullscreen .fighter-right {
-    bottom: calc(5% - 35px) !important;
+    bottom: calc(5% + 50px) !important;
     width: 25% !important;
+}
+
+/* PVE-specific: Lower fullscreen fighters by 40px */
+#pve-battle-screen .battlefield-section.fullscreen .fighter-left,
+#pve-battle-screen .battlefield-section.fullscreen .fighter-right {
+    bottom: calc(5% + 10px) !important;
 }
 
 .battlefield-section.fullscreen .fighter-left {
@@ -1476,10 +1538,10 @@ input[type="range"] {
     /* Scale removed - now controlled by JavaScript per-character */
 }
 
-/* Scale the character images directly in fullscreen - 20% bigger than normal */
+/* Scale the character images directly in fullscreen - 10% smaller than previous */
 .battlefield-section.fullscreen .character-image {
-    width: 238px !important;
-    height: 302px !important;
+    width: 257px !important;
+    height: 326px !important;
 }
 
 .battlefield-fullscreen-close {
@@ -1641,6 +1703,7 @@ input[type="range"] {
     border: 1px solid rgba(255, 255, 255, 0.3);
     color: #999;
     font-size: 1.1rem;
+    padding: 1px 12px;
 }
 
 .control-btn.exit-btn:hover {
@@ -2287,7 +2350,75 @@ input[type="range"] {
 
 /* Spread HP bars apart in PVE */
 #pve-battle-screen .top-progress {
-    gap: 40px;
+    top: 25px;
+    left: 0;
+    transform: none;
+    width: 100%;
+    justify-content: space-between;
+    padding: 0 40px;
+    gap: 0;
+}
+
+/* Win Odds Display (Center between HP bars) */
+.pve-win-odds {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.win-odds-label {
+    font-family: 'Cinzel', serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: #FFD700;
+    text-shadow:
+        0 0 8px rgba(255, 215, 0, 0.8),
+        0 2px 4px rgba(0, 0, 0, 0.9);
+    letter-spacing: 1.5px;
+}
+
+.win-odds-value {
+    font-family: 'Cinzel', serif;
+    font-size: 24px;
+    font-weight: 700;
+    color: #FFFFFF;
+    text-shadow:
+        0 0 12px rgba(255, 255, 255, 0.9),
+        0 0 20px rgba(100, 200, 255, 0.6),
+        0 3px 6px rgba(0, 0, 0, 0.9);
+    letter-spacing: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Color coding for win odds */
+.win-odds-value.winning {
+    color: #00FF00;
+    text-shadow:
+        0 0 12px rgba(0, 255, 0, 0.9),
+        0 0 20px rgba(0, 255, 0, 0.6),
+        0 3px 6px rgba(0, 0, 0, 0.9);
+}
+
+.win-odds-value.losing {
+    color: #FF4444;
+    text-shadow:
+        0 0 12px rgba(255, 68, 68, 0.9),
+        0 0 20px rgba(255, 68, 68, 0.6),
+        0 3px 6px rgba(0, 0, 0, 0.9);
+}
+
+.win-odds-value.even {
+    color: #FFD700;
+    text-shadow:
+        0 0 12px rgba(255, 215, 0, 0.9),
+        0 0 20px rgba(255, 215, 0, 0.6),
+        0 3px 6px rgba(0, 0, 0, 0.9);
+}
+
+/* Hide nameplate tabs in PVE battle screen */
+#pve-battle-screen .nameplate-vs-container {
+    display: none !important;
 }
 
 .top-odds {
@@ -2824,6 +2955,11 @@ input[type="range"] {
     transform: translateZ(0);
 }
 
+/* Monster-specific sprite adjustments */
+#pve-monster-sprite[data-monster="raccoon"] {
+    transform: scaleX(-1) scale(0.4) translateZ(0) !important;
+}
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.6; }
@@ -3016,6 +3152,33 @@ input[type="range"] {
 /* Fullscreen/chat rules have higher specificity so they will still override this */
 .fighter-right:not(.fighter-entrance-right):not(.victory-center) {
     transform: translateX(0) scale(0.8) !important;
+}
+
+/* PVE-specific: Position fighters at bottom in normal mode */
+#pve-battle-screen .fighter-left:not(.fighter-entrance-left),
+#pve-battle-screen .fighter-right:not(.fighter-entrance-right) {
+    bottom: -5px !important;
+    justify-content: flex-end;
+}
+
+/* PVE-specific: Move hero down 10px */
+#pve-battle-screen .fighter-left:not(.fighter-entrance-left) {
+    bottom: -15px !important;
+}
+
+/* PVE-specific: Move wood dummy down 40px */
+#pve-battle-screen .fighter-right:not(.fighter-entrance-right):has(#pve-monster-sprite[data-monster="wood-dummy"]) {
+    bottom: -45px !important;
+}
+
+/* PVE-specific: Move raccoon down 80px */
+#pve-battle-screen .fighter-right:not(.fighter-entrance-right):has(#pve-monster-sprite[data-monster="raccoon"]) {
+    bottom: -85px !important;
+}
+
+/* PVE-specific: Move ram down 50px */
+#pve-battle-screen .fighter-right:not(.fighter-entrance-right):has(#pve-monster-sprite[data-monster="ram"]) {
+    bottom: -55px !important;
 }
 
 .fighter-sprite {
@@ -4975,7 +5138,7 @@ input[type="range"] {
     z-index: 24;
 }
 
-.block-text, .parry-text, .miss-text {
+.block-text, .parry-text, .miss-text, .crit-text {
     position: absolute;
     top: 80px; /* Way down, matching attack text positioning */
     left: 50%;
@@ -5001,6 +5164,113 @@ input[type="range"] {
 .miss-text {
     color: #9E9E9E;
     text-shadow: 0 0 20px rgba(158, 158, 158, 1), 0 0 40px rgba(158, 158, 158, 0.6);
+}
+
+.crit-text {
+    color: #ff0000;
+    text-shadow: 0 0 30px rgba(255, 0, 0, 1), 0 0 60px rgba(255, 0, 0, 0.8);
+    font-size: 3rem;
+}
+
+/* Rabid mode effects */
+.rabid-overlay::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(255, 0, 0, 0.6);
+    mix-blend-mode: multiply;
+    pointer-events: none;
+    z-index: 1;
+    animation: rabidPulse 0.5s ease-in-out infinite;
+}
+
+.rabid-text {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.8rem;
+    font-weight: bold;
+    color: #ff0000;
+    text-shadow:
+        0 0 20px rgba(255, 0, 0, 1),
+        0 0 40px rgba(255, 0, 0, 0.8),
+        0 0 60px rgba(255, 0, 0, 0.6),
+        2px 2px 4px rgba(0, 0, 0, 0.9);
+    z-index: 100;
+    animation: rabidTextPulse 0.8s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes rabidPulse {
+    0%, 100% {
+        opacity: 0.6;
+    }
+    50% {
+        opacity: 0.9;
+    }
+}
+
+@keyframes rabidTextPulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+        text-shadow:
+            0 0 20px rgba(255, 0, 0, 1),
+            0 0 40px rgba(255, 0, 0, 0.8),
+            0 0 60px rgba(255, 0, 0, 0.6),
+            2px 2px 4px rgba(0, 0, 0, 0.9);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.1);
+        text-shadow:
+            0 0 30px rgba(255, 0, 0, 1),
+            0 0 50px rgba(255, 0, 0, 1),
+            0 0 70px rgba(255, 0, 0, 0.8),
+            2px 2px 4px rgba(0, 0, 0, 0.9);
+    }
+}
+
+/* PVE Victory Text Animation */
+@keyframes pveVictoryTextPulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        text-shadow:
+            0 0 25px rgba(255, 215, 0, 1),
+            0 0 50px rgba(255, 215, 0, 0.9),
+            0 0 75px rgba(255, 255, 255, 0.7),
+            4px 4px 10px rgba(0, 0, 0, 0.9);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.08);
+        text-shadow:
+            0 0 40px rgba(255, 215, 0, 1),
+            0 0 80px rgba(255, 215, 0, 1),
+            0 0 120px rgba(255, 255, 255, 1),
+            4px 4px 15px rgba(0, 0, 0, 1);
+    }
+}
+
+/* PVE Defeat Text Animation */
+@keyframes pveDefeatTextPulse {
+    0%, 100% {
+        transform: translate(-50%, -50%) scale(1);
+        text-shadow:
+            0 0 25px rgba(255, 0, 0, 1),
+            0 0 50px rgba(255, 0, 0, 0.9),
+            0 0 75px rgba(255, 100, 100, 0.7),
+            4px 4px 10px rgba(0, 0, 0, 0.9);
+    }
+    50% {
+        transform: translate(-50%, -50%) scale(1.08);
+        text-shadow:
+            0 0 40px rgba(255, 0, 0, 1),
+            0 0 80px rgba(255, 0, 0, 1),
+            0 0 120px rgba(255, 100, 100, 1),
+            4px 4px 15px rgba(0, 0, 0, 1);
+    }
 }
 
 @keyframes attackAnimation {
@@ -5809,6 +6079,7 @@ input[type="range"] {
     background: #1a1a2e;
 }
 
+
 .town-background {
     position: absolute;
     top: 0;
@@ -5933,7 +6204,7 @@ input[type="range"] {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    z-index: 5;
+    z-index: 10;
     pointer-events: none;
 }
 
@@ -5948,21 +6219,21 @@ input[type="range"] {
 
 .home-aphrodite {
     left: 25%;
-    z-index: 5;
+    z-index: 10;
     bottom: calc(-10% - 80px); /* Moved down 65px total (40px + 25px) */
 }
 
 .home-hero {
     left: calc(50% - 20px);
     transform: translateX(-50%);
-    z-index: 6;
+    z-index: 11;
     height: 240%;
     bottom: calc(-10% - 145px); /* Moved down 65px total (40px + 25px) */
 }
 
 .home-black-knight {
     right: 25%;
-    z-index: 5;
+    z-index: 10;
 }
 
 
@@ -6162,6 +6433,152 @@ input[type="range"] {
 
 .home-guilds-btn:hover {
     transform: translateY(-3px);
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   PVP SCREEN
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+#pvp-screen {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.pvp-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.pvp-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/pvp/PVP.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+
+/* Mode Selection Buttons */
+.pvp-mode-btn {
+    position: absolute;
+    width: 240px;
+    height: 120px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.pvp-mode-btn:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.pvp-mode-btn:active {
+    transform: translate(-50%, -50%) scale(0.98);
+}
+
+/* Legends Button - Left Third (moved 30px outward) */
+.pvp-legends-btn {
+    left: calc(33.33% - 30px);
+    top: 50%;
+    transform: translate(-50%, -50%);
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+.pvp-legends-btn:hover {
+    transform: translate(-50%, -50%) scale(1.02);
+    opacity: 1;
+}
+
+/* Tournament Button - Right Third (moved 30px outward) */
+.pvp-tournament-btn {
+    left: calc(66.67% + 30px);
+    top: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.pvp-tournament-btn:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+}
+
+.pvp-mode-title {
+    display: block;
+    letter-spacing: 1px;
+    font-size: 14px;
+}
+
+/* PVP mode button images */
+.pvp-mode-btn img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* Coming Soon Badge */
+.coming-soon-badge {
+    display: block;
+    font-size: 8px;
+    margin-top: 4px;
+    color: #FF6B6B;
+    background: rgba(255, 107, 107, 0.2);
+    padding: 2px 7px;
+    border-radius: 7px;
+    border: 1px solid #FF6B6B;
+    letter-spacing: 0.5px;
+    text-shadow: 0 0 8px rgba(255, 107, 107, 0.8);
+}
+
+/* PVP Screen Back Button */
+#pvp-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 2px 12px 4px 12px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+}
+
+#pvp-back-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: #ffd700;
+    transform: translateX(-3px);
+    box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4);
+}
+
+#pvp-back-btn:active {
+    transform: translateX(-1px);
+}
+
+/* Icon size for PVP back button */
+#pvp-back-btn img {
+    width: 24px;
+    height: 16px;
+    vertical-align: middle;
+    display: inline-block;
 }
 
 .home-guilds-btn:hover img {
@@ -6581,7 +6998,7 @@ input[type="range"] {
     position: absolute;
     top: 20px;
     left: 20px;
-    padding: 8px 12px;
+    padding: 2px 12px 4px 12px;
     font-size: 20px;
     font-weight: bold;
     color: #fff;
@@ -6603,6 +7020,101 @@ input[type="range"] {
 
 .store-back-btn:active {
     transform: translateX(-1px);
+}
+
+/* ========================================
+   CASTLE SCREEN
+   ======================================== */
+
+.castle-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.castle-background {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/castle/Castle_home.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+.castle-enter-btn {
+    position: absolute;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 12px 40px;
+    font-size: 24px;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #FFD700, #FFA500);
+    border: 3px solid #FFD700;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6), 0 0 20px rgba(255, 215, 0, 0.4);
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    letter-spacing: 2px;
+}
+
+.castle-enter-btn:hover {
+    background: linear-gradient(135deg, #FFA500, #FF8C00);
+    border-color: #FFF;
+    transform: translateX(-50%) translateY(-3px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.6);
+}
+
+.castle-enter-btn:active {
+    transform: translateX(-50%) translateY(-1px);
+}
+
+.castle-back-btn {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    padding: 3px 12px 3px 12px;
+    font-size: 20px;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid rgba(255, 215, 0, 0.4);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.castle-back-btn:hover {
+    background: rgba(0, 0, 0, 0.85);
+    border-color: #ffd700;
+    transform: translateX(-3px);
+    box-shadow: 0 6px 12px rgba(255, 215, 0, 0.4);
+}
+
+.castle-back-btn:active {
+    transform: translateX(-1px);
+}
+
+.castle-back-btn .icon-img {
+    width: 24px;
+    height: 16px;
+    vertical-align: middle;
+    display: inline-block;
 }
 
 /* ============================================
@@ -6676,10 +7188,10 @@ input[type="range"] {
 }
 
 /* Lock icon overlay for locked monsters */
-.pve-lock-icon {
+.pve-monster-btn .pve-lock-icon {
     position: absolute;
-    width: 67%;
-    height: 67%;
+    width: 50% !important;
+    height: 50% !important;
     object-fit: contain;
     pointer-events: none;
     z-index: 5;
@@ -6748,7 +7260,7 @@ input[type="range"] {
     position: absolute;
     top: 20px;
     left: 20px;
-    padding: 8px 12px;
+    padding: 2px 12px 4px 12px;
     font-size: 20px;
     font-weight: bold;
     color: #fff;
@@ -6772,6 +7284,27 @@ input[type="range"] {
 .pve-back-btn:active,
 .dominion-back-btn:active {
     transform: translateX(-1px);
+}
+
+/* Dev Mode Unlock Button (in dev panel) - additional styles */
+.pve-dev-unlock {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.pve-dev-unlock svg {
+    width: 14px;
+    height: 14px;
+    stroke: currentColor;
+    flex-shrink: 0;
+}
+
+/* When unlocked state */
+.pve-dev-unlock.unlocked {
+    color: #6f6;
+    border-color: #484;
 }
 
 @keyframes pulse {

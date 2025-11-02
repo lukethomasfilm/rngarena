@@ -43,7 +43,9 @@
                 <button id="start-btn" class="start-btn hidden">START</button>
 
                 <!-- Mute Button -->
-                <button id="mute-btn" class="loading-mute-btn" aria-label="Toggle audio mute">🔇</button>
+                <button id="mute-btn" class="loading-mute-btn" aria-label="Toggle audio mute">
+                    <img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img">
+                </button>
             </div>
         </div>
 
@@ -119,8 +121,12 @@
 
                 <!-- Top Left Controls - Settings and Audio -->
                 <div class="home-top-left-controls">
-                    <button id="home-settings-btn" class="home-small-btn" aria-label="Open settings">⚙️</button>
-                    <button id="home-audio-btn" class="home-small-btn" aria-label="Toggle audio">🔊</button>
+                    <button id="home-settings-btn" class="home-small-btn" aria-label="Open settings">
+                        <img src="/images/UX Images/settings.png" alt="Settings" class="icon-img">
+                    </button>
+                    <button id="home-audio-btn" class="home-small-btn" aria-label="Toggle audio">
+                        <img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img">
+                    </button>
                 </div>
 
                 <!-- Top Right Controls - Currency -->
@@ -160,7 +166,27 @@
                 </button>
 
                 <!-- Back Button -->
-                <button id="store-back-btn" class="store-back-btn" aria-label="Return to home">←</button>
+                <button id="store-back-btn" class="store-back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
+        <!-- Castle Screen -->
+        <div id="castle-screen" class="game-screen hidden">
+            <div class="castle-container">
+                <!-- Castle Background -->
+                <div class="castle-background"></div>
+
+                <!-- Enter Button (Bottom Center) -->
+                <button id="castle-enter-btn" class="castle-enter-btn" aria-label="Enter Castle">
+                    ENTER
+                </button>
+
+                <!-- Back Button -->
+                <button id="castle-back-btn" class="castle-back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
             </div>
         </div>
 
@@ -186,7 +212,9 @@
                 <img src="/images/Dominion/directions.png" alt="Map Directions" class="dominion-directions" loading="lazy">
 
                 <!-- Back Button -->
-                <button id="dominion-back-btn" class="dominion-back-btn" aria-label="Return to home">←</button>
+                <button id="dominion-back-btn" class="dominion-back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
             </div>
         </div>
 
@@ -199,7 +227,7 @@
                     <button class="pve-monster-btn" id="pve-wood-dummy" data-monster="wood-dummy" style="left: calc(22% - 5px); top: calc(75% + 20px);">
                         <img src="/images/pve/wood-dummy.png" alt="Wood Dummy">
                     </button>
-                    <button class="pve-monster-btn pve-locked" id="pve-raccoon" data-monster="raccoon" style="left: 13%; top: 35%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-raccoon" data-monster="raccoon" style="left: 13%; top: calc(35% + 50px);">
                         <img src="/images/pve/raccoon.png" alt="Raccoon">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
@@ -211,8 +239,8 @@
                         <img src="/images/pve/ram.png" alt="Ram">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn pve-locked" id="pve-eagle" data-monster="eagle" style="left: calc(45% - 35px); top: calc(50% - 35px);">
-                        <img src="/images/pve/eagle.png" alt="Eagle">
+                    <button class="pve-monster-btn pve-locked" id="pve-frog-fish" data-monster="frog-fish" style="left: calc(45% - 35px); top: calc(50% - 35px);">
+                        <img src="/images/pve/frog-fish.png" alt="Frog-Fish">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
                     <button class="pve-monster-btn pve-locked" id="pve-serpent" data-monster="serpent" style="left: calc(5% + 410px); top: 60%;">
@@ -234,7 +262,9 @@
                 </div>
 
                 <!-- Back Button -->
-                <button id="pve-back-btn" class="pve-back-btn" aria-label="Return to home">←</button>
+                <button id="pve-back-btn" class="pve-back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
             </div>
         </div>
 
@@ -269,8 +299,10 @@
                             <div class="hp-text" id="pve-hero-hp-text">10/10</div>
                         </div>
 
-                        <div class="progress-container">
-                            <div class="progress-label">PVE Battle</div>
+                        <!-- Win Odds Display (Center) -->
+                        <div class="pve-win-odds" id="pve-win-odds">
+                            <div class="win-odds-label">ODDS OF VICTORY</div>
+                            <div class="win-odds-value" id="pve-win-odds-value">--</div>
                         </div>
 
                         <!-- Monster HP Bar (Right) -->
@@ -320,9 +352,15 @@
             <!-- Bottom Left: Controls -->
             <div class="bottom-left-section">
                 <div class="control-grid">
-                    <button id="pve-settings-btn" class="control-btn" aria-label="Open settings">⚙️</button>
-                    <button id="pve-mute-audio" class="control-btn mute-btn" aria-label="Toggle audio">🔊</button>
-                    <button id="pve-exit-game" class="control-btn exit-btn" title="Return to PVE Map" aria-label="Return to PVE map">←</button>
+                    <button id="pve-settings-btn" class="control-btn" aria-label="Open settings">
+                        <img src="/images/UX Images/settings.png" alt="Settings" class="icon-img">
+                    </button>
+                    <button id="pve-mute-audio" class="control-btn mute-btn" aria-label="Toggle audio">
+                        <img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img">
+                    </button>
+                    <button id="pve-exit-game" class="control-btn exit-btn" title="Return to PVE Map" aria-label="Return to PVE map">
+                        <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                    </button>
                     <button id="pve-fast-forward" class="control-btn" aria-label="Fast forward">⏩</button>
                 </div>
             </div>
@@ -337,8 +375,32 @@
         </div><!-- End container -->
         </div><!-- End pve-battle-screen -->
 
-        <!-- PVP Tournament Screen -->
-        <div id="pvp-tournament-screen" class="game-screen hidden">
+        <!-- PVP Screen -->
+        <div id="pvp-screen" class="game-screen hidden">
+            <div class="pvp-container">
+                <!-- Background -->
+                <div class="pvp-background"></div>
+
+                <!-- Back Button -->
+                <button id="pvp-back-btn" class="back-button" aria-label="Back to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back">
+                </button>
+
+                <!-- Legends Button (Left) -->
+                <button id="pvp-legends-btn" class="pvp-mode-btn pvp-legends-btn" aria-label="Legends Mode">
+                    <img src="/images/pvp/Legends.png" alt="Legends Mode">
+                    <span class="coming-soon-badge">COMING SOON</span>
+                </button>
+
+                <!-- Tournament Button (Right) -->
+                <button id="pvp-tournament-btn" class="pvp-mode-btn pvp-tournament-btn" aria-label="Tournament Mode">
+                    <img src="/images/pvp/Tournament.png" alt="Tournament Mode">
+                </button>
+            </div>
+        </div><!-- End pvp-screen -->
+
+        <!-- Tournament Screen -->
+        <div id="tournament-screen" class="game-screen hidden">
         <div class="container">
             <!-- Left Side: Loot Container -->
             <div class="left-section">
@@ -447,9 +509,15 @@
             <!-- Bottom Left: 4-Button Control Grid -->
             <div class="bottom-left-section">
                 <div class="control-grid">
-                    <button id="settings-btn" class="control-btn" aria-label="Open settings">⚙️</button>
-                    <button id="mute-audio" class="control-btn mute-btn" aria-label="Toggle audio">🔊</button>
-                    <button id="exit-game" class="control-btn exit-btn" title="Return to Home" aria-label="Return to home">←</button>
+                    <button id="settings-btn" class="control-btn" aria-label="Open settings">
+                        <img src="/images/UX Images/settings.png" alt="Settings" class="icon-img">
+                    </button>
+                    <button id="mute-audio" class="control-btn mute-btn" aria-label="Toggle audio">
+                        <img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img">
+                    </button>
+                    <button id="exit-game" class="control-btn exit-btn" title="Return to Home" aria-label="Return to home">
+                        <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                    </button>
                     <label class="control-btn toggle-btn" aria-label="Enable Daring Hero mode">
                         <input type="checkbox" id="daring-hero-checkbox">
                         <span class="toggle-slider"></span>
@@ -479,7 +547,7 @@
                 </div>
             </div>
         </div><!-- End container -->
-        </div><!-- End pvp-tournament-screen -->
+        </div><!-- End tournament-screen -->
 
         <!-- Loot Claim Popup Overlay -->
         <div class="loot-claim-overlay hidden" id="loot-claim-overlay">
@@ -529,8 +597,12 @@
             <div class="chat-mode-overlay-content">
                 <!-- Top Control Bar -->
                 <div class="chat-mode-top-bar">
-                    <button id="chat-mode-settings-btn" class="chat-mode-control-btn" aria-label="Open settings">⚙️</button>
-                    <button id="chat-mode-mute-btn" class="chat-mode-control-btn" aria-label="Toggle audio">🔊</button>
+                    <button id="chat-mode-settings-btn" class="chat-mode-control-btn" aria-label="Open settings">
+                        <img src="/images/UX Images/settings.png" alt="Settings" class="icon-img">
+                    </button>
+                    <button id="chat-mode-mute-btn" class="chat-mode-control-btn" aria-label="Toggle audio">
+                        <img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img">
+                    </button>
                     <button class="chat-mode-control-btn chat-mode-close-btn" id="close-chat-mode-overlay" aria-label="Close live chat">✕</button>
                 </div>
                 <div class="chat-mode-battlefield-overlay" id="chat-mode-battlefield-overlay">
@@ -554,7 +626,16 @@
         <button id="start-tournament-btn" class="start-tournament-btn" aria-label="Start PVP tournament">🏆 START TOURNAMENT</button>
         <button id="fast-forward-btn" class="fast-forward-btn" aria-label="Toggle 4x fast forward">⏩ 4x Fast Forward</button>
         <button id="dev-preview-toggle" class="dev-preview-toggle-btn" aria-label="Toggle dev previews">▼ Show Dev Previews</button>
-        <button id="dev-mute-btn" class="dev-mute-btn" aria-label="Toggle audio mute">🔇 MUTED</button>
+        <button id="dev-mute-btn" class="dev-mute-btn" aria-label="Toggle audio mute">
+            <img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED
+        </button>
+        <button id="pve-dev-unlock" class="pve-dev-unlock" aria-label="Dev Mode: Unlock All PVE Monsters" title="Unlock all PVE monsters for testing">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            UNLOCK PVE
+        </button>
     </div>
 
     <!-- Dev Preview Wrapper -->
@@ -739,11 +820,22 @@
                 muteBtn.addEventListener('click', () => {
                     isMuted = !isMuted;
                     homeMusic.muted = isMuted;
-                    muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                    const muteBtnImg = muteBtn.querySelector('.icon-img');
+                    if (muteBtnImg) {
+                        muteBtnImg.src = isMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
+                        muteBtnImg.alt = isMuted ? 'Muted' : 'Sound';
+                    }
 
                     // Update dev button too
                     if (devMuteBtn) {
-                        devMuteBtn.textContent = isMuted ? '🔇 MUTED' : '🔊 UNMUTED';
+                        const devMuteBtnImg = devMuteBtn.querySelector('.icon-img');
+                        if (devMuteBtnImg) {
+                            devMuteBtnImg.src = isMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
+                            devMuteBtnImg.alt = isMuted ? 'Muted' : 'Sound';
+                        }
+                        devMuteBtn.innerHTML = isMuted ?
+                            '<img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED' :
+                            '<img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img"> UNMUTED';
                         devMuteBtn.classList.toggle('active', !isMuted);
                     }
 
@@ -796,10 +888,16 @@
                     homeMusic.muted = isMuted;
 
                     // Update both buttons
-                    devMuteBtn.textContent = isMuted ? '🔇 MUTED' : '🔊 UNMUTED';
+                    devMuteBtn.innerHTML = isMuted ?
+                        '<img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED' :
+                        '<img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img"> UNMUTED';
                     devMuteBtn.classList.toggle('active', !isMuted);
                     if (muteBtn) {
-                        muteBtn.textContent = isMuted ? '🔇' : '🔊';
+                        const muteBtnImg = muteBtn.querySelector('.icon-img');
+                        if (muteBtnImg) {
+                            muteBtnImg.src = isMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
+                            muteBtnImg.alt = isMuted ? 'Muted' : 'Sound';
+                        }
                     }
 
                     // Try to play if unmuting

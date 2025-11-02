@@ -30,6 +30,11 @@ export class PVECombatSystem {
         this.combatEnded = false;
         this.currentTurn = 'hero'; // Hero always goes first
 
+        // Rabid attack state (for raccoon's special ability)
+        this.isRabidAttacking = false;
+        this.rabidAttacksRemaining = 0;
+        this.rabidTextElement = null; // Store reference to persistent RABID text
+
         // UI elements
         this.heroSprite = document.getElementById('pve-hero-sprite');
         this.monsterSprite = document.getElementById('pve-monster-sprite');
@@ -42,6 +47,12 @@ export class PVECombatSystem {
         // Fast forward state
         this.fastForward = false;
         this.setupFastForward();
+
+        // Audio state - check if globally muted
+        this.muted = window.arena?.audioMuted || false;
+
+        // Critical sound (same as PVP)
+        this.criticalSoundPath = '/sfx/Critical!_fighter_ga-1760028020390.mp3';
 
         // Attack voice sound paths (hero is male, uses Voice 1-6)
         this.normalAttackVoicePaths = [
@@ -78,7 +89,18 @@ export class PVECombatSystem {
      */
     startCombat() {
         console.log('⚔️ PVE Combat starting!');
-        setTimeout(() => this.executeCombatBeat(), 1000);
+
+        // Calculate and display initial win odds
+        this.updateWinOdds();
+
+        // Play monster intro sound if available, then wait 1.5s before starting
+        if (this.monster.sfx && this.monster.sfx.intro) {
+            console.log('🔊 Playing monster intro sound:', this.monster.sfx.intro);
+            this.playSound(this.monster.sfx.intro);
+        }
+
+        // Wait 1.5 seconds before starting combat (for intro sound)
+        setTimeout(() => this.executeCombatBeat(), 1500);
     }
 
     /**
@@ -87,7 +109,11 @@ export class PVECombatSystem {
     executeCombatBeat() {
         if (this.combatEnded) return;
 
-        const delay = this.fastForward ? 100 : 1800; // Fast forward = 100ms, normal = 1800ms
+        // Rabid attacks are faster - 800ms between attacks (or 100ms in fast forward)
+        let delay = this.fastForward ? 100 : 1800; // Fast forward = 100ms, normal = 1800ms
+        if (this.isRabidAttacking && this.rabidAttacksRemaining > 0) {
+            delay = this.fastForward ? 100 : 800; // Rabid attacks = 800ms
+        }
 
         if (this.currentTurn === 'hero') {
             this.executeHeroAttack();
@@ -141,19 +167,176 @@ export class PVECombatSystem {
     }
 
     /**
+     * Execute Ram's charge attack with special animation
+     */
+    executeChargeAttack() {
+        console.log('🐏 Executing charge attack!');
+
+        // Step 1: Rear up (attack sprite) for 0.2 seconds
+        if (this.monsterSprite && this.monster.attackSprite) {
+            this.monsterSprite.style.backgroundImage = `url('${this.monster.attackSprite}')`;
+        }
+
+        // Step 2: Return to normal pose after 0.2s
+        setTimeout(() => {
+            if (this.monsterSprite) {
+                this.monsterSprite.style.backgroundImage = `url('${this.monster.sprite}')`;
+            }
+        }, 200);
+
+        // Step 3: Start charging toward hero (left side) after brief pause
+        setTimeout(() => {
+            // Play charge sound
+            if (this.monster.sfx && this.monster.sfx.charge) {
+                console.log('🔊 Playing charge sound:', this.monster.sfx.charge);
+                this.playSound(this.monster.sfx.charge);
+            }
+
+            // Super fast charge toward hero and off left side of screen
+            if (this.monsterSprite) {
+                this.monsterSprite.style.transition = 'transform 0.6s linear';
+                this.monsterSprite.style.transform = 'scaleX(-1) scale(0.4) translateX(-1800px)';
+            }
+        }, 400);
+
+        // Step 4: Deal damage as ram passes through hero (midway point ~300ms into charge)
+        setTimeout(() => {
+            const chargeDamage = this.monster.specialAbility.chargeDamage || 10;
+
+            // Show damage, slash, and play hit sound
+            this.showDamageNumber(this.heroFighter, chargeDamage, false);
+            this.showSlashEffect(this.heroFighter);
+            this.playHitSound();
+
+            // Update hero HP
+            this.heroHP -= chargeDamage;
+            this.battleSystem.updateHeroHP(this.heroHP, this.hero.maxHealth);
+
+            // Check if hero is defeated
+            if (this.heroHP <= 0) {
+                setTimeout(() => this.endCombat('monster'), 400);
+            }
+        }, 700); // Midway through the charge
+
+        // Step 5: Teleport to right side (off screen) after charge completes
+        setTimeout(() => {
+            if (this.monsterSprite) {
+                this.monsterSprite.style.transition = 'none';
+                this.monsterSprite.style.transform = 'scaleX(-1) scale(0.4) translateX(1800px)';
+            }
+        }, 1000);
+
+        // Step 6: Return to starting position from right side
+        setTimeout(() => {
+            if (this.monsterSprite) {
+                this.monsterSprite.style.transition = 'transform 0.5s ease-out';
+                this.monsterSprite.style.transform = 'scaleX(-1) scale(0.4) translateX(0)';
+            }
+        }, 1050);
+
+        // Step 7: Continue to next turn
+        setTimeout(() => {
+            if (!this.combatEnded) {
+                this.nextTurn();
+            }
+        }, 1600);
+    }
+
+    /**
      * Execute monster's attack (Wood Dummy always misses)
      */
     executeMonsterAttack() {
         console.log(`🎯 ${this.monster.displayName} attacks! (Round ${this.combatRound})`);
 
-        // Wood Dummy is on a stick - no attack animation (can't move!)
+        // FIRST: Check for special ability triggers
+        // This must happen BEFORE sprite switching so we know which sprite to use
+
+        // Check for Rabid Attack trigger (Raccoon - only if not already rabid)
+        if (!this.isRabidAttacking &&
+            this.monster.specialAbility &&
+            this.monster.specialAbility.rabidChance &&
+            !this.monster.specialAbility.neverAttacks) {
+            const rabidRoll = this.rollDie(100);
+            if (rabidRoll <= this.monster.specialAbility.rabidChance) {
+                // Trigger Rabid Attack!
+                this.isRabidAttacking = true;
+                this.rabidAttacksRemaining = this.monster.specialAbility.rabidAttackCount;
+                console.log(`🦝 RABID ATTACK TRIGGERED! ${this.rabidAttacksRemaining} attacks incoming!`);
+
+                // Show persistent RABID text
+                if (this.monsterFighter) {
+                    this.rabidTextElement = document.createElement('div');
+                    this.rabidTextElement.className = 'rabid-text';
+                    this.rabidTextElement.textContent = 'RABID!';
+                    this.monsterFighter.appendChild(this.rabidTextElement);
+                }
+
+                // Make monster 10% bigger during rabid mode
+                if (this.monsterSprite) {
+                    this.monsterSprite.style.transform = 'scaleX(-1) scale(0.44)'; // 0.4 * 1.1 = 0.44
+                }
+            }
+        }
+
+        // Check for Charge Attack trigger (Ram)
+        let isCharging = false;
+        if (this.monster.specialAbility &&
+            this.monster.specialAbility.chargeChance &&
+            !this.monster.specialAbility.neverAttacks) {
+            const chargeRoll = this.rollDie(100);
+            if (chargeRoll <= this.monster.specialAbility.chargeChance) {
+                isCharging = true;
+                console.log(`🐏 CHARGE ATTACK TRIGGERED!`);
+            }
+        }
+
+        // Handle charge attack with special animation
+        if (isCharging) {
+            this.executeChargeAttack();
+            return; // Skip normal attack flow
+        }
+
+        // SECOND: Change to appropriate attack sprite and lunge forward
+        if (this.monsterSprite) {
+            if (this.isRabidAttacking && this.monster.rabidAttackSprite) {
+                // Use rabid attack sprite if in rabid mode
+                console.log('🦝 Setting rabid attack sprite:', this.monster.rabidAttackSprite);
+                this.monsterSprite.style.backgroundImage = `url('${this.monster.rabidAttackSprite}')`;
+                console.log('🦝 Monster sprite element:', this.monsterSprite);
+                console.log('🦝 Applied background-image:', this.monsterSprite.style.backgroundImage);
+                console.log('🦝 Computed background-image:', window.getComputedStyle(this.monsterSprite).backgroundImage);
+            } else if (this.monster.attackSprite) {
+                // Use normal attack sprite
+                this.monsterSprite.style.backgroundImage = `url('${this.monster.attackSprite}')`;
+            }
+
+            // Lunge forward (monster is on right, so move left toward hero)
+            // Skip lunge for Wood Dummy (it's on a stick and can't move!)
+            if (this.monster.id !== 'wood-dummy') {
+                this.monsterSprite.style.transition = 'transform 0.1s ease-out';
+                this.monsterSprite.style.transform = 'translateX(-10px)';
+            }
+        }
 
         setTimeout(() => {
             // Wood Dummy always misses (specialAbility.neverAttacks)
             if (this.monster.specialAbility && this.monster.specialAbility.neverAttacks) {
                 this.handleMonsterMiss();
             } else {
-                // Future monsters: normal attack logic
+
+                // Play monster attack sound if available
+                if (this.monster.sfx && this.monster.sfx.attack) {
+                    if (Array.isArray(this.monster.sfx.attack)) {
+                        const randomAttack = this.monster.sfx.attack[Math.floor(Math.random() * this.monster.sfx.attack.length)];
+                        console.log('🔊 [MONSTER ATTACKS] Playing attack sound:', randomAttack);
+                        this.playSound(randomAttack);
+                    } else {
+                        console.log('🔊 [MONSTER ATTACKS] Playing attack sound:', this.monster.sfx.attack);
+                        this.playSound(this.monster.sfx.attack);
+                    }
+                }
+
+                // Execute attack
                 const attackRoll = this.rollDie(6);
                 if (attackRoll === 6) {
                     this.handleMonsterMiss();
@@ -163,6 +346,25 @@ export class PVECombatSystem {
                     this.handleHeroHit(damage, isCrit);
                 }
             }
+
+            // Revert to appropriate sprite after attack and reset position
+            setTimeout(() => {
+                if (this.monsterSprite) {
+                    if (this.isRabidAttacking && this.monster.rabidNormalSprite) {
+                        // Revert to rabid normal stance if still in rabid mode
+                        console.log('🦝 Reverting to rabid normal sprite:', this.monster.rabidNormalSprite);
+                        this.monsterSprite.style.backgroundImage = `url('${this.monster.rabidNormalSprite}')`;
+                    } else {
+                        // Revert to normal sprite
+                        this.monsterSprite.style.backgroundImage = `url('${this.monster.sprite}')`;
+                    }
+
+                    // Reset position (lunge back) - skip for Wood Dummy
+                    if (this.monster.id !== 'wood-dummy') {
+                        this.monsterSprite.style.transform = 'translateX(0)';
+                    }
+                }
+            }, 400);
         }, 200);
     }
 
@@ -195,6 +397,7 @@ export class PVECombatSystem {
             this.playMonsterHitSounds();
 
             if (isCrit) {
+                this.playCriticalSound();
                 this.showCriticalScreenFlash();
             }
 
@@ -204,7 +407,18 @@ export class PVECombatSystem {
 
             // Check if monster is defeated
             if (this.monsterHP <= 0) {
-                this.endCombat('hero');
+                // Play outro/end sound if available, then show victory
+                if (this.monster.sfx && this.monster.sfx.end) {
+                    console.log('🔊 Playing monster end sound:', this.monster.sfx.end);
+                    this.playSound(this.monster.sfx.end);
+                    // Wait for outro sound before showing victory (1.5s)
+                    setTimeout(() => {
+                        this.endCombat('hero');
+                    }, 1500);
+                } else {
+                    // No outro sound, show victory immediately
+                    this.endCombat('hero');
+                }
             } else {
                 this.nextTurn();
             }
@@ -218,8 +432,10 @@ export class PVECombatSystem {
         console.log(`${this.monster.displayName} MISS!`);
 
         // Wood Dummy is on a stick - no miss animation (can't move!)
-        // Just show the MISS text
-        this.showCombatText(this.monsterFighter, 'MISS!', 'miss-text');
+        // Show MISS text for all monsters except dummy
+        if (this.monster.id !== 'wood-dummy') {
+            this.showCombatText(this.monsterFighter, 'MISS!', 'miss-text');
+        }
         this.nextTurn();
     }
 
@@ -236,9 +452,13 @@ export class PVECombatSystem {
             }
             this.showDamageNumber(this.heroFighter, damage, isCrit);
             this.showSlashEffect(this.heroFighter);
+
+            // Always play hit sound when hero takes damage
+            console.log('🔊 [HERO HIT] Playing generic hit sound');
             this.playHitSound();
 
             if (isCrit) {
+                this.playCriticalSound();
                 this.showCriticalScreenFlash();
             }
 
@@ -256,46 +476,81 @@ export class PVECombatSystem {
     }
 
     /**
-     * Flash monster hit sprite
+     * Flash monster hit/defense sprite
      */
     flashMonsterHit() {
-        if (!this.monsterSprite || !this.monster.hitSprite) return;
+        if (!this.monsterSprite) return;
 
         const originalSprite = this.monster.sprite;
 
-        // Show hit sprite
-        this.monsterSprite.style.backgroundImage = `url('${this.monster.hitSprite}')`;
+        // Wood Dummy uses hitSprite, others use defenseSprite
+        if (this.monster.hitSprite) {
+            // Wood Dummy - show hit sprite
+            this.monsterSprite.style.backgroundImage = `url('${this.monster.hitSprite}')`;
+        } else if (this.monster.defenseSprite) {
+            // Other monsters - show defense sprite when taking damage
+            this.monsterSprite.style.backgroundImage = `url('${this.monster.defenseSprite}')`;
+        }
 
-        // Flash back to normal after 200ms
+        // Flash back to normal after 400ms
         setTimeout(() => {
             this.monsterSprite.style.backgroundImage = `url('${originalSprite}')`;
-        }, 200);
+        }, 400);
     }
 
     /**
-     * Play monster-specific hit sounds (dummywood + hay)
+     * Play monster-specific hit sounds
      */
     playMonsterHitSounds() {
-        if (!this.monster.sfx) return;
+        console.log(`🎯 MONSTER TAKES DAMAGE - Playing ${this.monster.displayName} hit sounds`);
 
-        // Play random hit sound (dummywood1-3)
-        if (this.monster.sfx.hit && this.monster.sfx.hit.length > 0) {
-            const randomHit = this.monster.sfx.hit[Math.floor(Math.random() * this.monster.sfx.hit.length)];
-            this.playSound(randomHit);
-        }
+        // Wood Dummy specific: Play random hit sound (dummywood1-3) and hay sound
+        if (this.monster.id === 'wood-dummy') {
+            if (this.monster.sfx && this.monster.sfx.hit && this.monster.sfx.hit.length > 0) {
+                const randomHit = this.monster.sfx.hit[Math.floor(Math.random() * this.monster.sfx.hit.length)];
+                console.log('  🔊 [MONSTER HIT] Wood hit:', randomHit);
+                this.playSound(randomHit);
+            }
 
-        // Play hay sound
-        if (this.monster.sfx.hay) {
-            setTimeout(() => {
-                this.playSound(this.monster.sfx.hay);
-            }, 100); // Slight delay for layering
+            if (this.monster.sfx && this.monster.sfx.hay) {
+                setTimeout(() => {
+                    console.log('  🔊 [MONSTER HIT] Hay sound');
+                    this.playSound(this.monster.sfx.hay);
+                }, 100); // Slight delay for layering
+            }
+        } else {
+            // Other monsters: Play defense sounds (grunts/growls) AND generic hit sound
+            if (this.monster.sfx && this.monster.sfx.defense) {
+                // Play defense grunt/growl
+                if (Array.isArray(this.monster.sfx.defense)) {
+                    const randomDefense = this.monster.sfx.defense[Math.floor(Math.random() * this.monster.sfx.defense.length)];
+                    console.log('  🔊 [MONSTER HIT] Defense sound:', randomDefense);
+                    this.playSound(randomDefense);
+                } else {
+                    console.log('  🔊 [MONSTER HIT] Defense sound:', this.monster.sfx.defense);
+                    this.playSound(this.monster.sfx.defense);
+                }
+            }
+
+            // Always play generic hit sound for impact on all living monsters
+            console.log('  🔊 [MONSTER HIT] Generic hit sound');
+            this.playHitSound();
         }
+    }
+
+    /**
+     * Set muted state
+     */
+    setMuted(muted) {
+        this.muted = muted;
     }
 
     /**
      * Play a sound file
      */
     playSound(path) {
+        if (this.muted) return;
+
         try {
             const audio = new Audio(path);
             audio.volume = 0.5;
@@ -309,6 +564,8 @@ export class PVECombatSystem {
      * Play attack voice sound (ora yells!)
      */
     playAttackVoice(isCrit) {
+        if (this.muted) return;
+
         let soundPath;
 
         if (isCrit) {
@@ -337,6 +594,129 @@ export class PVECombatSystem {
         ];
         const randomHit = hitSounds[Math.floor(Math.random() * hitSounds.length)];
         this.playSound(randomHit);
+    }
+
+    /**
+     * Play critical strike sound (same as PVP)
+     */
+    playCriticalSound() {
+        if (this.muted) return;
+
+        const sound = new Audio(this.criticalSoundPath);
+        sound.volume = 0.5;
+        sound.play().catch(err => console.log('Critical sound play failed:', err));
+
+        // Stop after 1 second
+        setTimeout(() => {
+            sound.pause();
+            sound.currentTime = 0;
+        }, 1000);
+    }
+
+    /**
+     * Calculate win probability using Monte Carlo simulation
+     * Simulates thousands of battles from current state
+     * @returns {number} Hero win percentage (0-100)
+     */
+    calculateWinProbability() {
+        const SIMULATIONS = 2000; // Run 2000 simulations for accuracy
+        let heroWins = 0;
+
+        for (let i = 0; i < SIMULATIONS; i++) {
+            if (this.simulateBattle()) {
+                heroWins++;
+            }
+        }
+
+        return Math.round((heroWins / SIMULATIONS) * 100);
+    }
+
+    /**
+     * Simulate one complete battle from current state
+     * @returns {boolean} True if hero wins, false if monster wins
+     */
+    simulateBattle() {
+        let simHeroHP = this.heroHP;
+        let simMonsterHP = this.monsterHP;
+        let simCurrentTurn = this.currentTurn;
+        let simIsRabid = false;
+        let simRabidRemaining = 0;
+
+        // Battle until someone dies
+        while (simHeroHP > 0 && simMonsterHP > 0) {
+            if (simCurrentTurn === 'hero') {
+                // Hero attacks
+                const roll = this.rollDie(6);
+                if (roll !== 6) { // Not a miss
+                    const damage = roll === 5 ? GAME_CONFIG.DAMAGE.CRITICAL : roll;
+                    simMonsterHP -= damage;
+                }
+                simCurrentTurn = 'monster';
+            } else {
+                // Monster attacks
+
+                // Wood Dummy never attacks
+                if (this.monster.specialAbility?.neverAttacks) {
+                    simCurrentTurn = 'hero';
+                    continue;
+                }
+
+                // Check for Rabid Attack trigger (Raccoon special)
+                if (!simIsRabid &&
+                    this.monster.specialAbility?.rabidChance &&
+                    this.rollDie(100) <= this.monster.specialAbility.rabidChance) {
+                    simIsRabid = true;
+                    simRabidRemaining = this.monster.specialAbility.rabidAttackCount;
+                }
+
+                // Execute attack
+                const roll = this.rollDie(6);
+                if (roll !== 6) { // Not a miss
+                    const damage = roll === 5 ? GAME_CONFIG.DAMAGE.CRITICAL : roll;
+                    simHeroHP -= damage;
+                }
+
+                // Handle Rabid Attack continuation
+                if (simIsRabid) {
+                    simRabidRemaining--;
+                    if (simRabidRemaining <= 0) {
+                        simIsRabid = false;
+                        simCurrentTurn = 'hero';
+                    }
+                    // Stay on monster's turn if rabid
+                } else {
+                    simCurrentTurn = 'hero';
+                }
+            }
+        }
+
+        return simHeroHP > 0; // Hero wins if they have HP remaining
+    }
+
+    /**
+     * Update the win odds display
+     */
+    updateWinOdds() {
+        const winOddsElement = document.getElementById('pve-win-odds-value');
+        if (!winOddsElement) return;
+
+        // Calculate win probability
+        const heroWinPercent = this.calculateWinProbability();
+
+        // Update display
+        winOddsElement.textContent = `${heroWinPercent}%`;
+
+        // Update color based on odds
+        winOddsElement.classList.remove('winning', 'losing', 'even');
+        if (heroWinPercent >= 65) {
+            winOddsElement.classList.add('winning');
+        } else if (heroWinPercent <= 35) {
+            winOddsElement.classList.add('losing');
+        } else {
+            winOddsElement.classList.add('even');
+        }
+
+        console.log(`📊 Win Odds Updated: Hero ${heroWinPercent}%`);
     }
 
     /**
@@ -506,7 +886,41 @@ export class PVECombatSystem {
      * Switch to next turn
      */
     nextTurn() {
-        this.currentTurn = this.currentTurn === 'hero' ? 'monster' : 'hero';
+        // Update win odds after HP changes
+        this.updateWinOdds();
+
+        // Handle rabid attack mode - keep turn on monster
+        if (this.isRabidAttacking && this.rabidAttacksRemaining > 0) {
+            this.rabidAttacksRemaining--;
+            console.log(`🦝 Rabid attacks remaining: ${this.rabidAttacksRemaining}`);
+
+            // If rabid attacks are done, end rabid mode and switch to hero
+            if (this.rabidAttacksRemaining === 0) {
+                this.isRabidAttacking = false;
+                console.log(`🦝 Rabid attack ended!`);
+
+                // Revert to normal monster sprite
+                if (this.monsterSprite) {
+                    this.monsterSprite.style.backgroundImage = `url('${this.monster.sprite}')`;
+                    // Scale back to normal size
+                    this.monsterSprite.style.transform = 'scaleX(-1) scale(0.4)';
+                }
+
+                // Remove persistent RABID text
+                if (this.rabidTextElement) {
+                    this.rabidTextElement.remove();
+                    this.rabidTextElement = null;
+                }
+
+                this.currentTurn = 'hero';
+            } else {
+                // Keep turn on monster for next rabid attack
+                this.currentTurn = 'monster';
+            }
+        } else {
+            // Normal turn switching
+            this.currentTurn = this.currentTurn === 'hero' ? 'monster' : 'hero';
+        }
     }
 
     /**
@@ -528,6 +942,16 @@ export class PVECombatSystem {
      */
     cleanup() {
         this.combatEnded = true;
+
+        // Clean up rabid mode effects
+        if (this.monsterSprite && this.monster) {
+            this.monsterSprite.style.backgroundImage = `url('${this.monster.sprite}')`;
+        }
+        if (this.rabidTextElement) {
+            this.rabidTextElement.remove();
+            this.rabidTextElement = null;
+        }
+
         // Stop all audio elements
         document.querySelectorAll('audio').forEach(audio => {
             if (!audio.id.includes('home-music')) {

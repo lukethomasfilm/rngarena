@@ -24,7 +24,7 @@ import {
  * ARCHITECTURAL SEPARATION:
  * -------------------------
  * This class handles EXCLUSIVELY PVP tournament functionality.
- * All DOM element references are scoped to #pvp-tournament-screen.
+ * All DOM element references are scoped to #tournament-screen.
  *
  * PVE System (COMPLETELY SEPARATE):
  * - Located in: js/pve/PVEBattleSystem.js & js/pve/PVECombatSystem.js
@@ -36,7 +36,7 @@ import {
  * 1. NEVER use document.querySelector() for shared class names
  *    (e.g., .fighter-left, .arena-viewport, .nameplate-vs-container)
  *
- * 2. ALWAYS scope selectors: this.pvpScreen.querySelector()
+ * 2. ALWAYS scope selectors: this.tournamentScreen.querySelector()
  *
  * 3. Store all PVP element references in constructor with pvpScreen scoping
  *
@@ -72,22 +72,22 @@ export class RNGArena {
         this.ladyLuckFrame = 1; // Current frame (1-4)
         this.ladyLuckAnimationInterval = null; // Animation interval ID
 
-        // DOM Elements - ALL scoped to PVP tournament screen to avoid conflicts with PVE
-        // CRITICAL: This ensures RNGArena only manipulates PVP elements, never PVE
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        if (!pvpScreen) {
-            console.error('❌ PVP tournament screen not found! RNGArena cannot initialize.');
+        // DOM Elements - ALL scoped to Tournament screen to avoid conflicts with PVE
+        // CRITICAL: This ensures RNGArena only manipulates Tournament elements, never PVE
+        const tournamentScreen = document.getElementById('tournament-screen');
+        if (!tournamentScreen) {
+            console.error('❌ Tournament screen not found! RNGArena cannot initialize.');
             return;
         }
 
-        this.pvpScreen = pvpScreen; // Store reference for future use
-        this.leftFighter = pvpScreen.querySelector('.fighter-left');
-        this.rightFighter = pvpScreen.querySelector('.fighter-right');
-        this.battleStatus = pvpScreen.querySelector('.battle-status');
-        this.roundAnnouncement = pvpScreen.querySelector('.round-announcement');
+        this.tournamentScreen = tournamentScreen; // Store reference for future use
+        this.leftFighter = tournamentScreen.querySelector('.fighter-left');
+        this.rightFighter = tournamentScreen.querySelector('.fighter-right');
+        this.battleStatus = tournamentScreen.querySelector('.battle-status');
+        this.roundAnnouncement = tournamentScreen.querySelector('.round-announcement');
         this.startButton = document.getElementById('start-battle');
         this.chatMessages = document.getElementById('chat-messages');
-        this.arenaViewport = pvpScreen.querySelector('.arena-viewport');
+        this.arenaViewport = tournamentScreen.querySelector('.arena-viewport');
         this.progressSegments = document.getElementById('progress-segments');
         this.heroProgressIndicator = document.getElementById('hero-progress-indicator');
         this.leftFighterNameEl = document.getElementById('left-nameplate-name');
@@ -96,11 +96,11 @@ export class RNGArena {
         this.countdownTimer = document.getElementById('countdown-timer');
         this.leftFighterTitlesEl = document.getElementById('left-nameplate-titles');
         this.rightFighterTitlesEl = document.getElementById('right-nameplate-titles');
-        this.leftFighterCard = pvpScreen.querySelector('.left-fighter-card');
-        this.rightFighterCard = pvpScreen.querySelector('.right-fighter-card');
+        this.leftFighterCard = tournamentScreen.querySelector('.left-fighter-card');
+        this.rightFighterCard = tournamentScreen.querySelector('.right-fighter-card');
         this.bracketDisplay = document.getElementById('bracket-display');
         this.overlayBracketDisplay = document.getElementById('overlay-bracket-display');
-        this.bracketViewport = pvpScreen.querySelector('.bracket-viewport');
+        this.bracketViewport = tournamentScreen.querySelector('.bracket-viewport');
         this.bracketSlider = document.getElementById('bracket-slider');
         this.zoomInBtn = document.getElementById('zoom-in');
         this.zoomOutBtn = document.getElementById('zoom-out');
@@ -109,15 +109,15 @@ export class RNGArena {
         this.overlayZoomOutBtn = document.getElementById('overlay-zoom-out');
         this.overlayZoomLevel = document.getElementById('overlay-zoom-level');
         this.overlayBracketSlider = document.getElementById('overlay-bracket-slider');
-        this.chatContainer = pvpScreen.querySelector('.chat-container');
+        this.chatContainer = tournamentScreen.querySelector('.chat-container');
         this.chatInput = document.getElementById('chat-input');
 
-        // Additional PVP-specific elements (scoped to prevent PVE conflicts)
-        this.nameplateVsContainer = pvpScreen.querySelector('.nameplate-vs-container');
-        this.leftNameplate = pvpScreen.querySelector('.left-nameplate');
-        this.rightNameplate = pvpScreen.querySelector('.right-nameplate');
-        this.crownOdds = pvpScreen.querySelector('.crown-odds');
-        this.lootHeaderBottom = pvpScreen.querySelector('.loot-header-bottom');
+        // Additional Tournament-specific elements (scoped to prevent PVE conflicts)
+        this.nameplateVsContainer = tournamentScreen.querySelector('.nameplate-vs-container');
+        this.leftNameplate = tournamentScreen.querySelector('.left-nameplate');
+        this.rightNameplate = tournamentScreen.querySelector('.right-nameplate');
+        this.crownOdds = tournamentScreen.querySelector('.crown-odds');
+        this.lootHeaderBottom = tournamentScreen.querySelector('.loot-header-bottom');
         this.sendChatBtn = document.getElementById('send-chat');
 
         // Initialize Systems
@@ -174,6 +174,9 @@ export class RNGArena {
     async init() {
         // Initialize home screen navigation
         this.initHomeScreen();
+
+        // Initialize PVP selection screen navigation
+        this.initPVPSelection();
 
         // Initialize home music - HTML autoplay handles playing (muted)
         // We just unmute it here to bypass browser restrictions
@@ -294,17 +297,25 @@ export class RNGArena {
                 // Mute everything
                 this.backgroundMusic.pause();
                 if (this.homeMusic) this.homeMusic.pause();
-                muteBtn.textContent = '🔇';
+                const muteBtnImg = muteBtn.querySelector('.icon-img');
+                if (muteBtnImg) {
+                    muteBtnImg.src = '/images/UX Images/sound-off.png';
+                    muteBtnImg.alt = 'Muted';
+                }
                 console.log('🔇 Audio muted');
             } else {
                 // Unmute - only play music for current screen
                 const currentScreen = this.gameManager.getCurrentScreen();
                 if (currentScreen === 'home' && this.homeMusic) {
                     this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                } else if (currentScreen === 'pvp-tournament') {
+                } else if (currentScreen === 'tournament') {
                     this.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
                 }
-                muteBtn.textContent = '🔊';
+                const muteBtnImg = muteBtn.querySelector('.icon-img');
+                if (muteBtnImg) {
+                    muteBtnImg.src = '/images/UX Images/Sound.png';
+                    muteBtnImg.alt = 'Sound';
+                }
                 console.log('🔊 Audio unmuted');
             }
 
@@ -332,10 +343,10 @@ export class RNGArena {
         const settingsBtn = document.getElementById('home-settings-btn');
         const audioBtn = document.getElementById('home-audio-btn');
 
-        // PVP button launches the tournament
+        // PVP button launches the PVP screen
         if (pvpBtn) {
             pvpBtn.addEventListener('click', () => {
-                this.navigateToScreen('pvp-tournament');
+                this.navigateToScreen('pvp');
             });
         }
 
@@ -354,7 +365,7 @@ export class RNGArena {
 
         if (castleBtn) {
             castleBtn.addEventListener('click', () => {
-                alert('Castle screen coming soon!');
+                this.navigateToScreen('castle');
             });
         }
 
@@ -384,16 +395,24 @@ export class RNGArena {
                     // Mute everything
                     this.backgroundMusic.pause();
                     if (this.homeMusic) this.homeMusic.pause();
-                    audioBtn.textContent = '🔇';
+                    const audioBtnImg = audioBtn.querySelector('.icon-img');
+                    if (audioBtnImg) {
+                        audioBtnImg.src = '/images/UX Images/sound-off.png';
+                        audioBtnImg.alt = 'Muted';
+                    }
                 } else {
                     // Unmute - only play music for current screen
                     const currentScreen = this.gameManager.getCurrentScreen();
                     if (currentScreen === 'home' && this.homeMusic) {
                         this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                    } else if (currentScreen === 'pvp-tournament') {
+                    } else if (currentScreen === 'tournament') {
                         this.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
                     }
-                    audioBtn.textContent = '🔊';
+                    const audioBtnImg = audioBtn.querySelector('.icon-img');
+                    if (audioBtnImg) {
+                        audioBtnImg.src = '/images/UX Images/Sound.png';
+                        audioBtnImg.alt = 'Sound';
+                    }
                 }
 
                 // Mute/unmute all sound effects in combat system
@@ -421,10 +440,10 @@ export class RNGArena {
                 // Restart countdown with 15 seconds
                 this.startHomeCountdown(15);
 
-                // After 5 seconds (when timer hits 10), navigate to PVP
+                // After 5 seconds (when timer hits 10), navigate to Tournament
                 this.startTournamentTimeout = setTimeout(() => {
-                    console.log('🏆 Auto-launching PVP mode at 10 seconds');
-                    this.navigateToScreen('pvp-tournament');
+                    console.log('🏆 Auto-launching Tournament mode at 10 seconds');
+                    this.navigateToScreen('tournament');
                     this.startTournamentTimeout = null;
                 }, 5000);
             });
@@ -484,6 +503,33 @@ export class RNGArena {
             });
         }
 
+        // Castle screen event listeners
+        const castleBackBtn = document.getElementById('castle-back-btn');
+        if (castleBackBtn) {
+            castleBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to home from Castle');
+                this.navigateToScreen('home');
+            });
+        }
+
+        const castleEnterBtn = document.getElementById('castle-enter-btn');
+        if (castleEnterBtn) {
+            castleEnterBtn.addEventListener('click', () => {
+                console.log('🏰 Entering Castle');
+                // For now, just return to home - can be expanded later
+                this.navigateToScreen('home');
+            });
+        }
+
+        // Top-right castle menu button
+        const homeCastleMenuBtn = document.getElementById('home-castle-btn');
+        if (homeCastleMenuBtn) {
+            homeCastleMenuBtn.addEventListener('click', () => {
+                console.log('🏰 Opening Castle from menu button');
+                this.navigateToScreen('castle');
+            });
+        }
+
         // PVE screen event listeners
         const pveBackBtn = document.getElementById('pve-back-btn');
         if (pveBackBtn) {
@@ -509,6 +555,54 @@ export class RNGArena {
             });
         });
 
+        // Dev Mode Unlock Button (PVE)
+        const pveDevUnlockBtn = document.getElementById('pve-dev-unlock');
+        if (pveDevUnlockBtn) {
+            let devUnlocked = false;
+            pveDevUnlockBtn.addEventListener('click', () => {
+                devUnlocked = !devUnlocked;
+
+                if (devUnlocked) {
+                    // Unlock all monsters
+                    console.log('🔓 DEV MODE: Unlocking all PVE monsters');
+                    pveMonsterButtons.forEach(btn => {
+                        btn.classList.remove('pve-locked');
+                        const lockIcon = btn.querySelector('.pve-lock-icon');
+                        if (lockIcon) {
+                            lockIcon.style.display = 'none';
+                        }
+                    });
+                    pveDevUnlockBtn.classList.add('unlocked');
+
+                    // Change lock icon to unlocked (open lock)
+                    const svg = pveDevUnlockBtn.querySelector('svg');
+                    if (svg) {
+                        svg.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 9.9-1"></path>';
+                    }
+                } else {
+                    // Lock all monsters (except wood dummy which stays unlocked)
+                    console.log('🔒 DEV MODE: Re-locking PVE monsters');
+                    pveMonsterButtons.forEach(btn => {
+                        const monsterId = btn.dataset.monster;
+                        if (monsterId !== 'wood-dummy') {
+                            btn.classList.add('pve-locked');
+                            const lockIcon = btn.querySelector('.pve-lock-icon');
+                            if (lockIcon) {
+                                lockIcon.style.display = 'block';
+                            }
+                        }
+                    });
+                    pveDevUnlockBtn.classList.remove('unlocked');
+
+                    // Change icon back to locked
+                    const svg = pveDevUnlockBtn.querySelector('svg');
+                    if (svg) {
+                        svg.innerHTML = '<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path>';
+                    }
+                }
+            });
+        }
+
         // Dominion screen event listeners
         const dominionBackBtn = document.getElementById('dominion-back-btn');
         if (dominionBackBtn) {
@@ -521,7 +615,7 @@ export class RNGArena {
         // Map navigation and zoom state
         let mapPosX = 50; // Center X (percentage)
         let mapPosY = 50; // Center Y (percentage)
-        let mapZoom = 200; // Zoom level (percentage)
+        let mapZoom = 100; // Zoom level (percentage) - Start fully zoomed out
         const panStep = 10; // How much to move per click (percentage)
         const zoomStep = 20; // How much to zoom per click (percentage)
         const maxZoom = 400;
@@ -679,6 +773,39 @@ export class RNGArena {
         this.initParallax();
 
         console.log('🏠 Home screen initialized');
+    }
+
+    /**
+     * Initialize PVP selection screen navigation
+     */
+    initPVPSelection() {
+        const pvpTournamentBtn = document.getElementById('pvp-tournament-btn');
+        const pvpLegendsBtn = document.getElementById('pvp-legends-btn');
+        const pvpBackBtn = document.getElementById('pvp-back-btn');
+
+        // Tournament button - navigate to tournament screen
+        if (pvpTournamentBtn) {
+            pvpTournamentBtn.addEventListener('click', () => {
+                this.navigateToScreen('tournament');
+            });
+        }
+
+        // Legends button - show coming soon message (disabled for now)
+        if (pvpLegendsBtn) {
+            pvpLegendsBtn.addEventListener('click', () => {
+                console.log('⚔️ Legends mode coming soon!');
+                // Could add a toast notification here in the future
+            });
+        }
+
+        // Back button - return to home screen
+        if (pvpBackBtn) {
+            pvpBackBtn.addEventListener('click', () => {
+                this.navigateToScreen('home');
+            });
+        }
+
+        console.log('⚔️ PVP screen initialized');
     }
 
     /**
@@ -858,6 +985,19 @@ export class RNGArena {
             }
         }
 
+        // === CASTLE SCREEN ===
+        else if (screenName === 'castle') {
+            // Keep home music playing in background
+            if (this.homeMusic) {
+                this.homeMusic.volume = 0.5; // Half volume
+
+                // Start music if not playing and not muted
+                if (this.homeMusic.paused && !this.homeMusic.muted) {
+                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
+                }
+            }
+        }
+
         // === PVE SCREEN ===
         else if (screenName === 'pve') {
             // Keep home music playing in background
@@ -884,8 +1024,24 @@ export class RNGArena {
             }
         }
 
-        // === PVP TOURNAMENT SCREEN ===
-        else if (screenName === 'pvp-tournament') {
+        // === PVP SCREEN ===
+        else if (screenName === 'pvp') {
+            // Stop ALL PVP tournament activity completely (like going to home)
+            this.stopAllPVPActivity();
+
+            // Keep home music playing in background
+            if (this.homeMusic) {
+                this.homeMusic.volume = 0.5; // Half volume
+
+                // Start music if not playing and not muted
+                if (this.homeMusic.paused && !this.homeMusic.muted) {
+                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
+                }
+            }
+        }
+
+        // === TOURNAMENT SCREEN ===
+        else if (screenName === 'tournament') {
             // Stop home music completely
             if (this.homeMusic) {
                 this.homeMusic.pause();
@@ -1605,7 +1761,7 @@ export class RNGArena {
             }
 
             // Animate nameplates into view immediately (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            const nameplateContainer = this.tournamentScreen.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 // Remove visible class first to ensure clean start
                 nameplateContainer.classList.remove('visible');
@@ -1629,7 +1785,7 @@ export class RNGArena {
             }
         } else {
             // First round is a bye - keep nameplates hidden, let handleByeRound animate them (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            const nameplateContainer = this.tournamentScreen.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 nameplateContainer.classList.remove('visible');
             }
@@ -2026,8 +2182,8 @@ export class RNGArena {
         this.battleStatus.innerHTML = '✨ LADY LUCK VISITS YOU! ✨<br><span style="font-size: 0.6em;">You get a bye and a free loot tier - lucky you!</span>';
         this.battleStatus.style.opacity = '0'; // Start hidden
 
-        // Hide nameplates initially to prevent animation jump (scoped to PVP)
-        const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+        // Hide nameplates initially to prevent animation jump (scoped to Tournament)
+        const nameplateContainer = this.tournamentScreen.querySelector('.nameplate-vs-container');
         if (nameplateContainer) {
             nameplateContainer.classList.remove('visible');
         }
@@ -2136,7 +2292,7 @@ export class RNGArena {
             }
 
             // Show nameplates with smooth slide-up animation (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            const nameplateContainer = this.tournamentScreen.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 setTimeout(() => {
                     nameplateContainer.classList.add('visible');
@@ -2181,7 +2337,7 @@ export class RNGArena {
             }
 
             // Also fade out nameplates (scoped to PVP)
-            const nameplateContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+            const nameplateContainer = this.tournamentScreen.querySelector('.nameplate-vs-container');
             if (nameplateContainer) {
                 nameplateContainer.style.transition = 'opacity 1.5s ease-out';
                 nameplateContainer.style.opacity = '0';
@@ -2954,15 +3110,15 @@ export class RNGArena {
         });
 
         // Also hide the nameplate-vs-container (scoped to PVP)
-        this.pvpScreen.querySelectorAll('.nameplate-vs-container').forEach(el => {
+        this.tournamentScreen.querySelectorAll('.nameplate-vs-container').forEach(el => {
             el.style.setProperty('transition', 'transform 1s ease-in, opacity 0.8s ease-in', 'important');
             el.style.setProperty('transform', 'translateY(300px)', 'important');
             el.style.setProperty('opacity', '0', 'important');
         });
 
         // Find winner's nameplate and loser's nameplate (scoped to PVP)
-        const leftNameplate = this.pvpScreen.querySelector('.left-nameplate');
-        const rightNameplate = this.pvpScreen.querySelector('.right-nameplate');
+        const leftNameplate = this.tournamentScreen.querySelector('.left-nameplate');
+        const rightNameplate = this.tournamentScreen.querySelector('.right-nameplate');
         let winnerNameplate = null;
         let loserNameplate = null;
 
@@ -3220,8 +3376,8 @@ export class RNGArena {
     // ===== Combat Cleanup =====
 
     cleanupCombatElements() {
-        // Remove combat text elements (scoped to PVP)
-        const leftNameplate = this.pvpScreen.querySelector('.left-nameplate');
+        // Remove combat text elements (scoped to Tournament)
+        const leftNameplate = this.tournamentScreen.querySelector('.left-nameplate');
         if (leftNameplate) {
             leftNameplate.querySelectorAll('.fighter-health').forEach(el => el.remove());
         }
@@ -3273,14 +3429,14 @@ export class RNGArena {
         }
 
         // Restore tournament progress and odds (scoped to PVP)
-        const progressContainer = this.pvpScreen.querySelector('.progress-container');
+        const progressContainer = this.tournamentScreen.querySelector('.progress-container');
         if (progressContainer) {
             progressContainer.style.transform = '';
             progressContainer.style.opacity = '1';
             progressContainer.style.transition = '';
         }
 
-        const oddsDisplay = this.pvpScreen.querySelector('.top-odds');
+        const oddsDisplay = this.tournamentScreen.querySelector('.top-odds');
         if (oddsDisplay) {
             oddsDisplay.style.transform = '';
             oddsDisplay.style.opacity = '1';
@@ -3288,8 +3444,8 @@ export class RNGArena {
         }
 
         // Restore HP bars (scoped to PVP)
-        const leftHP = this.pvpScreen.querySelector('.left-hp');
-        const rightHP = this.pvpScreen.querySelector('.right-hp');
+        const leftHP = this.tournamentScreen.querySelector('.left-hp');
+        const rightHP = this.tournamentScreen.querySelector('.right-hp');
         if (leftHP) {
             leftHP.style.transform = '';
             leftHP.style.opacity = '1';
@@ -3301,12 +3457,12 @@ export class RNGArena {
             rightHP.style.transition = '';
         }
 
-        this.pvpScreen.querySelectorAll('.fighter-health').forEach(hp => {
+        this.tournamentScreen.querySelectorAll('.fighter-health').forEach(hp => {
             hp.style.opacity = '1';
         });
 
         // Restore nameplates (scoped to PVP)
-        this.pvpScreen.querySelectorAll('.left-nameplate, .right-nameplate').forEach(plate => {
+        this.tournamentScreen.querySelectorAll('.left-nameplate, .right-nameplate').forEach(plate => {
             plate.style.display = '';
             plate.style.position = '';
             plate.style.left = '';
@@ -3319,7 +3475,7 @@ export class RNGArena {
         });
 
         // Restore VS elements (scoped to PVP)
-        const vsDisplay = this.pvpScreen.querySelector('.vs-display');
+        const vsDisplay = this.tournamentScreen.querySelector('.vs-display');
         if (vsDisplay) {
             vsDisplay.style.display = '';
             vsDisplay.style.transform = '';
@@ -3327,7 +3483,7 @@ export class RNGArena {
             vsDisplay.style.transition = '';
         }
 
-        const nameplateVsContainer = this.pvpScreen.querySelector('.nameplate-vs-container');
+        const nameplateVsContainer = this.tournamentScreen.querySelector('.nameplate-vs-container');
         if (nameplateVsContainer) {
             nameplateVsContainer.style.display = '';
             nameplateVsContainer.style.transform = '';
@@ -3838,8 +3994,12 @@ export class RNGArena {
             if (chatModeMuteBtn && muteBtn) {
                 // Sync mute button appearance
                 const syncMuteButton = () => {
-                    const currentIcon = muteBtn.textContent;
-                    chatModeMuteBtn.textContent = currentIcon;
+                    const muteBtnImg = muteBtn.querySelector('.icon-img');
+                    const chatModeMuteBtnImg = chatModeMuteBtn.querySelector('.icon-img');
+                    if (muteBtnImg && chatModeMuteBtnImg) {
+                        chatModeMuteBtnImg.src = muteBtnImg.src;
+                        chatModeMuteBtnImg.alt = muteBtnImg.alt;
+                    }
                 };
 
                 chatModeMuteBtn.addEventListener('click', () => {
@@ -3872,10 +4032,10 @@ export class RNGArena {
             });
         }
 
-        // Fullscreen button - scope to PVP screen
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        const battlefieldSection = pvpScreen ? pvpScreen.querySelector('.battlefield-section') : null;
-        const fullscreenCloseBtn = pvpScreen ? pvpScreen.querySelector('.battlefield-fullscreen-close') : null;
+        // Fullscreen button - scope to Tournament screen
+        const tournamentScreen = document.getElementById('tournament-screen');
+        const battlefieldSection = tournamentScreen ? tournamentScreen.querySelector('.battlefield-section') : null;
+        const fullscreenCloseBtn = tournamentScreen ? tournamentScreen.querySelector('.battlefield-fullscreen-close') : null;
 
         if (fullscreenBtn && battlefieldSection) {
             fullscreenBtn.addEventListener('click', () => {
@@ -3897,11 +4057,11 @@ export class RNGArena {
             });
         }
 
-        // Exit button - returns to home screen
+        // Exit button - returns to PVP screen
         const exitBtn = document.getElementById('exit-game');
         if (exitBtn) {
             exitBtn.addEventListener('click', () => {
-                this.navigateToScreen('home');
+                this.navigateToScreen('pvp');
             });
         }
     }
@@ -3910,8 +4070,8 @@ export class RNGArena {
 
     initChatModeBattlefield() {
         const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
-        // Get PVP arena viewport specifically (has 'castle' class, not 'wood-castle')
-        const arenaViewport = document.querySelector('#pvp-tournament-screen .arena-viewport.castle');
+        // Get Tournament arena viewport specifically (has 'castle' class, not 'wood-castle')
+        const arenaViewport = document.querySelector('#tournament-screen .arena-viewport.castle');
 
         if (!chatModeBattlefield || !arenaViewport) {
             console.log('Chat mode battlefield elements not found:', { chatModeBattlefield, arenaViewport });
@@ -4009,9 +4169,9 @@ export class RNGArena {
     }
 
     setupAnimationObservers() {
-        // Get PVP arena viewport specifically
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        const arenaViewport = pvpScreen ? pvpScreen.querySelector('.arena-viewport') : null;
+        // Get Tournament arena viewport specifically
+        const tournamentScreen = document.getElementById('tournament-screen');
+        const arenaViewport = tournamentScreen ? tournamentScreen.querySelector('.arena-viewport') : null;
         const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
 
         if (!arenaViewport || !chatModeBattlefield) return;
@@ -4205,9 +4365,9 @@ export class RNGArena {
 
     updateChatModeBattlefield() {
         const chatModeBattlefield = document.getElementById('chat-mode-battlefield-overlay');
-        // Get PVP arena viewport specifically
-        const pvpScreen = document.getElementById('pvp-tournament-screen');
-        const arenaViewport = pvpScreen ? pvpScreen.querySelector('.arena-viewport') : null;
+        // Get Tournament arena viewport specifically
+        const tournamentScreen = document.getElementById('tournament-screen');
+        const arenaViewport = tournamentScreen ? tournamentScreen.querySelector('.arena-viewport') : null;
 
         if (!chatModeBattlefield || !arenaViewport) return;
 

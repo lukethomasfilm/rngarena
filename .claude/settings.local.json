@@ -53,7 +53,16 @@
       "Bash(start http://localhost:8000/images/Home%20Screen/background_blended.png)",
       "mcp__ide__executeCode",
       "Bash(start http://localhost:8001)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(del test_frog_odds.js)",
+      "Bash(nul)",
+      "Bash(del script.js)",
+      "Bash(del fix_remaining.js)",
+      "Bash(del rename_audio.ps1)",
+      "Bash(del styles.css.backup)",
+      "Bash(del home_screen.css)",
+      "Bash(del sfxslide.mp3)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

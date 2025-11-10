@@ -1880,68 +1880,7 @@ input[type="range"] {
     font-size: 1.2rem;
 }
 
-.black-box {
-    width: 100%;
-    height: 100%;
-    background: #0f0f0f;
-    border: none;
-}
-
 /* Exit Button Styling - Removed duplicate, now using .control-btn.exit-btn */
-
-/* Test Mode Toggle */
-.test-mode-container {
-    width: 100%;
-    padding: 10px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.test-mode-toggle {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    cursor: pointer;
-    user-select: none;
-}
-
-.test-mode-toggle input[type="checkbox"] {
-    display: none;
-}
-
-.toggle-slider {
-    position: relative;
-    width: 40px;
-    height: 20px;
-    background: rgba(100, 100, 100, 0.5);
-    border-radius: 10px;
-    border: 2px solid rgba(255, 255, 255, 0.3);
-    transition: all 0.3s ease;
-}
-
-.toggle-slider::before {
-    content: '';
-    position: absolute;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #fff;
-    top: 1px;
-    left: 1px;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.test-mode-toggle input[type="checkbox"]:checked + .toggle-slider {
-    background: linear-gradient(45deg, #4a90e2, #5aa3f5);
-    border-color: #4a90e2;
-}
-
-.test-mode-toggle input[type="checkbox"]:checked + .toggle-slider::before {
-    transform: translateX(20px);
-    background: #ffd700;
-}
 
 /* Daring Hero Toggle */
 .daring-hero-container {
@@ -2127,21 +2066,6 @@ input[type="range"] {
 }
 
 
-.top-section {
-    display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    align-items: flex-start;
-    gap: 4px;
-    padding: 4px 6px;
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 25%;
-    z-index: 10;
-    flex-shrink: 0;
-}
-
 .fighter-card {
     position: relative;
     padding: 8px 6px;
@@ -2270,21 +2194,6 @@ input[type="range"] {
     line-height: 1.1;
 }
 
-.fighter-name-display {
-    font-size: 0.9rem;
-    font-weight: bold;
-    text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.8);
-    letter-spacing: 0.5px;
-    margin: 1px 0;
-    position: relative;
-    z-index: 2;
-    width: 100%;
-    text-align: center;
-    line-height: 1.1;
-    word-wrap: break-word;
-    hyphens: auto;
-}
-
 .fighter-title {
     font-size: 0.5rem;
     font-weight: 600;
@@ -2296,44 +2205,6 @@ input[type="range"] {
     width: 100%;
     text-align: center;
     margin-top: 5px;
-}
-
-.center-info {
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 10px;
-    position: relative;
-}
-
-.bottom-vs {
-    position: absolute;
-    bottom: -2px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-}
-
-.bottom-vs .vs-display {
-    font-size: 1.0rem;
-    font-weight: 900;
-    background: linear-gradient(45deg, #ffd700, #ffed4e, #ffd700, #ff8c00);
-    background-size: 400% 400%;
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-    text-shadow:
-        0 0 10px rgba(255, 215, 0, 0.8),
-        0 0 20px rgba(255, 215, 0, 0.6),
-        0 0 30px rgba(255, 215, 0, 0.4);
-    letter-spacing: 8px;
-    padding: 4px 12px;
-    border-radius: 8px 8px 0 0;
-    border: 2px solid #ffd700;
-    border-bottom: none;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Top Tournament Progress */
@@ -2350,13 +2221,41 @@ input[type="range"] {
 
 /* Spread HP bars apart in PVE */
 #pve-battle-screen .top-progress {
-    top: 25px;
-    left: 0;
-    transform: none;
-    width: 100%;
-    justify-content: space-between;
-    padding: 0 40px;
-    gap: 0;
+    position: absolute !important;
+    top: 25px !important;
+    left: 0 !important;
+    right: 0 !important;
+    transform: none !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    padding: 0 40px !important;
+    gap: 0 !important;
+    transition: none !important; /* Prevent any transitions that might cause movement */
+    will-change: auto !important; /* Disable will-change optimization that might cause repositioning */
+    animation: none !important;
+}
+
+/* Ensure HP bars and all their children don't move during victory/defeat screens */
+#pve-battle-screen .top-progress *,
+#pve-battle-screen .hp-bar,
+#pve-battle-screen .hp-bar * {
+    transition: none !important;
+    animation: none !important;
+    will-change: auto !important;
+}
+
+#pve-battle-screen .hp-bar {
+    position: relative !important;
+    margin: 0 !important;
+}
+
+#pve-battle-screen .hp-bar.left-hp,
+#pve-battle-screen .hp-bar.right-hp {
+    top: 0 !important;
+    bottom: auto !important;
+    left: auto !important;
+    right: auto !important;
+    transform: none !important;
 }
 
 /* Win Odds Display (Center between HP bars) */
@@ -2416,9 +2315,13 @@ input[type="range"] {
         0 3px 6px rgba(0, 0, 0, 0.9);
 }
 
-/* Hide nameplate tabs in PVE battle screen */
+/* PVE nameplate customization */
+#pve-battle-screen .nameplate-titles {
+    display: none;
+}
+
 #pve-battle-screen .nameplate-vs-container {
-    display: none !important;
+    bottom: -7px;
 }
 
 .top-odds {
@@ -2580,27 +2483,6 @@ input[type="range"] {
     text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.8);
     letter-spacing: 2px;
     font-family: 'serif';
-}
-
-.fighter-info {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-width: 200px;
-}
-
-.fighter-name {
-    font-size: 1.4rem;
-    font-weight: bold;
-    color: #ffd700;
-    margin-bottom: 8px;
-    text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-}
-
-.fighter-stats {
-    display: flex;
-    gap: 15px;
-    font-size: 0.9rem;
 }
 
 .progress-container {
@@ -2956,8 +2838,17 @@ input[type="range"] {
 }
 
 /* Monster-specific sprite adjustments */
+/* Note: CSS only sets defaults, JavaScript controls all transforms dynamically */
 #pve-monster-sprite[data-monster="raccoon"] {
-    transform: scaleX(-1) scale(0.4) translateZ(0) !important;
+    transform: scaleX(-1) scale(0.4) translateY(-13px) translateZ(0);
+}
+
+#pve-monster-sprite[data-monster="ram"] {
+    transform: scale(0.8775) translateY(-10px) translateZ(0);
+}
+
+#pve-monster-sprite[data-monster="frog-fish"] {
+    transform: scale(0.65) translateY(15px) translateZ(0);
 }
 
 @keyframes pulse {
@@ -3041,8 +2932,8 @@ input[type="range"] {
 
 .arena-viewport.wood-castle {
     background: url('/images/pve/Dummy/Wood-castle.png') !important;
-    background-size: cover !important;
-    background-position: center bottom !important;
+    background-size: 110% !important;
+    background-position: center calc(100% + 15px) !important;
     background-repeat: no-repeat !important;
 }
 
@@ -3161,6 +3052,17 @@ input[type="range"] {
     justify-content: flex-end;
 }
 
+/* PVE-specific: Remove container scaling for monsters - sprites handle their own scaling */
+/* Higher specificity with :not(.victory-center) to override default rule */
+#pve-battle-screen .fighter-right:not(.fighter-entrance-right):not(.victory-center) {
+    transform: none !important;
+}
+
+/* PVE-specific: Scale hero down 15% (0.85) for better proportion */
+#pve-battle-screen .fighter-left:not(.fighter-entrance-left):not(.victory-center) {
+    transform: scale(0.85) !important;
+}
+
 /* PVE-specific: Move hero down 10px */
 #pve-battle-screen .fighter-left:not(.fighter-entrance-left) {
     bottom: -15px !important;
@@ -3202,11 +3104,6 @@ input[type="range"] {
     object-fit: contain;
     filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
     transition: filter 0.3s ease;
-}
-
-.win-chance {
-    color: #00ff00;
-    font-weight: bold;
 }
 
 .crown-odds {
@@ -3350,14 +3247,6 @@ input[type="range"] {
     }
 }
 
-.arena-controls {
-    position: absolute;
-    bottom: 20px;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 10;
-}
-
 .battle-btn {
     position: absolute;
     top: 50%;
@@ -3478,12 +3367,6 @@ input[type="range"] {
         opacity: 0;
         transform: translate(-50%, -50%) scale(0.8);
     }
-}
-
-.middle-section {
-    display: flex;
-    gap: 0px;
-    margin: 0px;
 }
 
 .battle-info {
@@ -3775,26 +3658,6 @@ input[type="range"] {
 .treasure-chest svg {
     filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
 }
-
-.chest-image {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.5));
-}
-
-.progress-gem {
-    transition: fill 0.5s ease, stroke 0.5s ease;
-}
-
-.progress-gem.tier-grey { fill: #808080; stroke: #666; }
-.progress-gem.tier-green { fill: #00ff00; stroke: #00cc00; }
-.progress-gem.tier-blue { fill: #0080ff; stroke: #0066cc; }
-.progress-gem.tier-teal { fill: #00CED1; stroke: #008B8B; }
-.progress-gem.tier-purple { fill: #8000ff; stroke: #6600cc; }
-.progress-gem.tier-orange { fill: #ff8000; stroke: #cc6600; }
-.progress-gem.tier-crimson { fill: #DC143C; stroke: #8B0000; }
-.progress-gem.tier-gold { fill: #ffd700; stroke: #ffcc00; }
 
 .bracket-container {
     background: rgba(0, 0, 0, 0.7);
@@ -4549,15 +4412,6 @@ input[type="range"] {
         grid-row: 1;
     }
 
-    .middle-section {
-        grid-column: 1;
-        grid-row: 2;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 10px;
-        margin-top: 10px;
-    }
-
     .battle-info {
         height: 150px;
         grid-column: 1;
@@ -4590,17 +4444,6 @@ input[type="range"] {
 
     .arena-viewport {
         height: 400px;
-    }
-
-    .top-section {
-        grid-template-columns: 1fr;
-        gap: 10px;
-        padding: 10px;
-        text-align: center;
-    }
-
-    .center-info {
-        order: -1;
     }
 
     .fighter-card {
@@ -4814,14 +4657,6 @@ input[type="range"] {
     animation: fighterExit 0.8s ease-out forwards;
 }
 
-.winner-pose {
-    animation: winnerPose 0.6s ease-in-out infinite;
-}
-
-.odds-update {
-    animation: oddsUpdate 0.8s ease-out;
-}
-
 /* Victory Animation Styles */
 .victory-center {
     position: absolute !important;
@@ -4862,21 +4697,6 @@ input[type="range"] {
     opacity: 0;
     animation: crownDescend 3s ease-out forwards;
     animation-delay: 1s;
-}
-
-.victor-text {
-    position: absolute;
-    top: 30%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 4rem;
-    font-weight: bold;
-    color: #ffd700;
-    text-shadow: 0 0 30px rgba(255, 215, 0, 1);
-    opacity: 0;
-    animation: victorTextAppear 2s ease-out forwards;
-    animation-delay: 2s;
-    z-index: 10;
 }
 
 .victory-nameplate {
@@ -5086,6 +4906,25 @@ input[type="range"] {
     white-space: nowrap; /* Keep on one line */
 }
 
+.poison-damage-number {
+    position: absolute;
+    top: 60px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 3rem;
+    font-weight: bold;
+    color: #00ff00; /* Bright green */
+    text-shadow:
+        0 0 20px rgba(0, 255, 0, 1),
+        0 0 40px rgba(0, 255, 0, 0.8),
+        0 0 60px rgba(0, 255, 0, 0.6),
+        2px 2px 4px rgba(0, 0, 0, 0.8); /* Enhanced green glow */
+    opacity: 0;
+    animation: damageNumber 2s ease-out forwards;
+    z-index: 5; /* Behind knight */
+    white-space: nowrap; /* Keep on one line */
+}
+
 .attacker-damage-number {
     position: absolute;
     top: 80px; /* Much lower - around chest/body area */
@@ -5173,20 +5012,6 @@ input[type="range"] {
 }
 
 /* Rabid mode effects */
-.rabid-overlay::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(255, 0, 0, 0.6);
-    mix-blend-mode: multiply;
-    pointer-events: none;
-    z-index: 1;
-    animation: rabidPulse 0.5s ease-in-out infinite;
-}
-
 .rabid-text {
     position: absolute;
     top: 40px;
@@ -5203,6 +5028,40 @@ input[type="range"] {
     z-index: 100;
     animation: rabidTextPulse 0.8s ease-in-out infinite;
     pointer-events: none;
+}
+
+/* Special attack text (for all special abilities) */
+.special-attack-text {
+    position: absolute;
+    top: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #FFD700;
+    text-shadow:
+        0 0 20px rgba(255, 215, 0, 1),
+        0 0 40px rgba(255, 215, 0, 0.8),
+        0 0 60px rgba(255, 215, 0, 0.6),
+        2px 2px 4px rgba(0, 0, 0, 0.9);
+    z-index: 100;
+    animation: specialAttackPulse 0.6s ease-out;
+    pointer-events: none;
+}
+
+@keyframes specialAttackPulse {
+    0% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-10px) scale(0.8);
+    }
+    50% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0) scale(1.1);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(10px) scale(1);
+    }
 }
 
 @keyframes rabidPulse {
@@ -5230,6 +5089,98 @@ input[type="range"] {
             0 0 50px rgba(255, 0, 0, 1),
             0 0 70px rgba(255, 0, 0, 0.8),
             2px 2px 4px rgba(0, 0, 0, 0.9);
+    }
+}
+
+/* Stunned Text Animation (Frog-Fish Sonic Croak) */
+@keyframes stunPulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+        text-shadow:
+            0 0 10px rgba(255, 255, 153, 0.8),
+            0 0 20px rgba(255, 255, 153, 0.6),
+            2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.15);
+        text-shadow:
+            0 0 20px rgba(255, 255, 153, 1),
+            0 0 30px rgba(255, 255, 153, 0.8),
+            0 0 40px rgba(255, 255, 153, 0.6),
+            2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* Sonic Wave Expand Animation */
+@keyframes sonicWaveExpand {
+    0% {
+        width: 60px;
+        height: 60px;
+        opacity: 1;
+        border-width: 3px;
+    }
+    100% {
+        width: 200px;
+        height: 200px;
+        opacity: 0;
+        border-width: 1px;
+    }
+}
+
+/* Ripplefang Venom Strike - Fang Animation */
+@keyframes fangStrike {
+    0% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(-30deg) scale(0.5);
+    }
+    30% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(-30deg) scale(1.2);
+    }
+    60% {
+        opacity: 1;
+        transform: translate(-50%, -50%) rotate(-25deg) scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) rotate(-20deg) scale(0.8);
+    }
+}
+
+/* Ripplefang Tidal Wave - Rise from bottom */
+@keyframes tidalWaveRise {
+    0% {
+        bottom: -310px;
+    }
+    100% {
+        bottom: -10px;
+    }
+}
+
+/* Ripplefang Tidal Wave - Slide across screen */
+@keyframes tidalWaveSlide {
+    0% {
+        right: 0;
+    }
+    100% {
+        right: 100%;
+    }
+}
+
+/* Poison Status Text Pulse */
+@keyframes poisonTextPulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+        text-shadow:
+            0 0 10px #00ff00,
+            2px 2px 0 #003300;
+    }
+    50% {
+        transform: translateX(-50%) scale(1.1);
+        text-shadow:
+            0 0 20px #00ff00,
+            0 0 30px #00ff00,
+            2px 2px 0 #003300;
     }
 }
 

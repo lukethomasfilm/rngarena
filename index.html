@@ -243,8 +243,8 @@
                         <img src="/images/pve/frog-fish.png" alt="Frog-Fish">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn pve-locked" id="pve-serpent" data-monster="serpent" style="left: calc(5% + 410px); top: 60%;">
-                        <img src="/images/pve/serpent.png" alt="Serpent">
+                    <button class="pve-monster-btn pve-locked" id="pve-ripplefang" data-monster="ripplefang" style="left: calc(5% + 410px); top: 60%;">
+                        <img src="/images/pve/serpent.png" alt="Ripplefang">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
                     <button class="pve-monster-btn pve-locked" id="pve-nymph" data-monster="nymph" style="left: calc(82% + 40px); top: calc(35% + 60px);">
@@ -626,8 +626,8 @@
         <button id="start-tournament-btn" class="start-tournament-btn" aria-label="Start PVP tournament">🏆 START TOURNAMENT</button>
         <button id="fast-forward-btn" class="fast-forward-btn" aria-label="Toggle 4x fast forward">⏩ 4x Fast Forward</button>
         <button id="dev-preview-toggle" class="dev-preview-toggle-btn" aria-label="Toggle dev previews">▼ Show Dev Previews</button>
-        <button id="dev-mute-btn" class="dev-mute-btn" aria-label="Toggle audio mute">
-            <img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED
+        <button id="dev-mute-btn" class="dev-mute-btn active" aria-label="Toggle audio mute">
+            <img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img"> UNMUTED
         </button>
         <button id="pve-dev-unlock" class="pve-dev-unlock" aria-label="Dev Mode: Unlock All PVE Monsters" title="Unlock all PVE monsters for testing">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -807,40 +807,40 @@
                 homeScreen.classList.remove('hidden');
             });
 
-            // Initialize audio as muted
+            // Initialize audio as muted on loading screen only
             const homeMusic = document.getElementById('home-music');
             homeMusic.muted = true;
 
             // Loading screen mute button functionality
             const muteBtn = document.getElementById('mute-btn');
             const devMuteBtn = document.getElementById('dev-mute-btn');
-            let isMuted = true; // Start muted
+            let loadingScreenMuted = true; // Loading screen starts muted (global default is unmuted)
 
             if (muteBtn) {
                 muteBtn.addEventListener('click', () => {
-                    isMuted = !isMuted;
-                    homeMusic.muted = isMuted;
+                    loadingScreenMuted = !loadingScreenMuted;
+                    homeMusic.muted = loadingScreenMuted;
                     const muteBtnImg = muteBtn.querySelector('.icon-img');
                     if (muteBtnImg) {
-                        muteBtnImg.src = isMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
-                        muteBtnImg.alt = isMuted ? 'Muted' : 'Sound';
+                        muteBtnImg.src = loadingScreenMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
+                        muteBtnImg.alt = loadingScreenMuted ? 'Muted' : 'Sound';
                     }
 
-                    // Update dev button too
+                    // Update dev button too (loading screen only controls homeMusic directly)
                     if (devMuteBtn) {
                         const devMuteBtnImg = devMuteBtn.querySelector('.icon-img');
                         if (devMuteBtnImg) {
-                            devMuteBtnImg.src = isMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
-                            devMuteBtnImg.alt = isMuted ? 'Muted' : 'Sound';
+                            devMuteBtnImg.src = loadingScreenMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
+                            devMuteBtnImg.alt = loadingScreenMuted ? 'Muted' : 'Sound';
                         }
-                        devMuteBtn.innerHTML = isMuted ?
+                        devMuteBtn.innerHTML = loadingScreenMuted ?
                             '<img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED' :
                             '<img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img"> UNMUTED';
-                        devMuteBtn.classList.toggle('active', !isMuted);
+                        devMuteBtn.classList.toggle('active', !loadingScreenMuted);
                     }
 
                     // Ensure audio plays when unmuted
-                    if (!isMuted) {
+                    if (!loadingScreenMuted) {
                         homeMusic.play().catch(err => {
                             console.log('Audio play prevented:', err);
                         });
@@ -881,30 +881,39 @@
                 });
             }
 
-            // Dev Panel Mute Button (uses homeMusic and devMuteBtn already declared above)
-            if (devMuteBtn && homeMusic) {
+            // Dev Panel Mute Button
+            // During loading screen: controls homeMusic directly
+            // After arena loads: calls window.arena.toggleMute() for global control
+            if (devMuteBtn) {
                 devMuteBtn.addEventListener('click', () => {
-                    isMuted = !isMuted;
-                    homeMusic.muted = isMuted;
+                    // Check if arena is loaded (after loading screen)
+                    if (window.arena && window.arena.toggleMute) {
+                        // Use arena's global mute control
+                        window.arena.toggleMute();
+                    } else {
+                        // Loading screen: control homeMusic directly
+                        loadingScreenMuted = !loadingScreenMuted;
+                        homeMusic.muted = loadingScreenMuted;
 
-                    // Update both buttons
-                    devMuteBtn.innerHTML = isMuted ?
-                        '<img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED' :
-                        '<img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img"> UNMUTED';
-                    devMuteBtn.classList.toggle('active', !isMuted);
-                    if (muteBtn) {
-                        const muteBtnImg = muteBtn.querySelector('.icon-img');
-                        if (muteBtnImg) {
-                            muteBtnImg.src = isMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
-                            muteBtnImg.alt = isMuted ? 'Muted' : 'Sound';
+                        // Update both buttons
+                        devMuteBtn.innerHTML = loadingScreenMuted ?
+                            '<img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED' :
+                            '<img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img"> UNMUTED';
+                        devMuteBtn.classList.toggle('active', !loadingScreenMuted);
+                        if (muteBtn) {
+                            const muteBtnImg = muteBtn.querySelector('.icon-img');
+                            if (muteBtnImg) {
+                                muteBtnImg.src = loadingScreenMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
+                                muteBtnImg.alt = loadingScreenMuted ? 'Muted' : 'Sound';
+                            }
                         }
-                    }
 
-                    // Try to play if unmuting
-                    if (!isMuted) {
-                        homeMusic.play().catch(err => {
-                            console.log('Audio play prevented:', err);
-                        });
+                        // Try to play if unmuting
+                        if (!loadingScreenMuted) {
+                            homeMusic.play().catch(err => {
+                                console.log('Audio play prevented:', err);
+                            });
+                        }
                     }
                 });
             }

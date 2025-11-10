@@ -149,7 +149,7 @@ export class RNGArena {
         // Home screen music (will be initialized in init())
         this.homeMusic = null;
 
-        // Audio state
+        // Audio state - ALWAYS start unmuted
         this.audioMuted = false;
 
         // Sound paths - URL encode special characters like #
@@ -279,6 +279,83 @@ export class RNGArena {
         this.initClaimLootButton();
         this.initDevTabs();
         this.initAudioToggle();
+
+        // Ensure all mute buttons show correct initial state (unmuted by default)
+        this.updateAllMuteButtons();
+    }
+
+    /**
+     * Toggle mute state globally
+     * Can be called from anywhere: window.arena.toggleMute()
+     */
+    toggleMute() {
+        this.audioMuted = !this.audioMuted;
+
+        if (this.audioMuted) {
+            // Mute everything
+            this.backgroundMusic.pause();
+            if (this.homeMusic) this.homeMusic.pause();
+
+            // Mute PVE battle music if active
+            if (this.pveBattleSystem && this.pveBattleSystem.battleMusic) {
+                this.pveBattleSystem.battleMusic.pause();
+            }
+            console.log('🔇 Audio muted globally');
+        } else {
+            // Unmute - only play music for current screen
+            const currentScreen = this.gameManager.getCurrentScreen();
+            if (currentScreen === 'home' && this.homeMusic) {
+                this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
+            } else if (currentScreen === 'tournament') {
+                this.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
+            } else if (currentScreen === 'pve' && this.pveBattleSystem && this.pveBattleSystem.battleMusic) {
+                // Resume PVE battle music if in battle
+                this.pveBattleSystem.battleMusic.play().catch(e => console.log('PVE battle music play failed:', e));
+            }
+            console.log('🔊 Audio unmuted globally');
+        }
+
+        // Update all mute button visuals
+        this.updateAllMuteButtons();
+
+        // Mute/unmute all sound effects in combat systems
+        if (this.combatSystem) {
+            this.combatSystem.setMuted(this.audioMuted);
+        }
+        if (this.pveBattleSystem) {
+            this.pveBattleSystem.setMuted(this.audioMuted);
+        }
+    }
+
+    /**
+     * Update all mute button visuals to match current state
+     */
+    updateAllMuteButtons() {
+        const buttons = [
+            { id: 'mute-audio', hasText: false },
+            { id: 'home-audio-btn', hasText: false },
+            { id: 'chat-mode-mute-btn', hasText: false },
+            { id: 'dev-mute-btn', hasText: true },
+            { id: 'pve-mute-audio', hasText: false }
+        ];
+
+        buttons.forEach(({ id, hasText }) => {
+            const btn = document.getElementById(id);
+            if (!btn) return;
+
+            const img = btn.querySelector('.icon-img');
+            if (img) {
+                img.src = this.audioMuted ? '/images/UX Images/sound-off.png' : '/images/UX Images/Sound.png';
+                img.alt = this.audioMuted ? 'Muted' : 'Sound';
+            }
+
+            if (hasText) {
+                btn.innerHTML = this.audioMuted ?
+                    '<img src="/images/UX Images/sound-off.png" alt="Muted" class="icon-img"> MUTED' :
+                    '<img src="/images/UX Images/Sound.png" alt="Sound" class="icon-img"> UNMUTED';
+                btn.classList.toggle('active', !this.audioMuted);
+            }
+        });
     }
 
     initAudioToggle() {
@@ -291,38 +368,7 @@ export class RNGArena {
 
         muteBtn.addEventListener('click', () => {
             console.log('🔊 Audio button clicked! Current state:', this.audioMuted);
-            this.audioMuted = !this.audioMuted;
-
-            if (this.audioMuted) {
-                // Mute everything
-                this.backgroundMusic.pause();
-                if (this.homeMusic) this.homeMusic.pause();
-                const muteBtnImg = muteBtn.querySelector('.icon-img');
-                if (muteBtnImg) {
-                    muteBtnImg.src = '/images/UX Images/sound-off.png';
-                    muteBtnImg.alt = 'Muted';
-                }
-                console.log('🔇 Audio muted');
-            } else {
-                // Unmute - only play music for current screen
-                const currentScreen = this.gameManager.getCurrentScreen();
-                if (currentScreen === 'home' && this.homeMusic) {
-                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                } else if (currentScreen === 'tournament') {
-                    this.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
-                }
-                const muteBtnImg = muteBtn.querySelector('.icon-img');
-                if (muteBtnImg) {
-                    muteBtnImg.src = '/images/UX Images/Sound.png';
-                    muteBtnImg.alt = 'Sound';
-                }
-                console.log('🔊 Audio unmuted');
-            }
-
-            // Mute/unmute all sound effects in combat system
-            if (this.combatSystem) {
-                this.combatSystem.setMuted(this.audioMuted);
-            }
+            this.toggleMute();
         });
         console.log('✅ Audio button listener attached');
     }
@@ -389,36 +435,7 @@ export class RNGArena {
 
         if (audioBtn) {
             audioBtn.addEventListener('click', () => {
-                this.audioMuted = !this.audioMuted;
-
-                if (this.audioMuted) {
-                    // Mute everything
-                    this.backgroundMusic.pause();
-                    if (this.homeMusic) this.homeMusic.pause();
-                    const audioBtnImg = audioBtn.querySelector('.icon-img');
-                    if (audioBtnImg) {
-                        audioBtnImg.src = '/images/UX Images/sound-off.png';
-                        audioBtnImg.alt = 'Muted';
-                    }
-                } else {
-                    // Unmute - only play music for current screen
-                    const currentScreen = this.gameManager.getCurrentScreen();
-                    if (currentScreen === 'home' && this.homeMusic) {
-                        this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                    } else if (currentScreen === 'tournament') {
-                        this.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
-                    }
-                    const audioBtnImg = audioBtn.querySelector('.icon-img');
-                    if (audioBtnImg) {
-                        audioBtnImg.src = '/images/UX Images/Sound.png';
-                        audioBtnImg.alt = 'Sound';
-                    }
-                }
-
-                // Mute/unmute all sound effects in combat system
-                if (this.combatSystem) {
-                    this.combatSystem.setMuted(this.audioMuted);
-                }
+                this.toggleMute();
             });
         }
 

@@ -64,6 +64,7 @@ export class PVEBattleSystem {
         this.currentMusicIndex = 0;
         this.shuffledTracks = [];
         this.battleMusic = null;
+        this.battleMusicEndedHandler = null; // Store listener for cleanup
 
         // UI Elements
         this.screen = document.getElementById('pve-battle-screen');
@@ -119,42 +120,11 @@ export class PVEBattleSystem {
             });
         }
 
-        // Mute button
+        // Mute button - use global toggleMute for consistency
         if (this.muteBtn) {
             this.muteBtn.addEventListener('click', () => {
-                if (window.arena) {
-                    window.arena.audioMuted = !window.arena.audioMuted;
-
-                    const muteBtnImg = this.muteBtn.querySelector('.icon-img');
-                    if (window.arena.audioMuted) {
-                        // Mute all audio
-                        if (window.arena.backgroundMusic) window.arena.backgroundMusic.pause();
-                        if (window.arena.homeMusic) window.arena.homeMusic.pause();
-                        if (this.battleMusic) this.battleMusic.pause();
-                        if (muteBtnImg) {
-                            muteBtnImg.src = '/images/UX Images/sound-off.png';
-                            muteBtnImg.alt = 'Muted';
-                        }
-                        // Mute combat system
-                        if (this.combat) this.combat.setMuted(true);
-                    } else {
-                        // Unmute - resume music based on current screen
-                        const currentScreen = window.arena.gameManager?.getCurrentScreen?.();
-                        if (currentScreen === 'home' && window.arena.homeMusic) {
-                            window.arena.homeMusic.play().catch(e => console.log('Home music play failed:', e));
-                        } else if (this.battleActive && this.battleMusic) {
-                            // Resume PVE battle music
-                            this.battleMusic.play().catch(e => console.log('PVE battle music play failed:', e));
-                        } else if (window.arena.backgroundMusic) {
-                            window.arena.backgroundMusic.play().catch(e => console.log('Arena music play failed:', e));
-                        }
-                        if (muteBtnImg) {
-                            muteBtnImg.src = '/images/UX Images/Sound.png';
-                            muteBtnImg.alt = 'Sound';
-                        }
-                        // Unmute combat system
-                        if (this.combat) this.combat.setMuted(false);
-                    }
+                if (window.arena && window.arena.toggleMute) {
+                    window.arena.toggleMute();
                 }
             });
         }
@@ -293,14 +263,22 @@ export class PVEBattleSystem {
             this.currentMusicIndex = 0;
         }
 
+        // Remove old listener if it exists (prevent memory leak)
+        if (this.battleMusic && this.battleMusicEndedHandler) {
+            this.battleMusic.removeEventListener('ended', this.battleMusicEndedHandler);
+        }
+
         // Create audio element for current track
         this.battleMusic = new Audio(this.shuffledTracks[this.currentMusicIndex]);
         this.battleMusic.volume = 0.425; // 15% quieter than 0.5
 
-        // When track ends, play next track
-        this.battleMusic.addEventListener('ended', () => {
+        // Store listener reference so we can remove it later
+        this.battleMusicEndedHandler = () => {
             this.playNextTrack();
-        });
+        };
+
+        // When track ends, play next track
+        this.battleMusic.addEventListener('ended', this.battleMusicEndedHandler);
 
         // Play the music
         this.battleMusic.play().catch(e => console.log('PVE battle music play failed:', e));
@@ -320,11 +298,8 @@ export class PVEBattleSystem {
             console.log('🔀 Reshuffling PVE music playlist');
         }
 
-        // Stop current music
-        if (this.battleMusic) {
-            this.battleMusic.pause();
-            this.battleMusic = null;
-        }
+        // Stop current music (will remove listener)
+        this.stopBattleMusic();
 
         // Play next track if battle is still active
         if (this.battleActive) {
@@ -337,6 +312,11 @@ export class PVEBattleSystem {
      */
     stopBattleMusic() {
         if (this.battleMusic) {
+            // Remove event listener to prevent memory leak
+            if (this.battleMusicEndedHandler) {
+                this.battleMusic.removeEventListener('ended', this.battleMusicEndedHandler);
+                this.battleMusicEndedHandler = null;
+            }
             this.battleMusic.pause();
             this.battleMusic.currentTime = 0;
             this.battleMusic = null;
@@ -355,18 +335,7 @@ export class PVEBattleSystem {
             this.monsterName.textContent = this.currentMonster.displayName;
         }
 
-        // Set titles
-        if (this.heroTitles) {
-            this.heroTitles.textContent = 'The Bold • The Brave • The Lucky';
-        }
-        if (this.monsterTitles) {
-            if (this.currentMonster.id === 'wood-dummy') {
-                this.monsterTitles.textContent = 'Masochist • Made of Wood';
-            } else if (this.currentMonster.id === 'raccoon') {
-                this.monsterTitles.textContent = 'Trash Bandit • Rabid';
-            }
-        }
-
+        // Titles are hidden in PVE via CSS (display: none)
         // Show nameplate container (needs 'visible' class like PVP)
         if (this.nameplateContainer) {
             this.nameplateContainer.classList.add('visible');
@@ -391,10 +360,25 @@ export class PVEBattleSystem {
             this.monsterSprite.style.backgroundImage = `url('${this.currentMonster.sprite}')`;
             // Add data attribute for monster-specific styling (e.g., flipping raccoon)
             this.monsterSprite.setAttribute('data-monster', this.currentMonster.id);
-            // Make monster sprite visible (fighters start with opacity: 0)
+
+            // Get monster's base transform from monster data (data-driven, not hardcoded!)
+            const monsterTransform = this.currentMonster.baseTransform || 'scaleX(-1) scale(0.4)';
+
+            this.monsterSprite.style.setProperty('transform', monsterTransform, 'important');
+            console.log(`🎨 [PVEBattleSystem] Set monster (${this.currentMonster.id}) sprite transform:`, monsterTransform);
+
+            // Force reflow and re-apply after CSS loads
+            setTimeout(() => {
+                this.monsterSprite.style.setProperty('transform', monsterTransform, 'important');
+                console.log(`🎨 [PVEBattleSystem] Re-applied transform after delay:`, window.getComputedStyle(this.monsterSprite).transform);
+            }, 100);
+
+            // Debug: Check container transform
             const monsterFighter = this.monsterSprite.closest('.fighter-right');
             if (monsterFighter) {
                 monsterFighter.style.opacity = '1';
+                console.log(`🎨 [PVEBattleSystem] Container transform:`, window.getComputedStyle(monsterFighter).transform);
+                console.log(`🎨 [PVEBattleSystem] Sprite computed transform:`, window.getComputedStyle(this.monsterSprite).transform);
             }
         }
 
@@ -406,8 +390,8 @@ export class PVEBattleSystem {
             // Set monster-specific background if available
             if (this.currentMonster.backgroundImage) {
                 this.viewport.style.setProperty('background', `url('${this.currentMonster.backgroundImage}')`, 'important');
-                this.viewport.style.setProperty('background-size', 'cover', 'important');
-                this.viewport.style.setProperty('background-position', 'center', 'important');
+                this.viewport.style.setProperty('background-size', '110%', 'important');
+                this.viewport.style.setProperty('background-position', 'center calc(100% + 15px)', 'important');
                 this.viewport.style.setProperty('background-repeat', 'no-repeat', 'important');
             } else {
                 // Use default wood castle for monsters without custom backgrounds
@@ -424,12 +408,20 @@ export class PVEBattleSystem {
     /**
      * Update hero HP bar
      */
-    updateHeroHP(current, max) {
+    updateHeroHP(current, max, isPoisoned = false) {
         // Clamp HP to minimum of 0
         const displayHP = Math.max(0, current);
         const percentage = (displayHP / max) * 100;
         if (this.heroHPFill) {
             this.heroHPFill.style.width = `${percentage}%`;
+            // Turn HP bar green when poisoned
+            if (isPoisoned) {
+                this.heroHPFill.style.background = '#00ff00'; // Override gradient with solid green
+                this.heroHPFill.style.boxShadow = '0 0 10px rgba(0, 255, 0, 0.8), 0 0 20px rgba(0, 255, 0, 0.4)'; // Green glow
+            } else {
+                this.heroHPFill.style.background = ''; // Reset to default gradient
+                this.heroHPFill.style.boxShadow = ''; // Reset box shadow
+            }
         }
         if (this.heroHPText) {
             this.heroHPText.textContent = `${displayHP}/${max}`;
@@ -445,6 +437,11 @@ export class PVEBattleSystem {
         const percentage = (displayHP / max) * 100;
         if (this.monsterHPFill) {
             this.monsterHPFill.style.width = `${percentage}%`;
+
+            // Add light blue glow for Ripplefang (medium boss)
+            if (this.currentMonster && this.currentMonster.id === 'ripplefang') {
+                this.monsterHPFill.style.boxShadow = '0 0 10px rgba(100, 200, 255, 0.8), 0 0 20px rgba(100, 200, 255, 0.4)';
+            }
         }
         if (this.monsterHPText) {
             this.monsterHPText.textContent = `${displayHP}/${max}`;
@@ -486,7 +483,8 @@ export class PVEBattleSystem {
                 0 0 75px rgba(255, 255, 255, 0.7),
                 4px 4px 10px rgba(0, 0, 0, 0.9);
             animation: pveVictoryTextPulse 3s ease-in-out infinite;
-            will-change: opacity, transform;
+            will-change: auto;
+            contain: layout;
         `;
         victoryText.textContent = 'VICTORY';
 
@@ -535,7 +533,7 @@ export class PVEBattleSystem {
         claimButton.textContent = 'CLAIM LOOT';
         claimButton.style.cssText = `
             position: absolute;
-            top: 50%;
+            top: calc(50% + 15px);
             left: 50%;
             transform: translate(-50%, -50%) scale(0.5);
             padding: 15px 40px;
@@ -548,19 +546,17 @@ export class PVEBattleSystem {
             border-radius: 8px;
             cursor: pointer;
             z-index: 950;
-            transition: all 0.2s ease;
+            transition: transform 0.15s ease, box-shadow 0.15s ease;
             box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
         `;
 
-        // Hover effects (keep 50% scale)
+        // Simplified hover effects - only scale and glow
         claimButton.addEventListener('mouseenter', () => {
-            claimButton.style.background = 'linear-gradient(135deg, #2d2d2d 0%, #3d3d3d 100%)';
             claimButton.style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.8)';
             claimButton.style.transform = 'translate(-50%, -50%) scale(0.525)'; // 0.5 * 1.05
         });
 
         claimButton.addEventListener('mouseleave', () => {
-            claimButton.style.background = 'linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)';
             claimButton.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.5)';
             claimButton.style.transform = 'translate(-50%, -50%) scale(0.5)';
         });
@@ -619,7 +615,8 @@ export class PVEBattleSystem {
                 0 0 75px rgba(255, 100, 100, 0.7),
                 4px 4px 10px rgba(0, 0, 0, 0.9);
             animation: pveDefeatTextPulse 3s ease-in-out infinite;
-            will-change: opacity, transform;
+            will-change: auto;
+            contain: layout;
         `;
         defeatText.textContent = 'DEFEAT';
 
@@ -636,7 +633,7 @@ export class PVEBattleSystem {
         buttonsContainer.className = 'pve-defeat-buttons';
         buttonsContainer.style.cssText = `
             position: absolute;
-            top: calc(50% + 25px);
+            top: 50%;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -725,6 +722,25 @@ export class PVEBattleSystem {
         // Mark monster as completed
         this.markMonsterCompleted();
 
+        // Set loot chest image and text based on monster's loot data
+        if (this.currentMonster && this.currentMonster.loot) {
+            const loot = this.currentMonster.loot;
+            const chestImage = document.querySelector('.popup-loot-chest-image');
+            const lootHeaderBottom = document.querySelector('.popup-loot-header-bottom');
+
+            if (chestImage && loot.chestNumber) {
+                // Format chest number with leading zero (e.g., 5 -> "05")
+                const chestNumber = String(loot.chestNumber).padStart(2, '0');
+                chestImage.src = `/images/Loot/chest_${chestNumber}.png`;
+                console.log(`📦 Set chest image to: chest_${chestNumber}.png`);
+            }
+
+            if (lootHeaderBottom && loot.material && loot.rarity) {
+                lootHeaderBottom.innerHTML = `${loot.material.toUpperCase()} CHEST<br>${loot.rarity.toUpperCase()} LOOT`;
+                console.log(`📦 Set loot text to: ${loot.material} / ${loot.rarity}`);
+            }
+        }
+
         // Show loot claim popup overlay
         const lootClaimOverlay = document.getElementById('loot-claim-overlay');
         if (lootClaimOverlay) {
@@ -755,7 +771,7 @@ export class PVEBattleSystem {
         buttonsContainer.className = 'pve-victory-buttons';
         buttonsContainer.style.cssText = `
             position: absolute;
-            top: calc(50% + 25px);
+            top: 50%;
             left: 50%;
             transform: translateX(-50%);
             display: flex;
@@ -915,7 +931,13 @@ export class PVEBattleSystem {
             // Stop current battle music
             this.stopBattleMusic();
 
-            // Clean up current battle
+            // CRITICAL: Cleanup the old combat system BEFORE creating a new one
+            if (this.combat) {
+                this.combat.cleanup();
+                this.combat = null;
+            }
+
+            // Clean up battle UI elements
             this.cleanupBattle();
 
             // Restart battle with same monster (will start new music and fade in)
@@ -942,8 +964,16 @@ export class PVEBattleSystem {
             this.screen.style.opacity = '0';
 
             setTimeout(() => {
-                // Clean up current battle
+                // Stop battle music
                 this.stopBattleMusic();
+
+                // CRITICAL: Cleanup the old combat system BEFORE creating a new one
+                if (this.combat) {
+                    this.combat.cleanup();
+                    this.combat = null;
+                }
+
+                // Clean up battle UI elements
                 this.cleanupBattle();
 
                 // Start next battle
@@ -1065,6 +1095,16 @@ export class PVEBattleSystem {
         this.battleActive = false;
         this.currentMonster = null;
         this.hero = null;
+    }
+
+    /**
+     * Set muted state for all PVE audio
+     */
+    setMuted(muted) {
+        // Pass muted state to combat system
+        if (this.combat) {
+            this.combat.setMuted(muted);
+        }
     }
 
     /**

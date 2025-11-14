@@ -5,6 +5,8 @@ import { CombatSystem } from './CombatSystem.js';
 import { BracketSystem } from './BracketSystem.js';
 import { GameManager } from './GameManager.js';
 import { PVEBattleSystem } from './pve/PVEBattleSystem.js';
+import { GearLibrary } from './gear/GearLibrary.js';
+import { AwardsTitlesSystem } from './AwardsTitlesSystem.js';
 import {
     GAME_CONFIG,
     ARENA_CONFIG,
@@ -127,6 +129,8 @@ export class RNGArena {
         this.lootSystem = new LootSystem();
         this.bracketSystem = new BracketSystem(this.bracketDisplay, this.tournament);
         this.pveBattleSystem = new PVEBattleSystem(); // PVE battle system
+        this.gearLibrary = new GearLibrary(); // Gear library system
+        this.awardsTitlesSystem = new AwardsTitlesSystem(); // Awards & titles system
 
         // Combat system will be initialized per battle
         this.combatSystem = null;
@@ -439,6 +443,14 @@ export class RNGArena {
             });
         }
 
+        // Currency display - navigate to purchase screen
+        const currencyDisplay = document.getElementById('home-currency-display');
+        if (currencyDisplay) {
+            currencyDisplay.addEventListener('click', () => {
+                this.navigateToScreen('purchase');
+            });
+        }
+
         // Exit button is on PVP tournament screen, not home screen
         // Event listener added in initBracketOverlay() instead
 
@@ -474,6 +486,27 @@ export class RNGArena {
                 this.navigateToScreen('home');
             });
         }
+
+        // Purchase screen event listeners
+        const purchaseBackBtn = document.getElementById('purchase-back-btn');
+        if (purchaseBackBtn) {
+            purchaseBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to home from purchase screen');
+                this.navigateToScreen('home');
+            });
+        }
+
+        // Purchase button handlers
+        const purchaseButtons = document.querySelectorAll('.purchase-btn');
+        purchaseButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                const price = btn.dataset.price;
+                const amount = btn.querySelector('.purchase-amount').textContent;
+                console.log(`💰 Purchase clicked: ${amount} ${type} for $${price}`);
+                alert(`Purchase: ${amount} ${type.toUpperCase()} for $${price}\n\n(Payment integration coming soon!)`);
+            });
+        });
 
         // Battle Pass overlay
         const battlepassBtn = document.getElementById('store-battlepass-btn');
@@ -532,9 +565,150 @@ export class RNGArena {
         const castleEnterBtn = document.getElementById('castle-enter-btn');
         if (castleEnterBtn) {
             castleEnterBtn.addEventListener('click', () => {
-                console.log('🏰 Entering Castle');
-                // For now, just return to home - can be expanded later
-                this.navigateToScreen('home');
+                console.log('🏰 Entering Castle Interior');
+                this.navigateToScreen('castle-interior');
+            });
+        }
+
+        // Castle clickable overlay
+        const castleClickOverlay = document.getElementById('castle-click-overlay');
+        if (castleClickOverlay) {
+            castleClickOverlay.addEventListener('click', () => {
+                console.log('🏰 Entering Castle Interior (background clicked)');
+                this.navigateToScreen('castle-interior');
+            });
+        }
+
+        // Castle Interior screen event listeners
+        const castleInteriorBackBtn = document.getElementById('castle-interior-back-btn');
+        if (castleInteriorBackBtn) {
+            castleInteriorBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to castle entrance');
+                this.navigateToScreen('castle');
+            });
+        }
+
+        // Castle Room Buttons
+        const gearRoomBtn = document.getElementById('gear-room-btn');
+        if (gearRoomBtn) {
+            gearRoomBtn.addEventListener('click', () => {
+                console.log('⚔️ Entering Gear Room');
+                this.navigateToScreen('gear-room');
+            });
+        }
+
+        const awardsTitlesBtn = document.getElementById('awards-titles-btn');
+        if (awardsTitlesBtn) {
+            awardsTitlesBtn.addEventListener('click', () => {
+                console.log('🏆 Entering Awards & Titles');
+                this.navigateToScreen('awards-titles');
+            });
+        }
+
+        const trophyRoomBtn = document.getElementById('trophy-room-btn');
+        if (trophyRoomBtn) {
+            trophyRoomBtn.addEventListener('click', () => {
+                console.log('🏆 Entering Trophy Room');
+                this.navigateToScreen('trophy-room');
+            });
+        }
+
+        // Gear Room Mannequin Buttons
+        const pvpMannequinBtn = document.getElementById('pvp-mannequin-btn');
+        if (pvpMannequinBtn) {
+            pvpMannequinBtn.addEventListener('click', () => {
+                console.log('⚔️ Opening PVP Gear Library');
+                this.navigateToScreen('pvp-gear-library');
+                this.gearLibrary.loadPVPGearLibrary();
+            });
+        }
+
+        const pveMannequinBtn = document.getElementById('pve-mannequin-btn');
+        if (pveMannequinBtn) {
+            pveMannequinBtn.addEventListener('click', () => {
+                console.log('🗡️ Opening PVE Gear Library');
+                this.navigateToScreen('pve-gear-library');
+                this.gearLibrary.loadPVEGearLibrary();
+            });
+        }
+
+        // Gear Room Clickable Overlays
+        const gearRoomPvpClick = document.getElementById('gear-room-pvp-click');
+        if (gearRoomPvpClick) {
+            gearRoomPvpClick.addEventListener('click', () => {
+                console.log('⚔️ Opening PVP Gear Library (left side clicked)');
+                this.navigateToScreen('pvp-gear-library');
+                this.gearLibrary.loadPVPGearLibrary();
+            });
+        }
+
+        const gearRoomPveClick = document.getElementById('gear-room-pve-click');
+        if (gearRoomPveClick) {
+            gearRoomPveClick.addEventListener('click', () => {
+                console.log('🗡️ Opening PVE Gear Library (right side clicked)');
+                this.navigateToScreen('pve-gear-library');
+                this.gearLibrary.loadPVEGearLibrary();
+            });
+        }
+
+        // Clickable Mannequins
+        const pvpMannequin = document.getElementById('pvp-mannequin');
+        if (pvpMannequin) {
+            pvpMannequin.addEventListener('click', () => {
+                console.log('⚔️ Opening PVP Gear Library (mannequin clicked)');
+                this.navigateToScreen('pvp-gear-library');
+                this.gearLibrary.loadPVPGearLibrary();
+            });
+        }
+
+        const pveMannequin = document.getElementById('pve-mannequin');
+        if (pveMannequin) {
+            pveMannequin.addEventListener('click', () => {
+                console.log('🗡️ Opening PVE Gear Library (mannequin clicked)');
+                this.navigateToScreen('pve-gear-library');
+                this.gearLibrary.loadPVEGearLibrary();
+            });
+        }
+
+        // Room Back Buttons
+        const gearRoomBackBtn = document.getElementById('gear-room-back-btn');
+        if (gearRoomBackBtn) {
+            gearRoomBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to castle interior from Gear Room');
+                this.navigateToScreen('castle-interior');
+            });
+        }
+
+        const awardsTitlesBackBtn = document.getElementById('awards-titles-back-btn');
+        if (awardsTitlesBackBtn) {
+            awardsTitlesBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to castle interior from Awards & Titles');
+                this.navigateToScreen('castle-interior');
+            });
+        }
+
+        const trophyRoomBackBtn = document.getElementById('trophy-room-back-btn');
+        if (trophyRoomBackBtn) {
+            trophyRoomBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to castle interior from Trophy Room');
+                this.navigateToScreen('castle-interior');
+            });
+        }
+
+        // Gear Library Back Buttons
+        const pvpLibraryBackBtn = document.getElementById('pvp-library-back-btn');
+        if (pvpLibraryBackBtn) {
+            pvpLibraryBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to gear room from PVP library');
+                this.navigateToScreen('gear-room');
+            });
+        }
+
+        const pveLibraryBackBtn = document.getElementById('pve-library-back-btn');
+        if (pveLibraryBackBtn) {
+            pveLibraryBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to gear room from PVE library');
+                this.navigateToScreen('gear-room');
             });
         }
 
@@ -832,6 +1006,9 @@ export class RNGArena {
         const parallaxLayers = document.querySelectorAll('.parallax-logo, .parallax-castle, .parallax-trees');
         const characters = document.querySelectorAll('.home-character');
         const storeImage = document.getElementById('store-main-image');
+        const purchaseImage = document.getElementById('purchase-main-image');
+        const castleParallaxLayers = document.querySelectorAll('.castle-parallax-clouds, .castle-parallax-castle, .castle-parallax-castle-complete, .castle-parallax-tree, .castle-parallax-rock');
+        const castleInteriorBg = document.querySelector('.castle-interior-background');
         // No parallax buttons now - all moved to bottom bar
 
         // Auto-drift animation using requestAnimationFrame
@@ -841,8 +1018,8 @@ export class RNGArena {
         const animateParallax = () => {
             const currentScreen = this.gameManager.currentScreen;
 
-            // Only apply parallax if on home or store screen
-            if (currentScreen !== 'home' && currentScreen !== 'store') {
+            // Only apply parallax if on home, store, castle, castle-interior, or purchase screen
+            if (currentScreen !== 'home' && currentScreen !== 'store' && currentScreen !== 'castle' && currentScreen !== 'castle-interior' && currentScreen !== 'purchase') {
                 // Stop animation when not on parallax-enabled screens to save resources
                 if (animationId) {
                     cancelAnimationFrame(animationId);
@@ -895,6 +1072,37 @@ export class RNGArena {
 
                 // Preserve the centering transform
                 storeImage.style.transform = `translate(-50%, -50%) translate3d(${moveX}px, ${moveY}px, 0)`;
+            }
+
+            // Apply parallax to castle screen
+            if (currentScreen === 'castle') {
+                castleParallaxLayers.forEach(layer => {
+                    const speed = parseFloat(layer.dataset.speed) || 0.5;
+                    const moveX = xOffset * 45 * speed; // Doubled from 22.5 for more noticeable movement
+                    const moveY = yOffset * 30 * speed; // Doubled from 15
+
+                    layer.style.transform = `translate3d(${moveX}px, ${moveY}px, 0)`; // Use translate3d for GPU acceleration
+                });
+            }
+
+            // Apply parallax to castle interior screen
+            if (currentScreen === 'castle-interior' && castleInteriorBg) {
+                const speed = parseFloat(castleInteriorBg.dataset.speed) || 0.5;
+                const moveX = xOffset * 22.5 * speed;
+                const moveY = yOffset * 15 * speed;
+
+                // Preserve the initial offset transform
+                castleInteriorBg.style.transform = `translate(-3%, -3%) translate3d(${moveX}px, ${moveY}px, 0)`;
+            }
+
+            // Apply parallax to purchase screen
+            if (currentScreen === 'purchase' && purchaseImage) {
+                const speed = parseFloat(purchaseImage.dataset.speed) || 0.5;
+                const moveX = xOffset * 22.5 * speed;
+                const moveY = yOffset * 15 * speed;
+
+                // Preserve the centering transform
+                purchaseImage.style.transform = `translate(-50%, -50%) translate3d(${moveX}px, ${moveY}px, 0)`;
             }
 
             animationId = requestAnimationFrame(animateParallax);
@@ -1002,6 +1210,19 @@ export class RNGArena {
             }
         }
 
+        // === PURCHASE SCREEN ===
+        else if (screenName === 'purchase') {
+            // Keep home music playing in background
+            if (this.homeMusic) {
+                this.homeMusic.volume = 0.5; // Half volume
+
+                // Start music if not playing and not muted
+                if (this.homeMusic.paused && !this.homeMusic.muted) {
+                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
+                }
+            }
+        }
+
         // === CASTLE SCREEN ===
         else if (screenName === 'castle') {
             // Keep home music playing in background
@@ -1013,6 +1234,9 @@ export class RNGArena {
                     this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
                 }
             }
+
+            // Update castle visual based on monster completion
+            this.updateCastleVisual();
         }
 
         // === PVE SCREEN ===
@@ -1258,6 +1482,26 @@ export class RNGArena {
 
         if (gemsDisplay) {
             gemsDisplay.textContent = stats.gems;
+        }
+    }
+
+    /**
+     * Update castle visual based on monster completion status
+     */
+    updateCastleVisual() {
+        if (!this.pveBattleSystem) return;
+
+        const castle1 = document.getElementById('castle-parallax-1');
+        const castle2 = document.getElementById('castle-parallax-2');
+
+        if (castle1 && castle2) {
+            if (this.pveBattleSystem.areAllMonstersCompleted()) {
+                castle1.classList.add('hidden');
+                castle2.classList.remove('hidden');
+            } else {
+                castle1.classList.remove('hidden');
+                castle2.classList.add('hidden');
+            }
         }
     }
 

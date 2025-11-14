@@ -131,7 +131,7 @@
 
                 <!-- Top Right Controls - Currency -->
                 <div class="home-top-right-controls">
-                    <div class="home-currency">
+                    <div class="home-currency" id="home-currency-display">
                         <div class="home-currency-item">
                             <img src="/images/effects/Gold Coin.webp" alt="Gold" class="home-currency-icon" loading="lazy">
                             <span id="home-gold-display-top" class="home-currency-value">10,000</span>
@@ -172,11 +172,104 @@
             </div>
         </div>
 
+        <!-- Purchase Screen -->
+        <div id="purchase-screen" class="game-screen hidden">
+            <div class="purchase-container">
+                <!-- Purchase Background Image -->
+                <div class="purchase-display">
+                    <img id="purchase-main-image" src="/images/shop/purchase.png" alt="Purchase Screen" class="purchase-image" data-speed="0.5" loading="lazy">
+                </div>
+
+                <!-- Purchase Options -->
+                <div class="purchase-options">
+                    <!-- Gold Section -->
+                    <div class="purchase-section">
+                        <h2 class="purchase-section-title">
+                            <img src="/images/effects/Gold Coin.webp" alt="Gold" class="purchase-currency-icon">
+                            GOLD PACKS
+                        </h2>
+                        <div class="purchase-grid">
+                            <button class="purchase-btn" data-type="gold" data-price="2.00">
+                                <div class="purchase-amount">1,000</div>
+                                <div class="purchase-price">$2.00</div>
+                            </button>
+                            <button class="purchase-btn" data-type="gold" data-price="5.00">
+                                <div class="purchase-amount">3,000</div>
+                                <div class="purchase-price">$5.00</div>
+                            </button>
+                            <button class="purchase-btn" data-type="gold" data-price="10.00">
+                                <div class="purchase-amount">7,000</div>
+                                <div class="purchase-price">$10.00</div>
+                            </button>
+                            <button class="purchase-btn" data-type="gold" data-price="20.00">
+                                <div class="purchase-amount">15,000</div>
+                                <div class="purchase-price">$20.00</div>
+                            </button>
+                            <button class="purchase-btn" data-type="gold" data-price="50.00">
+                                <div class="purchase-amount">40,000</div>
+                                <div class="purchase-price">$50.00</div>
+                            </button>
+                            <button class="purchase-btn" data-type="gold" data-price="100.00">
+                                <div class="purchase-amount">100,000</div>
+                                <div class="purchase-price">$100.00</div>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Gems Section -->
+                    <div class="purchase-section">
+                        <h2 class="purchase-section-title">
+                            <span class="purchase-currency-icon">💎</span>
+                            GEM PACKS
+                        </h2>
+                        <div class="purchase-grid">
+                            <button class="purchase-btn purchase-btn-gem" data-type="gem" data-price="2.00">
+                                <div class="purchase-amount">50</div>
+                                <div class="purchase-price">$2.00</div>
+                            </button>
+                            <button class="purchase-btn purchase-btn-gem" data-type="gem" data-price="5.00">
+                                <div class="purchase-amount">150</div>
+                                <div class="purchase-price">$5.00</div>
+                            </button>
+                            <button class="purchase-btn purchase-btn-gem" data-type="gem" data-price="10.00">
+                                <div class="purchase-amount">350</div>
+                                <div class="purchase-price">$10.00</div>
+                            </button>
+                            <button class="purchase-btn purchase-btn-gem" data-type="gem" data-price="20.00">
+                                <div class="purchase-amount">750</div>
+                                <div class="purchase-price">$20.00</div>
+                            </button>
+                            <button class="purchase-btn purchase-btn-gem" data-type="gem" data-price="50.00">
+                                <div class="purchase-amount">2,000</div>
+                                <div class="purchase-price">$50.00</div>
+                            </button>
+                            <button class="purchase-btn purchase-btn-gem" data-type="gem" data-price="100.00">
+                                <div class="purchase-amount">5,000</div>
+                                <div class="purchase-price">$100.00</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <button id="purchase-back-btn" class="castle-back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
         <!-- Castle Screen -->
         <div id="castle-screen" class="game-screen hidden">
             <div class="castle-container">
-                <!-- Castle Background -->
-                <div class="castle-background"></div>
+                <!-- Parallax Background Layers -->
+                <div class="castle-parallax-clouds" data-speed="0.45"></div>
+                <div class="castle-parallax-castle" data-speed="0.6" id="castle-parallax-1"></div>
+                <div class="castle-parallax-castle-complete hidden" data-speed="0.6" id="castle-parallax-2"></div>
+                <div class="castle-parallax-tree" data-speed="0.75"></div>
+                <div class="castle-parallax-rock" data-speed="0.9"></div>
+
+                <!-- Clickable overlay for castle -->
+                <div class="castle-clickable-overlay" id="castle-click-overlay"></div>
 
                 <!-- Enter Button (Bottom Center) -->
                 <button id="castle-enter-btn" class="castle-enter-btn" aria-label="Enter Castle">
@@ -185,6 +278,291 @@
 
                 <!-- Back Button -->
                 <button id="castle-back-btn" class="castle-back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
+        <!-- Castle Interior Screen -->
+        <div id="castle-interior-screen" class="game-screen hidden">
+            <div class="castle-interior-container">
+                <!-- Castle Interior Background -->
+                <div class="castle-interior-background" data-speed="0.5"></div>
+
+                <!-- Bottom Bar with Room Icons -->
+                <div class="castle-bottom-bar">
+                    <button id="gear-room-btn" class="castle-bar-btn" aria-label="Enter Gear Room">
+                        <img src="/images/Castle/Armoury_Icon.png" alt="Armory">
+                        <span class="castle-bar-label">ARMORY</span>
+                    </button>
+                    <button id="awards-titles-btn" class="castle-bar-btn" aria-label="Enter Awards & Titles">
+                        <img src="/images/Castle/Awards_Icon.png" alt="Awards">
+                        <span class="castle-bar-label">AWARDS</span>
+                    </button>
+                    <button id="trophy-room-btn" class="castle-bar-btn" aria-label="Enter Trophy Room">
+                        <img src="/images/Castle/Trophy_room_icon.png" alt="Trophy">
+                        <span class="castle-bar-label">TROPHY</span>
+                    </button>
+                </div>
+
+                <!-- Back Button -->
+                <button id="castle-interior-back-btn" class="castle-back-btn" aria-label="Return to castle entrance">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
+        <!-- Gear Room Screen -->
+        <div id="gear-room-screen" class="game-screen hidden">
+            <div class="gear-room-container">
+                <!-- Castle Gear Room Background -->
+                <div class="gear-room-background"></div>
+
+                <!-- Clickable overlays for navigation -->
+                <div class="gear-room-clickable-left" id="gear-room-pvp-click"></div>
+                <div class="gear-room-clickable-right" id="gear-room-pve-click"></div>
+
+                <!-- Mannequin 2 (Left - PVP) -->
+                <div class="mannequin-display mannequin-left clickable-mannequin" id="pvp-mannequin">
+                    <img src="/images/Castle/PVP_mannequin.png" alt="PVP Mannequin" class="mannequin-image">
+                </div>
+
+                <!-- Mannequin 1 (Right - PVE) -->
+                <div class="mannequin-display mannequin-right clickable-mannequin" id="pve-mannequin">
+                    <img src="/images/Castle/PVE_mannequin.png" alt="PVE Mannequin" class="mannequin-image">
+                </div>
+
+                <!-- PVP Info Window (Left) -->
+                <div class="mannequin-info-window mannequin-info-left" id="pvp-mannequin-btn">
+                    <div class="mannequin-info-title">PVP</div>
+                    <div class="mannequin-info-text">
+                        Your PVP loadout for tournament battles. Customize your gear to dominate the arena
+                        and climb the ranks. Every piece of equipment can mean the difference between glory
+                        and defeat in the brutal world of competitive combat.
+                    </div>
+                </div>
+
+                <!-- PVE Info Window (Right) -->
+                <div class="mannequin-info-window mannequin-info-right" id="pve-mannequin-btn">
+                    <div class="mannequin-info-title">PVE</div>
+                    <div class="mannequin-info-text">
+                        Your PVE loadout for monster hunting. Equip powerful gear to conquer increasingly
+                        dangerous foes and collect legendary loot. Adapt your equipment to counter each
+                        monster's unique abilities and special attacks.
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <button id="gear-room-back-btn" class="castle-back-btn" aria-label="Return to castle interior">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
+        <!-- PVP Gear Library Screen -->
+        <div id="pvp-gear-library-screen" class="game-screen hidden">
+            <div class="gear-library-container">
+                <!-- Blurred Background -->
+                <div class="gear-library-background gear-library-bg-blur"></div>
+
+                <!-- Mannequin (Left) -->
+                <div class="gear-library-mannequin mannequin-library-left">
+                    <img src="/images/Castle/PVP_mannequin.png" alt="PVP Mannequin">
+                    <img src="/images/Loot Items/daring_hero_sword.png" alt="Daring Hero Sword" class="mannequin-sword">
+                </div>
+
+                <!-- Gear Grid (Right) -->
+                <div class="gear-library-grid gear-grid-right">
+                    <div class="gear-grid-header">PVP GEAR LIBRARY</div>
+                    <div class="gear-grid-scroll" id="pvp-gear-scroll">
+                        <!-- Gear items populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <button id="pvp-library-back-btn" class="castle-back-btn" aria-label="Return to gear room">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
+        <!-- PVE Gear Library Screen -->
+        <div id="pve-gear-library-screen" class="game-screen hidden">
+            <div class="gear-library-container">
+                <!-- Blurred Background -->
+                <div class="gear-library-background gear-library-bg-blur"></div>
+
+                <!-- Mannequin (Right) -->
+                <div class="gear-library-mannequin mannequin-library-right">
+                    <img src="/images/Castle/PVE_mannequin.png" alt="PVE Mannequin">
+                    <img src="/images/Loot Items/daring_hero_sword.png" alt="Daring Hero Sword" class="mannequin-sword">
+                </div>
+
+                <!-- Gear Grid (Left) -->
+                <div class="gear-library-grid gear-grid-left">
+                    <div class="gear-grid-header">PVE GEAR LIBRARY</div>
+                    <div class="gear-grid-scroll" id="pve-gear-scroll">
+                        <!-- Gear items populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <button id="pve-library-back-btn" class="castle-back-btn" aria-label="Return to gear room">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
+        <!-- Awards & Titles Screen -->
+        <div id="awards-titles-screen" class="game-screen hidden">
+            <div class="awards-titles-container">
+                <!-- Blurred Background -->
+                <div class="awards-titles-background"></div>
+
+                <!-- Main Tabbed Window -->
+                <div class="awards-main-window">
+                    <!-- Tab Headers -->
+                    <div class="awards-tabs">
+                        <button class="awards-tab" data-tab="titles">TITLES</button>
+                        <button class="awards-tab" data-tab="awards">AWARDS</button>
+                    </div>
+
+                    <!-- Tab Content -->
+                    <div class="awards-tab-content">
+                        <!-- Titles Tab -->
+                        <div class="tab-panel active" id="titles-panel">
+                            <div class="awards-scroll-content" id="titles-scroll">
+                                <div class="title-item" draggable="true" data-title="The Mediocre">
+                                    <div class="title-name">The Mediocre</div>
+                                </div>
+                                <div class="title-item" draggable="true" data-title="Barely Competent">
+                                    <div class="title-name">Barely Competent</div>
+                                </div>
+                                <div class="title-item" draggable="true" data-title="RNG Victim">
+                                    <div class="title-name">RNG Victim</div>
+                                </div>
+                                <div class="title-item" draggable="true" data-title="Lucky Loser">
+                                    <div class="title-name">Lucky Loser</div>
+                                </div>
+                                <div class="title-item" draggable="true" data-title="The Unfortunate">
+                                    <div class="title-name">The Unfortunate</div>
+                                </div>
+                                <div class="title-item" draggable="true" data-title="Dice Roller">
+                                    <div class="title-name">Dice Roller</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Awards Tab -->
+                        <div class="tab-panel" id="awards-panel">
+                            <div class="awards-scroll-content" id="awards-scroll">
+                                <div class="award-item" draggable="true" data-award="participation">
+                                    <div class="award-icon">🏆</div>
+                                    <div class="award-text">
+                                        <div class="award-name">Participation Trophy</div>
+                                        <div class="award-desc">You showed up. That's... something.</div>
+                                    </div>
+                                </div>
+                                <div class="award-item" draggable="true" data-award="accident">
+                                    <div class="award-icon">⚔️</div>
+                                    <div class="award-text">
+                                        <div class="award-name">Accidentally Won</div>
+                                        <div class="award-desc">Defeated an opponent by sheer luck.</div>
+                                    </div>
+                                </div>
+                                <div class="award-item" draggable="true" data-award="punching-bag">
+                                    <div class="award-icon">🛡️</div>
+                                    <div class="award-text">
+                                        <div class="award-name">Professional Punching Bag</div>
+                                        <div class="award-desc">Lost 10 battles in a row. Impressive dedication!</div>
+                                    </div>
+                                </div>
+                                <div class="award-item" draggable="true" data-award="near-death">
+                                    <div class="award-icon">💀</div>
+                                    <div class="award-text">
+                                        <div class="award-name">Near Death Experience</div>
+                                        <div class="award-desc">Won a battle with 1 HP remaining.</div>
+                                    </div>
+                                </div>
+                                <div class="award-item" draggable="true" data-award="miss">
+                                    <div class="award-icon">🎯</div>
+                                    <div class="award-text">
+                                        <div class="award-name">Couldn't Hit Water</div>
+                                        <div class="award-desc">Missed 5 attacks in one battle if you fell in the ocean.</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bottom Info Window -->
+                    <div class="awards-bottom-info">
+                        <div class="info-text" id="awards-info-text">Select a title or award to see more information. Drag and drop items to equip them.</div>
+                    </div>
+                </div>
+
+                <!-- Equippable Slots Window -->
+                <div class="equipped-slots-window">
+                    <div class="equipped-header active" id="equipped-titles-header">EQUIPPED TITLES</div>
+                    <div class="equipped-header" id="equipped-awards-header">EQUIPPED AWARDS</div>
+
+                    <!-- Title Slots -->
+                    <div class="equipped-content active" id="title-slots">
+                        <div class="equipped-slot" data-slot="1" data-type="title">
+                            <div class="slot-placeholder">Empty Slot</div>
+                        </div>
+                        <div class="equipped-slot" data-slot="2" data-type="title">
+                            <div class="slot-placeholder">Empty Slot</div>
+                        </div>
+                        <div class="equipped-slot" data-slot="3" data-type="title">
+                            <div class="slot-placeholder">Empty Slot</div>
+                        </div>
+                    </div>
+
+                    <!-- Award Slots -->
+                    <div class="equipped-content" id="award-slots">
+                        <div class="equipped-slot" data-slot="1" data-type="award">
+                            <div class="slot-placeholder">Empty Slot</div>
+                        </div>
+                        <div class="equipped-slot" data-slot="2" data-type="award">
+                            <div class="slot-placeholder">Empty Slot</div>
+                        </div>
+                        <div class="equipped-slot" data-slot="3" data-type="award">
+                            <div class="slot-placeholder">Empty Slot</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Popup Window -->
+                <div id="item-info-popup" class="item-info-popup hidden">
+                    <div class="item-info-popup-content">
+                        <div class="item-info-header">
+                            <span id="item-info-title"></span>
+                            <button id="item-info-close" class="info-close-btn">×</button>
+                        </div>
+                        <div class="item-info-content">
+                            <div id="item-info-icon" class="item-info-icon"></div>
+                            <div id="item-info-description" class="item-info-description"></div>
+                        </div>
+                        <button id="item-info-equip-btn" class="item-info-equip-btn">EQUIP</button>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <button id="awards-titles-back-btn" class="castle-back-btn" aria-label="Return to castle interior">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+            </div>
+        </div>
+
+        <!-- Trophy Room Screen -->
+        <div id="trophy-room-screen" class="game-screen hidden">
+            <div class="trophy-room-container">
+                <!-- Trophy Room Background -->
+                <div class="trophy-room-background"></div>
+
+                <!-- Back Button -->
+                <button id="trophy-room-back-btn" class="castle-back-btn" aria-label="Return to castle interior">
                     <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
                 </button>
             </div>
@@ -231,7 +609,7 @@
                         <img src="/images/pve/raccoon.png" alt="Raccoon">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn pve-locked" id="pve-goblin" data-monster="goblin" style="left: calc(58% - 20px); top: calc(30% - 45px);">
+                    <button class="pve-monster-btn pve-locked" id="pve-goblin" data-monster="goblin" style="left: calc(58% + 50px); top: calc(30% - 45px);">
                         <img src="/images/pve/goblin.png" alt="Goblin">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
@@ -243,7 +621,7 @@
                         <img src="/images/pve/frog-fish.png" alt="Frog-Fish">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>
-                    <button class="pve-monster-btn pve-locked" id="pve-ripplefang" data-monster="ripplefang" style="left: calc(5% + 410px); top: 60%;">
+                    <button class="pve-monster-btn pve-locked" id="pve-ripplefang" data-monster="ripplefang" style="left: calc(5% + 400px); top: 60%;">
                         <img src="/images/pve/serpent.png" alt="Ripplefang">
                         <img src="/images/pve/lock.png" alt="Locked" class="pve-lock-icon">
                     </button>

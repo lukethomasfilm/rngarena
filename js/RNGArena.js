@@ -6,6 +6,7 @@ import { BracketSystem } from './BracketSystem.js';
 import { GameManager } from './GameManager.js';
 import { PVEBattleSystem } from './pve/PVEBattleSystem.js';
 import { GearLibrary } from './gear/GearLibrary.js';
+import { GEAR_ITEMS, TIER_RATINGS } from './gear/GearData.js';
 import { AwardsTitlesSystem } from './AwardsTitlesSystem.js';
 import {
     GAME_CONFIG,
@@ -70,6 +71,15 @@ export class RNGArena {
         this.imagesLoaded = false;
         this.previousWinnerName = null; // Track previous battle winner
 
+        // Navigation history tracking
+        this.currentScreen = 'home'; // Track current screen
+        this.previousScreen = null; // Track previous screen for back navigation
+
+        // Player inventory - tracks owned gear items by ID
+        this.playerInventory = new Set();
+        this.loadPlayerInventory(); // Load from localStorage
+        this.populateDemoInventory(); // Demo: Add all items to inventory
+
         // Lady Luck animation state
         this.ladyLuckFrame = 1; // Current frame (1-4)
         this.ladyLuckAnimationInterval = null; // Animation interval ID
@@ -130,6 +140,7 @@ export class RNGArena {
         this.bracketSystem = new BracketSystem(this.bracketDisplay, this.tournament);
         this.pveBattleSystem = new PVEBattleSystem(); // PVE battle system
         this.gearLibrary = new GearLibrary(); // Gear library system
+        this.gearLibrary.arena = this; // Give gear library access to player inventory
         this.awardsTitlesSystem = new AwardsTitlesSystem(); // Awards & titles system
 
         // Combat system will be initialized per battle
@@ -387,7 +398,7 @@ export class RNGArena {
         const storeBtn = document.getElementById('home-store-btn-bar');
         const castleBtn = document.getElementById('home-castle-btn-bar');
         const dominionBtn = document.getElementById('home-dominion-btn-bar');
-        const guildsBtn = document.getElementById('home-guilds-btn-bar');
+        const socialBtn = document.getElementById('home-social-btn-bar');
 
         // Top buttons
         const settingsBtn = document.getElementById('home-settings-btn');
@@ -425,9 +436,9 @@ export class RNGArena {
             });
         }
 
-        if (guildsBtn) {
-            guildsBtn.addEventListener('click', () => {
-                alert('Guilds coming soon!');
+        if (socialBtn) {
+            socialBtn.addEventListener('click', () => {
+                this.navigateToScreen('social');
             });
         }
 
@@ -486,6 +497,21 @@ export class RNGArena {
                 this.navigateToScreen('home');
             });
         }
+
+        // Social screen event listeners
+        const socialBackBtn = document.getElementById('social-back-btn');
+        if (socialBackBtn) {
+            socialBackBtn.addEventListener('click', () => {
+                console.log('🔙 Returning to home from social');
+                this.navigateToScreen('home');
+            });
+        }
+
+        // Setup parallax effect on social screen
+        this.setupSocialParallax();
+
+        // Setup coming soon modals
+        this.setupComingSoonModals();
 
         // Purchase screen event listeners
         const purchaseBackBtn = document.getElementById('purchase-back-btn');
@@ -567,6 +593,22 @@ export class RNGArena {
             castleEnterBtn.addEventListener('click', () => {
                 console.log('🏰 Entering Castle Interior');
                 this.navigateToScreen('castle-interior');
+            });
+        }
+
+        const castlePveBtn = document.getElementById('castle-pve-btn');
+        if (castlePveBtn) {
+            castlePveBtn.addEventListener('click', () => {
+                console.log('⚔️ Going to PVE from Castle');
+                this.navigateToScreen('pve');
+            });
+        }
+
+        const castleLevelTab = document.getElementById('castle-level-tab');
+        if (castleLevelTab) {
+            castleLevelTab.addEventListener('click', () => {
+                console.log('📊 Showing castle level info');
+                this.showCastleLevelInfo();
             });
         }
 
@@ -712,6 +754,25 @@ export class RNGArena {
             });
         }
 
+        // Switch Library Buttons
+        const pvpSwitchLibraryBtn = document.getElementById('pvp-switch-library-btn');
+        if (pvpSwitchLibraryBtn) {
+            pvpSwitchLibraryBtn.addEventListener('click', () => {
+                console.log('🔄 Switching from PVP to PVE library');
+                this.navigateToScreen('pve-gear-library');
+                this.gearLibrary.loadPVEGearLibrary();
+            });
+        }
+
+        const pveSwitchLibraryBtn = document.getElementById('pve-switch-library-btn');
+        if (pveSwitchLibraryBtn) {
+            pveSwitchLibraryBtn.addEventListener('click', () => {
+                console.log('🔄 Switching from PVE to PVP library');
+                this.navigateToScreen('pvp-gear-library');
+                this.gearLibrary.loadPVPGearLibrary();
+            });
+        }
+
         // Top-right castle menu button
         const homeCastleMenuBtn = document.getElementById('home-castle-btn');
         if (homeCastleMenuBtn) {
@@ -725,8 +786,14 @@ export class RNGArena {
         const pveBackBtn = document.getElementById('pve-back-btn');
         if (pveBackBtn) {
             pveBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from PVE');
-                this.navigateToScreen('home');
+                // Navigate back to previous screen if it was castle, otherwise go home
+                if (this.previousScreen === 'castle') {
+                    console.log('🔙 Returning to castle from PVE');
+                    this.navigateToScreen('castle');
+                } else {
+                    console.log('🔙 Returning to home from PVE');
+                    this.navigateToScreen('home');
+                }
             });
         }
 
@@ -1160,6 +1227,10 @@ export class RNGArena {
      */
     navigateToScreen(screenName) {
         console.log(`🎮 Navigating to ${screenName}`);
+
+        // Track navigation history
+        this.previousScreen = this.currentScreen;
+        this.currentScreen = screenName;
 
         // Update GameManager state
         this.gameManager.navigateTo(screenName);
@@ -1885,10 +1956,11 @@ export class RNGArena {
             chestImage.style.filter = 'none';
         }
 
-        // Create helmet element
+        // Create helmet element (display only, not draggable)
         const helmet = document.createElement('img');
         helmet.src = '/images/Loot Items/Loot_helmet_test.png';
         helmet.className = 'loot-helmet';
+        helmet.dataset.gearId = 'pve-warrior-helm'; // Store gear ID for adding to inventory (PVE gear)
         helmet.style.cssText = `
             position: absolute;
             top: 50%;
@@ -1918,9 +1990,93 @@ export class RNGArena {
             chestImage.style.opacity = '0';
         }
 
+        // Add item to player inventory
+        const gearId = helmet.dataset.gearId;
+        if (gearId) {
+            this.addToInventory(gearId);
+        }
+
         // Add feedback message
         this.chatSystem.addAnnouncerMessage('✨ LEGENDARY HELMET OBTAINED! ✨');
-        this.chatSystem.addChatMessage('A rare treasure!');
+        this.chatSystem.addChatMessage('Check the Gear Library to equip it!');
+    }
+
+    /**
+     * Get gear item data by ID
+     */
+    getGearItemData(gearId) {
+        return GEAR_ITEMS[gearId] || null;
+    }
+
+    /**
+     * Load player inventory from localStorage
+     */
+    loadPlayerInventory() {
+        try {
+            const saved = localStorage.getItem('playerInventory');
+            if (saved) {
+                this.playerInventory = new Set(JSON.parse(saved));
+                console.log(`📦 Loaded ${this.playerInventory.size} items from inventory`);
+            }
+        } catch (e) {
+            console.error('Failed to load player inventory:', e);
+            this.playerInventory = new Set();
+        }
+    }
+
+    /**
+     * Demo: Populate inventory with all gear items
+     * TODO: Remove this when loot system is fully implemented
+     */
+    populateDemoInventory() {
+        // Add all gear items to inventory for demo purposes
+        Object.keys(GEAR_ITEMS).forEach(gearId => {
+            this.playerInventory.add(gearId);
+        });
+        this.savePlayerInventory();
+        console.log(`🎮 DEMO: Populated inventory with ${this.playerInventory.size} items`);
+    }
+
+    /**
+     * Save player inventory to localStorage
+     */
+    savePlayerInventory() {
+        try {
+            const data = JSON.stringify([...this.playerInventory]);
+            localStorage.setItem('playerInventory', data);
+            console.log(`💾 Saved ${this.playerInventory.size} items to inventory`);
+        } catch (e) {
+            console.error('Failed to save player inventory:', e);
+        }
+    }
+
+    /**
+     * Add item to player inventory
+     */
+    addToInventory(gearId) {
+        if (!GEAR_ITEMS[gearId]) {
+            console.error(`Cannot add unknown gear ID: ${gearId}`);
+            return false;
+        }
+
+        this.playerInventory.add(gearId);
+        this.savePlayerInventory();
+        console.log(`✅ Added ${GEAR_ITEMS[gearId].name} to inventory`);
+
+        // Refresh gear libraries to show the new item
+        if (this.gearLibrary) {
+            this.gearLibrary.refreshPVPGearLibrary();
+            this.gearLibrary.refreshPVEGearLibrary();
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if player owns an item
+     */
+    ownsItem(gearId) {
+        return this.playerInventory.has(gearId);
     }
 
     // ===== Background Music =====
@@ -5160,6 +5316,164 @@ export class RNGArena {
                 });
             });
         });
+    }
+
+    showCastleLevelInfo() {
+        const popup = document.getElementById('castle-level-popup');
+        if (!popup) return;
+
+        // Show the popup
+        popup.classList.remove('hidden');
+
+        // Get overlay and close button
+        const overlay = popup.querySelector('.info-popup-overlay');
+        const closeBtn = popup.querySelector('.info-popup-close');
+
+        // Close when clicking overlay
+        const closePopup = () => {
+            popup.classList.add('hidden');
+            overlay.removeEventListener('click', closePopup);
+            closeBtn.removeEventListener('click', closePopup);
+        };
+
+        overlay.addEventListener('click', closePopup);
+        closeBtn.addEventListener('click', closePopup);
+    }
+
+    /**
+     * Setup auto parallax effect for social screen backgrounds
+     */
+    setupSocialParallax() {
+        const backLayer = document.querySelector('.social-bg-back');
+        const frontLayer = document.querySelector('.social-bg-front');
+
+        if (!backLayer || !frontLayer) return;
+
+        let time = 0;
+
+        // Auto-animate parallax effect
+        const animateParallax = () => {
+            time += 0.001;
+
+            // Back layer moves slowly
+            const backX = Math.sin(time * 0.5) * 5;
+            const backY = Math.cos(time * 0.3) * 5;
+
+            // Front layer moves slightly more
+            const frontX = Math.sin(time * 0.7) * 8;
+            const frontY = Math.cos(time * 0.5) * 8;
+
+            backLayer.style.transform = `translate(${backX}px, ${backY}px) scale(1.15)`;
+            frontLayer.style.transform = `translate(${frontX}px, ${frontY}px) scale(1.15)`;
+
+            requestAnimationFrame(animateParallax);
+        };
+
+        animateParallax();
+    }
+
+    /**
+     * Setup coming soon modals for social features
+     */
+    setupComingSoonModals() {
+        const modal = document.getElementById('coming-soon-modal');
+        const closeBtn = document.getElementById('coming-soon-close');
+        const modalOverlay = document.querySelector('.coming-soon-modal-overlay');
+
+        if (!modal || !closeBtn || !modalOverlay) return;
+
+        // Feature data
+        const features = {
+            'guilds-btn': {
+                title: 'Guilds',
+                description: 'Create or join guilds with your friends and compete for guild glory and exclusive rewards.',
+                features: [
+                    'Create custom guilds with unique names and emblems',
+                    'Guild vs Guild tournaments and battles',
+                    'Guild-exclusive rewards and leaderboards',
+                    'Guild chat and coordination tools'
+                ]
+            },
+            'friends-btn': {
+                title: 'Friends',
+                description: 'Connect with players, send friend requests, and track your friends\' progress and achievements.',
+                features: [
+                    'Send and receive friend requests',
+                    'View friends\' profiles and stats',
+                    'Challenge friends to duels',
+                    'Gift items and rewards to friends'
+                ]
+            },
+            'chat-btn': {
+                title: 'Global Chat',
+                description: 'Communicate with players worldwide in real-time chat channels and private messages.',
+                features: [
+                    'Global chat channels for all players',
+                    'Private messaging system',
+                    'Custom chat emotes and reactions',
+                    'Chat moderation and reporting tools'
+                ]
+            },
+            'leaderboards-btn': {
+                title: 'Leaderboards',
+                description: 'Compete for the top spot in various leaderboards and earn exclusive rewards and recognition.',
+                features: [
+                    'Global rankings across multiple categories',
+                    'Seasonal leaderboards with reset rewards',
+                    'Guild leaderboards and rankings',
+                    'Special event leaderboards'
+                ]
+            },
+            'news-btn': {
+                title: 'Game News',
+                description: 'Stay updated with the latest game updates, patch notes, and community announcements.',
+                features: [
+                    'Latest patch notes and updates',
+                    'Developer blog and insights',
+                    'Community highlights and features',
+                    'Upcoming content previews'
+                ]
+            },
+            'events-btn': {
+                title: 'Special Events',
+                description: 'Participate in limited-time events, challenges, and seasonal activities for unique rewards.',
+                features: [
+                    'Weekly and monthly special events',
+                    'Seasonal holiday celebrations',
+                    'Limited-time exclusive rewards',
+                    'Community challenges and goals'
+                ]
+            }
+        };
+
+        // Close modal function
+        const closeModal = () => {
+            modal.classList.add('hidden');
+        };
+
+        // Setup button click handlers
+        Object.keys(features).forEach(buttonId => {
+            const button = document.getElementById(buttonId);
+            if (button) {
+                button.addEventListener('click', () => {
+                    const feature = features[buttonId];
+
+                    // Populate modal
+                    document.getElementById('modal-title').textContent = feature.title;
+                    document.getElementById('modal-description').textContent = feature.description;
+
+                    const featuresList = document.getElementById('modal-features');
+                    featuresList.innerHTML = feature.features.map(f => `<li>${f}</li>`).join('');
+
+                    // Show modal
+                    modal.classList.remove('hidden');
+                });
+            }
+        });
+
+        // Close button and overlay
+        closeBtn.addEventListener('click', closeModal);
+        modalOverlay.addEventListener('click', closeModal);
     }
 }
 console.log('🎮 RNGArena v3.0 - Audio & Loot Debug + CSS Fixes Loaded');

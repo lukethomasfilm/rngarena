@@ -61,9 +61,9 @@
                     <div class="countdown-time">02:31:40</div>
                 </div>
 
-                <!-- Dominion Button (Top Left) -->
-                <button id="home-dominion-btn" class="home-dominion-btn" aria-label="Open Dominion map">
-                    <img src="/images/Home Screen/Dominion.png" alt="Dominion">
+                <!-- Events Button (Top Left) -->
+                <button id="home-events-btn" class="home-dominion-btn" aria-label="Open Events">
+                    <img src="/images/Home Screen/events_icon.png" alt="Events">
                 </button>
 
                 <!-- Castle Button (Top Right) -->
@@ -86,28 +86,23 @@
                     <img src="/images/Home Screen/store.png" alt="Store">
                 </button>
 
-                <!-- Guilds Button (Between Store and Castle) -->
-                <button id="home-guilds-btn" class="home-corner-btn home-guilds-btn" aria-label="Open guilds menu">
-                    <img src="/images/Home Screen/Guilds.png" alt="Guilds">
-                </button>
-
                 <!-- Bottom Navigation Bar -->
                 <div class="home-bottom-bar">
-                    <button id="home-dominion-btn-bar" class="home-bar-btn">
-                        <img src="/images/Home Screen/Dominion.png" alt="Dominion">
-                        <span class="home-bar-label">DOMINION</span>
+                    <button id="home-events-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/events_icon.png" alt="Events">
+                        <span class="home-bar-label">EVENTS</span>
                     </button>
-                    <button id="home-guilds-btn-bar" class="home-bar-btn">
-                        <img src="/images/Home Screen/Guilds.png" alt="Guilds">
-                        <span class="home-bar-label">GUILDS</span>
+                    <button id="home-social-btn-bar" class="home-bar-btn">
+                        <img src="/images/Home Screen/Guilds.png" alt="Social">
+                        <span class="home-bar-label">SOCIAL</span>
                     </button>
                     <button id="home-pve-btn-bar" class="home-bar-btn">
                         <img src="/images/Home Screen/PVE.png" alt="PVE">
                         <span class="home-bar-label">PVE</span>
                     </button>
                     <button id="home-pvp-btn-bar" class="home-bar-btn">
-                        <img src="/images/Home Screen/PVP.png" alt="PVP">
-                        <span class="home-bar-label">PVP</span>
+                        <img src="/images/Home Screen/PVP.png" alt="Tournament">
+                        <span class="home-bar-label">TOURNAMENT</span>
                     </button>
                     <button id="home-store-btn-bar" class="home-bar-btn">
                         <img src="/images/Home Screen/store.png" alt="Store">
@@ -165,10 +160,85 @@
                     <img src="/images/Home Screen/Pass.png" alt="Battle Pass" loading="lazy">
                 </button>
 
+                <!-- Store Icon Button (Bottom Right) -->
+                <button id="store-purchase-btn" class="store-purchase-btn" aria-label="View Purchase Options">
+                    <img src="/images/shop/shop_icon.png" alt="Purchase Gold & Gems" loading="lazy">
+                </button>
+
                 <!-- Back Button -->
                 <button id="store-back-btn" class="store-back-btn" aria-label="Return to home">
                     <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
                 </button>
+            </div>
+        </div>
+
+        <!-- Social Screen -->
+        <div id="social-screen" class="game-screen hidden">
+            <div class="social-container">
+                <!-- Parallax Background Layers -->
+                <div class="social-bg-layer social-bg-back"></div>
+                <div class="social-bg-layer social-bg-front"></div>
+
+                <!-- Social Feature Buttons -->
+                <div class="social-features">
+                    <h1 class="social-title">SOCIAL HUB</h1>
+
+                    <div class="social-buttons-grid">
+                        <button class="social-feature-btn" id="guilds-btn">
+                            <div class="feature-icon">🏰</div>
+                            <div class="feature-name">Guilds</div>
+                            <div class="feature-lock">🔒</div>
+                        </button>
+
+                        <button class="social-feature-btn" id="friends-btn">
+                            <div class="feature-icon">👥</div>
+                            <div class="feature-name">Friends</div>
+                            <div class="feature-lock">🔒</div>
+                        </button>
+
+                        <button class="social-feature-btn" id="chat-btn">
+                            <div class="feature-icon">💬</div>
+                            <div class="feature-name">Chat</div>
+                            <div class="feature-lock">🔒</div>
+                        </button>
+
+                        <button class="social-feature-btn" id="leaderboards-btn">
+                            <div class="feature-icon">🏆</div>
+                            <div class="feature-name">Leaderboards</div>
+                            <div class="feature-lock">🔒</div>
+                        </button>
+
+                        <button class="social-feature-btn" id="news-btn">
+                            <div class="feature-icon">📰</div>
+                            <div class="feature-name">News</div>
+                            <div class="feature-lock">🔒</div>
+                        </button>
+
+                        <button class="social-feature-btn" id="dominion-btn">
+                            <div class="feature-icon">🗺️</div>
+                            <div class="feature-name">Dominion</div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Back Button -->
+                <button id="social-back-btn" class="castle-back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                </button>
+
+                <!-- Coming Soon Modal -->
+                <div id="coming-soon-modal" class="coming-soon-modal hidden">
+                    <div class="coming-soon-modal-overlay"></div>
+                    <div class="coming-soon-modal-content">
+                        <button class="coming-soon-close" id="coming-soon-close">×</button>
+                        <h2 class="coming-soon-modal-title" id="modal-title">Feature Name</h2>
+                        <p class="coming-soon-modal-desc" id="modal-description">Feature description goes here.</p>
+                        <ul class="coming-soon-modal-features" id="modal-features">
+                            <!-- Features populated by JavaScript -->
+                        </ul>
+                        <div class="coming-soon-badge-large">COMING SOON</div>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -271,15 +341,42 @@
                 <!-- Clickable overlay for castle -->
                 <div class="castle-clickable-overlay" id="castle-click-overlay"></div>
 
-                <!-- Enter Button (Bottom Center) -->
-                <button id="castle-enter-btn" class="castle-enter-btn" aria-label="Enter Castle">
-                    ENTER
-                </button>
+                <!-- Castle Tabs Container (Bottom Center) -->
+                <div class="castle-tabs-container">
+                    <div id="castle-level-tab" class="castle-tab castle-level-tab" aria-label="Castle Level">
+                        LVL 1
+                    </div>
+                    <button id="castle-enter-btn" class="castle-tab castle-enter-tab" aria-label="Enter Castle">
+                        ENTER
+                    </button>
+                    <button id="castle-pve-btn" class="castle-tab castle-pve-tab" aria-label="Go to PVE Map">
+                        PVE
+                    </button>
+                </div>
 
                 <!-- Back Button -->
-                <button id="castle-back-btn" class="castle-back-btn" aria-label="Return to home">
-                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="icon-img">
+                <button id="castle-back-btn" class="back-btn" aria-label="Return to home">
+                    <img src="/images/UX Images/back-arrow.png" alt="Back" class="back-btn-icon">
                 </button>
+
+                <!-- Castle Level Info Popup -->
+                <div id="castle-level-popup" class="info-popup hidden">
+                    <div class="info-popup-overlay"></div>
+                    <div class="info-popup-content">
+                        <h2 class="info-popup-title">CASTLE LEVELING</h2>
+                        <div class="info-popup-text">
+                            <p>Your castle level increases as you complete PVE areas and collect all trophies.</p>
+                            <p><strong>How it works:</strong></p>
+                            <ul>
+                                <li>Complete all battles in a PVE area</li>
+                                <li>Collect all trophies from that area</li>
+                                <li>Your castle levels up when an area is fully completed</li>
+                            </ul>
+                            <p>Finish the first PVE map (ending with the Dragon) to reach <strong>Level 2</strong>!</p>
+                        </div>
+                        <button class="info-popup-close">CLOSE</button>
+                    </div>
+                </div>
             </div>
         </div>
 
@@ -365,10 +462,104 @@
                 <!-- Blurred Background -->
                 <div class="gear-library-background gear-library-bg-blur"></div>
 
-                <!-- Mannequin (Left) -->
-                <div class="gear-library-mannequin mannequin-library-left">
-                    <img src="/images/Castle/PVP_mannequin.png" alt="PVP Mannequin">
-                    <img src="/images/Loot Items/daring_hero_sword.png" alt="Daring Hero Sword" class="mannequin-sword">
+                <!-- Mannequin Display (Left) -->
+                <div class="gear-library-mannequin mannequin-library-left" id="pvp-mannequin-container" data-library="pvp">
+                    <img src="/images/Castle/PVP_mannequin.png" alt="PVP Mannequin" class="mannequin-base">
+
+                    <!-- Gear Slots Overlay -->
+                    <div class="gear-slots-overlay hidden" id="pvp-gear-slots">
+                        <!-- Mannequin Background (for slot view) -->
+                        <div class="gear-slots-mannequin-bg">
+                            <img src="/images/Castle/PVP_mannequin.png" alt="PVP Mannequin">
+                        </div>
+
+                        <!-- Gear Slot Grid -->
+                        <div class="gear-slots-grid">
+                            <!-- Row 1: Ring1, Helmet, Ring2 -->
+                            <div class="gear-slot" data-slot="ring1" data-row="1">
+                                <div class="gear-slot-label">Ring 1</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="helmet" data-row="1">
+                                <div class="gear-slot-label">Helmet</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="ring2" data-row="1">
+                                <div class="gear-slot-label">Ring 2</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="1"></div>
+
+                            <!-- Row 2: Back, Chest, Gauntlets -->
+                            <div class="gear-slot" data-slot="back" data-row="2">
+                                <div class="gear-slot-label">Back</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="chest" data-row="2">
+                                <div class="gear-slot-label">Chest</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="gauntlets" data-row="2">
+                                <div class="gear-slot-label">Gauntlets</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="2"></div>
+
+                            <!-- Row 3: Weapon, Pants, Offhand -->
+                            <div class="gear-slot" data-slot="weapon" data-row="3">
+                                <div class="gear-slot-label">Weapon</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="pants" data-row="3">
+                                <div class="gear-slot-label">Pants</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="offhand" data-row="3">
+                                <div class="gear-slot-label">Off-hand</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="3"></div>
+
+                            <!-- Row 4: Boots, Trinket -->
+                            <div class="gear-slot gear-slot-empty" data-row="4"></div>
+                            <div class="gear-slot" data-slot="boots" data-row="4">
+                                <div class="gear-slot-label">Boots</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="trinket" data-row="4">
+                                <div class="gear-slot-label">Trinket</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="4"></div>
+                        </div>
+
+                        <!-- Stats Display Panel - Full overlay -->
+                        <div class="gear-stats-panel" id="pvp-stats-panel">
+                            <div class="gear-stats-title">TOTAL STATS</div>
+                            <div class="gear-stats-list">
+                                <div class="gear-stat"><span class="stat-name">Attack</span> <span class="stat-value" data-stat="attack">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Defense</span> <span class="stat-value" data-stat="defense">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Health</span> <span class="stat-value" data-stat="health">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Crit</span> <span class="stat-value" data-stat="crit">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Dodge</span> <span class="stat-value" data-stat="dodge">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons - Outside mannequin for corner positioning -->
+                <div class="gear-controls" id="pvp-gear-controls">
+                    <button class="gear-equip-set-btn hidden" id="pvp-equip-set-btn" title="Equip Full Set">
+                        EQUIP SET
+                    </button>
+                    <div class="gear-controls-row">
+                        <button class="gear-stats-toggle" id="pvp-stats-toggle" title="Toggle Stats">
+                            📊
+                        </button>
+                        <button class="gear-view-toggle" id="pvp-view-toggle" title="Toggle View">
+                            ⇄
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Gear Grid (Right) -->
@@ -378,6 +569,11 @@
                         <!-- Gear items populated by JavaScript -->
                     </div>
                 </div>
+
+                <!-- Switch Library Button -->
+                <button id="pvp-switch-library-btn" class="switch-library-btn" aria-label="Switch to PVE library">
+                    PVE
+                </button>
 
                 <!-- Back Button -->
                 <button id="pvp-library-back-btn" class="castle-back-btn" aria-label="Return to gear room">
@@ -392,10 +588,104 @@
                 <!-- Blurred Background -->
                 <div class="gear-library-background gear-library-bg-blur"></div>
 
-                <!-- Mannequin (Right) -->
-                <div class="gear-library-mannequin mannequin-library-right">
-                    <img src="/images/Castle/PVE_mannequin.png" alt="PVE Mannequin">
-                    <img src="/images/Loot Items/daring_hero_sword.png" alt="Daring Hero Sword" class="mannequin-sword">
+                <!-- Mannequin Display (Right) -->
+                <div class="gear-library-mannequin mannequin-library-right" id="pve-mannequin-container" data-library="pve">
+                    <img src="/images/Castle/PVE_mannequin.png" alt="PVE Mannequin" class="mannequin-base">
+
+                    <!-- Gear Slots Overlay -->
+                    <div class="gear-slots-overlay hidden" id="pve-gear-slots">
+                        <!-- Mannequin Background (for slot view) -->
+                        <div class="gear-slots-mannequin-bg">
+                            <img src="/images/Castle/PVE_mannequin.png" alt="PVE Mannequin">
+                        </div>
+
+                        <!-- Gear Slot Grid -->
+                        <div class="gear-slots-grid">
+                            <!-- Row 1: Ring1, Helmet, Ring2 -->
+                            <div class="gear-slot" data-slot="ring1" data-row="1">
+                                <div class="gear-slot-label">Ring 1</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="helmet" data-row="1">
+                                <div class="gear-slot-label">Helmet</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="ring2" data-row="1">
+                                <div class="gear-slot-label">Ring 2</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="1"></div>
+
+                            <!-- Row 2: Back, Chest, Gauntlets -->
+                            <div class="gear-slot" data-slot="back" data-row="2">
+                                <div class="gear-slot-label">Back</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="chest" data-row="2">
+                                <div class="gear-slot-label">Chest</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="gauntlets" data-row="2">
+                                <div class="gear-slot-label">Gauntlets</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="2"></div>
+
+                            <!-- Row 3: Weapon, Pants, Offhand -->
+                            <div class="gear-slot" data-slot="weapon" data-row="3">
+                                <div class="gear-slot-label">Weapon</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="pants" data-row="3">
+                                <div class="gear-slot-label">Pants</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="offhand" data-row="3">
+                                <div class="gear-slot-label">Off-hand</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="3"></div>
+
+                            <!-- Row 4: Boots, Trinket -->
+                            <div class="gear-slot gear-slot-empty" data-row="4"></div>
+                            <div class="gear-slot" data-slot="boots" data-row="4">
+                                <div class="gear-slot-label">Boots</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot" data-slot="trinket" data-row="4">
+                                <div class="gear-slot-label">Trinket</div>
+                                <div class="gear-slot-content"></div>
+                            </div>
+                            <div class="gear-slot gear-slot-empty" data-row="4"></div>
+                        </div>
+
+                        <!-- Stats Display Panel - Full overlay -->
+                        <div class="gear-stats-panel" id="pve-stats-panel">
+                            <div class="gear-stats-title">TOTAL STATS</div>
+                            <div class="gear-stats-list">
+                                <div class="gear-stat"><span class="stat-name">Attack</span> <span class="stat-value" data-stat="attack">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Defense</span> <span class="stat-value" data-stat="defense">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Health</span> <span class="stat-value" data-stat="health">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Crit</span> <span class="stat-value" data-stat="crit">0</span></div>
+                                <div class="gear-stat"><span class="stat-name">Dodge</span> <span class="stat-value" data-stat="dodge">0</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Control Buttons - Outside mannequin for corner positioning -->
+                <div class="gear-controls" id="pve-gear-controls">
+                    <button class="gear-equip-set-btn hidden" id="pve-equip-set-btn" title="Equip Full Set">
+                        EQUIP SET
+                    </button>
+                    <div class="gear-controls-row">
+                        <button class="gear-stats-toggle" id="pve-stats-toggle" title="Toggle Stats">
+                            📊
+                        </button>
+                        <button class="gear-view-toggle" id="pve-view-toggle" title="Toggle View">
+                            ⇄
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Gear Grid (Left) -->
@@ -405,6 +695,11 @@
                         <!-- Gear items populated by JavaScript -->
                     </div>
                 </div>
+
+                <!-- Switch Library Button -->
+                <button id="pve-switch-library-btn" class="switch-library-btn" aria-label="Switch to PVP library">
+                    PVP
+                </button>
 
                 <!-- Back Button -->
                 <button id="pve-library-back-btn" class="castle-back-btn" aria-label="Return to gear room">

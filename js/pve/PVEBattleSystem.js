@@ -183,6 +183,12 @@ export class PVEBattleSystem {
     async startBattle(monsterId) {
         console.log(`🎯 Starting PVE battle against: ${monsterId}`);
 
+        // Remove glow effect from this monster if it has it
+        const monsterBtn = document.getElementById(`pve-${monsterId}`);
+        if (monsterBtn) {
+            monsterBtn.classList.remove('pve-newly-unlocked');
+        }
+
         // Load monster data
         this.currentMonster = getMonster(monsterId);
         if (!this.currentMonster) {
@@ -190,15 +196,20 @@ export class PVEBattleSystem {
             return;
         }
 
-        // Initialize hero (always Daring Hero)
+        // Get hero stats from PVE gear
+        const gearStats = this.getHeroGearStats();
+
+        // Initialize hero (always Daring Hero or Dragon Armor if full set equipped)
+        const hasFullDragonArmor = this.hasFullDragonArmorSet();
         this.hero = {
             name: 'DARING HERO',
-            maxHealth: 40, // Hero base HP in PVE
-            health: 40,
+            maxHealth: 40 + (gearStats.health || 0), // Base HP + gear HP
+            health: 40 + (gearStats.health || 0),
+            stats: gearStats, // Include all gear stats for combat
             images: {
-                neutral: `/images/characters/${CHARACTER_CONFIG.HERO_READY}`,
-                attack: `/images/characters/${CHARACTER_CONFIG.HERO_ATTACK}`,
-                defense: `/images/characters/${CHARACTER_CONFIG.HERO_DEFENSE}`
+                neutral: hasFullDragonArmor ? `/images/characters/Dragon_armor_neutral.png` : `/images/characters/${CHARACTER_CONFIG.HERO_READY}`,
+                attack: hasFullDragonArmor ? `/images/characters/Dragon_armor_attackl.png` : `/images/characters/${CHARACTER_CONFIG.HERO_ATTACK}`,
+                defense: hasFullDragonArmor ? `/images/characters/Dragon_armor_defend.png` : `/images/characters/${CHARACTER_CONFIG.HERO_DEFENSE}`
             }
         };
 
@@ -746,19 +757,19 @@ export class PVEBattleSystem {
         if (lootClaimOverlay) {
             lootClaimOverlay.classList.remove('hidden');
 
-            // Set up one-time click handler to show post-victory buttons
+            // Set up one-time click handler to return to map
             const handleLootClose = () => {
                 lootClaimOverlay.classList.add('hidden');
                 lootClaimOverlay.removeEventListener('click', handleLootClose);
 
-                // Show post-victory buttons
-                this.showPostVictoryButtons();
+                // Return directly to map
+                this.exitBattle();
             };
 
             lootClaimOverlay.addEventListener('click', handleLootClose);
         } else {
-            // Fallback if overlay doesn't exist
-            this.showPostVictoryButtons();
+            // Fallback if overlay doesn't exist - return to map
+            this.exitBattle();
         }
     }
 
@@ -893,10 +904,39 @@ export class PVEBattleSystem {
                     lockIcon.remove();
                 }
 
+                // Add glow animation class (persistent subtle glow after 3s animation)
+                nextMonsterBtn.classList.add('pve-newly-unlocked');
+
                 console.log(`🔓 Unlocked next monster: ${nextMonsterId}`);
             }
         } else {
             console.log('🎉 All monsters completed!');
+            // Trigger castle completion visual
+            this.triggerCastleCompletion();
+        }
+    }
+
+    /**
+     * Check if all monsters are completed
+     */
+    areAllMonstersCompleted() {
+        return this.monsterSequence.every(monsterId => {
+            const btn = document.getElementById(`pve-${monsterId}`);
+            return btn && btn.classList.contains('pve-completed');
+        });
+    }
+
+    /**
+     * Trigger castle completion visual (switch to Castle_2)
+     */
+    triggerCastleCompletion() {
+        const castle1 = document.getElementById('castle-parallax-1');
+        const castle2 = document.getElementById('castle-parallax-2');
+
+        if (castle1 && castle2) {
+            castle1.classList.add('hidden');
+            castle2.classList.remove('hidden');
+            console.log('🏰 Castle upgraded to completed version!');
         }
     }
 
@@ -1105,6 +1145,38 @@ export class PVEBattleSystem {
         if (this.combat) {
             this.combat.setMuted(muted);
         }
+    }
+
+    /**
+     * Get hero gear stats from PVE equip system
+     */
+    getHeroGearStats() {
+        // Access the gear library's PVE equip system
+        if (window.arena && window.arena.gearLibrary && window.arena.gearLibrary.pveEquipSystem) {
+            return window.arena.gearLibrary.pveEquipSystem.getTotalStats();
+        }
+
+        // Return default empty stats if gear system not available
+        return {
+            attack: 0,
+            defense: 0,
+            health: 0,
+            crit: 0,
+            dodge: 0,
+            draconicCrit: 0
+        };
+    }
+
+    /**
+     * Check if player has full Dragon Armor set equipped
+     */
+    hasFullDragonArmorSet() {
+        if (window.arena && window.arena.gearLibrary && window.arena.gearLibrary.pveEquipSystem) {
+            const stats = window.arena.gearLibrary.pveEquipSystem.getTotalStats();
+            // If draconic crit is present, full set is equipped
+            return stats.draconicCrit > 0;
+        }
+        return false;
     }
 
     /**

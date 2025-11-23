@@ -112,6 +112,12 @@ export class GearLibrary {
                 gearItem.classList.add(`tier-${gear.tier}`);
             }
 
+            // Check if this gear is currently equipped and grey it out
+            const equipSystem = libraryType === 'pvp' ? this.pvpEquipSystem : this.pveEquipSystem;
+            if (equipSystem && this.isGearEquipped(gear.id, equipSystem)) {
+                gearItem.classList.add('equipped');
+            }
+
             // Use emoji placeholder for items without real images
             const emojiPlaceholders = {
                 helmet: '⛑️',
@@ -119,7 +125,7 @@ export class GearLibrary {
                 gauntlets: '🧤',
                 pants: '👖',
                 boots: '👢',
-                cape: '🧥',
+                back: '🧥',
                 ring: '💍',
                 weapon: '⚔️',
                 offhand: '🛡️',
@@ -200,7 +206,7 @@ export class GearLibrary {
                 gauntlets: '🧤',
                 pants: '👖',
                 boots: '👢',
-                cape: '🧥',
+                back: '🧥',
                 ring: '💍',
                 weapon: '⚔️',
                 offhand: '🛡️',
@@ -274,51 +280,99 @@ export class GearLibrary {
 
         this.currentPopup.appendChild(statsContainer);
 
-        // Position popup next to gear item
-        this.positionPopup(gearElement);
-
-        // Show popup
+        // Show popup first to get accurate height measurement
         this.currentPopup.classList.add('visible');
+
+        // Position popup next to gear item (now that content is rendered)
+        this.positionPopup(gearElement);
     }
 
     /**
-     * Position popup next to gear item
+     * Position popup next to gear item with smart bounds checking
      */
     positionPopup(gearElement) {
         const gearRect = gearElement.getBoundingClientRect();
         const popupWidth = 200; // Match CSS width
-        const popupHeight = this.currentPopup.offsetHeight || 250;
+
+        // Force reflow to ensure accurate height after content is added
+        this.currentPopup.offsetHeight;
+        const popupHeight = this.currentPopup.scrollHeight || this.currentPopup.offsetHeight || 250;
         const padding = 10;
+        const edgePadding = 15; // Minimum distance from screen edges
 
-        // Default: position to the right
-        let left = gearRect.right + padding;
-        let top = gearRect.top;
+        // Get available viewport dimensions
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
 
-        // Check if popup goes off right edge of screen
-        if (left + popupWidth > window.innerWidth) {
-            // Position to the left instead
-            left = gearRect.left - popupWidth - padding;
+        // Calculate available space on each side
+        const spaceRight = viewportWidth - gearRect.right;
+        const spaceLeft = gearRect.left;
+        const spaceBelow = viewportHeight - gearRect.bottom;
+        const spaceAbove = gearRect.top;
+
+        let left, top;
+
+        // Priority 1: Try right side
+        if (spaceRight >= popupWidth + padding + edgePadding) {
+            left = gearRect.right + padding;
+            top = gearRect.top;
         }
-
-        // Check if popup goes off left edge
-        if (left < 0) {
-            // Center it above or below
+        // Priority 2: Try left side
+        else if (spaceLeft >= popupWidth + padding + edgePadding) {
+            left = gearRect.left - popupWidth - padding;
+            top = gearRect.top;
+        }
+        // Priority 3: Try below, centered
+        else if (spaceBelow >= popupHeight + padding + edgePadding) {
             left = gearRect.left + (gearRect.width / 2) - (popupWidth / 2);
             top = gearRect.bottom + padding;
         }
-
-        // Check if popup goes off bottom edge
-        if (top + popupHeight > window.innerHeight) {
+        // Priority 4: Try above, centered
+        else if (spaceAbove >= popupHeight + padding + edgePadding) {
+            left = gearRect.left + (gearRect.width / 2) - (popupWidth / 2);
             top = gearRect.top - popupHeight - padding;
         }
-
-        // Check if popup goes off top edge
-        if (top < 0) {
-            top = padding;
+        // Fallback: Position to the side with most space, centered vertically
+        else {
+            if (spaceRight >= spaceLeft) {
+                left = gearRect.right + padding;
+            } else {
+                left = gearRect.left - popupWidth - padding;
+            }
+            top = gearRect.top + (gearRect.height / 2) - (popupHeight / 2);
         }
 
-        this.currentPopup.style.left = `${left}px`;
-        this.currentPopup.style.top = `${top}px`;
+        // Aggressive clamping to ensure popup stays within viewport
+        const maxAvailableHeight = viewportHeight - (2 * edgePadding);
+        const actualPopupWidth = Math.min(popupWidth, viewportWidth - (2 * edgePadding));
+        const actualPopupHeight = Math.min(popupHeight, maxAvailableHeight);
+
+        // Clamp horizontal position with actual popup width
+        left = Math.max(edgePadding, Math.min(left, viewportWidth - actualPopupWidth - edgePadding));
+
+        // Clamp vertical position with actual popup height
+        top = Math.max(edgePadding, Math.min(top, viewportHeight - actualPopupHeight - edgePadding));
+
+        // If popup needs to be constrained, set max dimensions
+        if (popupHeight > maxAvailableHeight) {
+            this.currentPopup.style.maxHeight = `${maxAvailableHeight}px`;
+            this.currentPopup.style.overflowY = 'auto';
+        } else {
+            this.currentPopup.style.maxHeight = '';
+            this.currentPopup.style.overflowY = '';
+        }
+
+        if (popupWidth > viewportWidth - (2 * edgePadding)) {
+            this.currentPopup.style.maxWidth = `${actualPopupWidth}px`;
+        } else {
+            this.currentPopup.style.maxWidth = '';
+        }
+
+        // Apply final positions
+        this.currentPopup.style.left = `${Math.round(left)}px`;
+        this.currentPopup.style.top = `${Math.round(top)}px`;
+
+        console.log(`📍 Tooltip positioned at (${Math.round(left)}, ${Math.round(top)}) within viewport (${viewportWidth}x${viewportHeight}), size: ${actualPopupWidth}x${actualPopupHeight}`);
     }
 
     /**
@@ -339,9 +393,24 @@ export class GearLibrary {
             defense: 'Defense',
             attack: 'Attack',
             dodge: 'Dodge %',
-            crit: 'Crit %'
+            crit: 'Crit %',
+            draconicCrit: 'Draconic Crit %'
         };
 
         return nameMap[statName] || statName;
+    }
+
+    /**
+     * Check if a gear item is currently equipped
+     */
+    isGearEquipped(gearId, equipSystem) {
+        if (!equipSystem || !equipSystem.equippedGear) {
+            return false;
+        }
+
+        // Check all equipment slots to see if this gear ID is equipped
+        return Object.values(equipSystem.equippedGear).some(equippedItem => {
+            return equippedItem && equippedItem.id === gearId;
+        });
     }
 }

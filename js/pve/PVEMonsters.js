@@ -156,7 +156,7 @@ export const PVE_MONSTERS = {
 
         // Transform and behavior config
         baseTransform: 'scale(0.8775) translateY(-10px)', // No flip - faces left
-        soundProfile: 'vocal-only', // Only vocalization, no fleshy hit sound
+        soundProfile: 'flesh', // Play fleshy hit sound when hero hits ram
         canLunge: true,
         showMissText: true,
 
@@ -187,10 +187,6 @@ export const PVE_MONSTERS = {
             attack: [
                 '/images/pve/Ram/Ram_hit.mp3',
                 '/images/pve/Ram/ram_hit_2.mp3'
-            ],
-            defense: [
-                '/images/pve/Ram/Ram_defend.mp3',
-                '/images/pve/Ram/Ram_defend 2.mp3'
             ],
             end: '/images/pve/Ram/Ram_end.mp3',
             charge: '/images/pve/Ram/Ram_charge.mp3'

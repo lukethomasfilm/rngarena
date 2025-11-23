@@ -74,6 +74,7 @@ export class RNGArena {
         // Navigation history tracking
         this.currentScreen = 'home'; // Track current screen
         this.previousScreen = null; // Track previous screen for back navigation
+        this.navigationStack = ['home']; // Stack of screens for proper back navigation
 
         // Player inventory - tracks owned gear items by ID
         this.playerInventory = new Set();
@@ -397,7 +398,7 @@ export class RNGArena {
         const pveBtn = document.getElementById('home-pve-btn-bar');
         const storeBtn = document.getElementById('home-store-btn-bar');
         const castleBtn = document.getElementById('home-castle-btn-bar');
-        const dominionBtn = document.getElementById('home-dominion-btn-bar');
+        const eventsBtn = document.getElementById('home-events-btn-bar');
         const socialBtn = document.getElementById('home-social-btn-bar');
 
         // Top buttons
@@ -430,9 +431,10 @@ export class RNGArena {
             });
         }
 
-        if (dominionBtn) {
-            dominionBtn.addEventListener('click', () => {
-                this.navigateToScreen('dominion');
+        if (eventsBtn) {
+            eventsBtn.addEventListener('click', () => {
+                // Show the events modal
+                this.showEventsModal();
             });
         }
 
@@ -492,19 +494,22 @@ export class RNGArena {
         // Store screen event listeners
         const storeBackBtn = document.getElementById('store-back-btn');
         if (storeBackBtn) {
-            storeBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from store');
-                this.navigateToScreen('home');
+            storeBackBtn.addEventListener('click', () => this.goBack());
+        }
+
+        // Store purchase button - navigate to purchase screen
+        const storePurchaseBtn = document.getElementById('store-purchase-btn');
+        if (storePurchaseBtn) {
+            storePurchaseBtn.addEventListener('click', () => {
+                console.log('💰 Navigating to purchase screen from store');
+                this.navigateToScreen('purchase');
             });
         }
 
         // Social screen event listeners
         const socialBackBtn = document.getElementById('social-back-btn');
         if (socialBackBtn) {
-            socialBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from social');
-                this.navigateToScreen('home');
-            });
+            socialBackBtn.addEventListener('click', () => this.goBack());
         }
 
         // Setup parallax effect on social screen
@@ -516,10 +521,7 @@ export class RNGArena {
         // Purchase screen event listeners
         const purchaseBackBtn = document.getElementById('purchase-back-btn');
         if (purchaseBackBtn) {
-            purchaseBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from purchase screen');
-                this.navigateToScreen('home');
-            });
+            purchaseBackBtn.addEventListener('click', () => this.goBack());
         }
 
         // Purchase button handlers
@@ -582,10 +584,7 @@ export class RNGArena {
         // Castle screen event listeners
         const castleBackBtn = document.getElementById('castle-back-btn');
         if (castleBackBtn) {
-            castleBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from Castle');
-                this.navigateToScreen('home');
-            });
+            castleBackBtn.addEventListener('click', () => this.goBack());
         }
 
         const castleEnterBtn = document.getElementById('castle-enter-btn');
@@ -624,10 +623,7 @@ export class RNGArena {
         // Castle Interior screen event listeners
         const castleInteriorBackBtn = document.getElementById('castle-interior-back-btn');
         if (castleInteriorBackBtn) {
-            castleInteriorBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to castle entrance');
-                this.navigateToScreen('castle');
-            });
+            castleInteriorBackBtn.addEventListener('click', () => this.goBack());
         }
 
         // Castle Room Buttons
@@ -715,43 +711,28 @@ export class RNGArena {
         // Room Back Buttons
         const gearRoomBackBtn = document.getElementById('gear-room-back-btn');
         if (gearRoomBackBtn) {
-            gearRoomBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to castle interior from Gear Room');
-                this.navigateToScreen('castle-interior');
-            });
+            gearRoomBackBtn.addEventListener('click', () => this.goBack());
         }
 
         const awardsTitlesBackBtn = document.getElementById('awards-titles-back-btn');
         if (awardsTitlesBackBtn) {
-            awardsTitlesBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to castle interior from Awards & Titles');
-                this.navigateToScreen('castle-interior');
-            });
+            awardsTitlesBackBtn.addEventListener('click', () => this.goBack());
         }
 
         const trophyRoomBackBtn = document.getElementById('trophy-room-back-btn');
         if (trophyRoomBackBtn) {
-            trophyRoomBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to castle interior from Trophy Room');
-                this.navigateToScreen('castle-interior');
-            });
+            trophyRoomBackBtn.addEventListener('click', () => this.goBack());
         }
 
         // Gear Library Back Buttons
         const pvpLibraryBackBtn = document.getElementById('pvp-library-back-btn');
         if (pvpLibraryBackBtn) {
-            pvpLibraryBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to gear room from PVP library');
-                this.navigateToScreen('gear-room');
-            });
+            pvpLibraryBackBtn.addEventListener('click', () => this.navigateToScreen('gear-room'));
         }
 
         const pveLibraryBackBtn = document.getElementById('pve-library-back-btn');
         if (pveLibraryBackBtn) {
-            pveLibraryBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to gear room from PVE library');
-                this.navigateToScreen('gear-room');
-            });
+            pveLibraryBackBtn.addEventListener('click', () => this.navigateToScreen('gear-room'));
         }
 
         // Switch Library Buttons
@@ -785,16 +766,7 @@ export class RNGArena {
         // PVE screen event listeners
         const pveBackBtn = document.getElementById('pve-back-btn');
         if (pveBackBtn) {
-            pveBackBtn.addEventListener('click', () => {
-                // Navigate back to previous screen if it was castle, otherwise go home
-                if (this.previousScreen === 'castle') {
-                    console.log('🔙 Returning to castle from PVE');
-                    this.navigateToScreen('castle');
-                } else {
-                    console.log('🔙 Returning to home from PVE');
-                    this.navigateToScreen('home');
-                }
-            });
+            pveBackBtn.addEventListener('click', () => this.goBack());
         }
 
         // PVE Monster button click handlers
@@ -864,10 +836,7 @@ export class RNGArena {
         // Dominion screen event listeners
         const dominionBackBtn = document.getElementById('dominion-back-btn');
         if (dominionBackBtn) {
-            dominionBackBtn.addEventListener('click', () => {
-                console.log('🔙 Returning to home from Dominion');
-                this.navigateToScreen('home');
-            });
+            dominionBackBtn.addEventListener('click', () => this.goBack());
         }
 
         // Map navigation and zoom state
@@ -1056,11 +1025,9 @@ export class RNGArena {
             });
         }
 
-        // Back button - return to home screen
+        // Back button - return to previous screen
         if (pvpBackBtn) {
-            pvpBackBtn.addEventListener('click', () => {
-                this.navigateToScreen('home');
-            });
+            pvpBackBtn.addEventListener('click', () => this.goBack());
         }
 
         console.log('⚔️ PVP screen initialized');
@@ -1223,14 +1190,40 @@ export class RNGArena {
     }
 
     /**
+     * Generic back navigation - returns to previous screen using navigation stack
+     */
+    goBack() {
+        // Pop current screen from stack
+        if (this.navigationStack.length > 1) {
+            this.navigationStack.pop();
+        }
+
+        // Get destination (top of stack after pop)
+        const destination = this.navigationStack.length > 0
+            ? this.navigationStack[this.navigationStack.length - 1]
+            : 'home';
+
+        console.log(`🔙 Going back to ${destination} (stack: ${this.navigationStack.join(' → ')})`);
+
+        // Navigate without adding to stack
+        this.navigateToScreen(destination, false);
+    }
+
+    /**
      * Navigate to a different screen - each screen is completely self-contained
      */
-    navigateToScreen(screenName) {
+    navigateToScreen(screenName, addToStack = true) {
         console.log(`🎮 Navigating to ${screenName}`);
 
         // Track navigation history
         this.previousScreen = this.currentScreen;
         this.currentScreen = screenName;
+
+        // Add to navigation stack for forward navigation
+        if (addToStack) {
+            this.navigationStack.push(screenName);
+            console.log(`📚 Navigation stack: ${this.navigationStack.join(' → ')}`);
+        }
 
         // Update GameManager state
         this.gameManager.navigateTo(screenName);
@@ -1325,6 +1318,24 @@ export class RNGArena {
 
         // === DOMINION SCREEN ===
         else if (screenName === 'dominion') {
+            // Keep home music playing in background
+            if (this.homeMusic) {
+                this.homeMusic.volume = 0.5; // Half volume
+
+                // Start music if not playing and not muted
+                if (this.homeMusic.paused && !this.homeMusic.muted) {
+                    this.homeMusic.play().catch(e => console.log('Home music play failed:', e));
+                }
+            }
+        }
+
+        // === AWARDS & TITLES SCREEN ===
+        else if (screenName === 'awards-titles') {
+            // Update equipped items visuals when screen is shown
+            if (this.awardsTitlesSystem) {
+                this.awardsTitlesSystem.updateEquippedItemsVisuals();
+            }
+
             // Keep home music playing in background
             if (this.homeMusic) {
                 this.homeMusic.volume = 0.5; // Half volume
@@ -5373,6 +5384,36 @@ export class RNGArena {
     }
 
     /**
+     * Show events modal from home screen
+     */
+    showEventsModal() {
+        const modal = document.getElementById('coming-soon-modal');
+        if (!modal) return;
+
+        // Events feature data
+        const eventsFeature = {
+            title: 'Special Events',
+            description: 'Participate in limited-time events, challenges, and seasonal activities for unique rewards.',
+            features: [
+                'Weekly and monthly special events',
+                'Seasonal holiday celebrations',
+                'Limited-time exclusive rewards',
+                'Community challenges and goals'
+            ]
+        };
+
+        // Populate modal
+        document.getElementById('modal-title').textContent = eventsFeature.title;
+        document.getElementById('modal-description').textContent = eventsFeature.description;
+
+        const featuresList = document.getElementById('modal-features');
+        featuresList.innerHTML = eventsFeature.features.map(f => `<li>${f}</li>`).join('');
+
+        // Show modal
+        modal.classList.remove('hidden');
+    }
+
+    /**
      * Setup coming soon modals for social features
      */
     setupComingSoonModals() {
@@ -5433,16 +5474,6 @@ export class RNGArena {
                     'Community highlights and features',
                     'Upcoming content previews'
                 ]
-            },
-            'events-btn': {
-                title: 'Special Events',
-                description: 'Participate in limited-time events, challenges, and seasonal activities for unique rewards.',
-                features: [
-                    'Weekly and monthly special events',
-                    'Seasonal holiday celebrations',
-                    'Limited-time exclusive rewards',
-                    'Community challenges and goals'
-                ]
             }
         };
 
@@ -5451,7 +5482,7 @@ export class RNGArena {
             modal.classList.add('hidden');
         };
 
-        // Setup button click handlers
+        // Setup button click handlers for locked features
         Object.keys(features).forEach(buttonId => {
             const button = document.getElementById(buttonId);
             if (button) {
@@ -5470,6 +5501,15 @@ export class RNGArena {
                 });
             }
         });
+
+        // Setup Dominion button to navigate to map (not locked)
+        const dominionBtn = document.getElementById('dominion-btn');
+        if (dominionBtn) {
+            dominionBtn.addEventListener('click', () => {
+                console.log('🗺️ Navigating to Dominion map from Social');
+                this.navigateToScreen('dominion');
+            });
+        }
 
         // Close button and overlay
         closeBtn.addEventListener('click', closeModal);

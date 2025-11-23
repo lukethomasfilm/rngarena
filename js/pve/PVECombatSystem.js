@@ -340,7 +340,18 @@ export class PVECombatSystem {
 
         // Attack roll (1-6)
         const attackRoll = this.rollDie(6);
-        const isCrit = attackRoll === 5;
+        let isCrit = attackRoll === 5;
+        let isDraconicCrit = false;
+
+        // Check for Draconic Crit if normal crit occurs
+        if (isCrit && this.hero.stats && this.hero.stats.draconicCrit) {
+            const draconicCritChance = this.hero.stats.draconicCrit;
+            const draconicRoll = Math.random() * 100;
+            if (draconicRoll < draconicCritChance) {
+                isDraconicCrit = true;
+                console.log(`🐉 DRACONIC CRIT ACTIVATED! (${draconicCritChance}% chance)`);
+            }
+        }
 
         // Play attack voice (ora yell!)
         this.playAttackVoice(isCrit);
@@ -361,24 +372,33 @@ export class PVECombatSystem {
                 // Hero misses
                 this.handleHeroMiss();
             } else {
+                // Calculate damage with draconic crit
+                let damage;
+                if (isDraconicCrit) {
+                    // Draconic crit deals double the normal crit damage
+                    damage = GAME_CONFIG.DAMAGE.CRITICAL * 2;
+                } else if (isCrit) {
+                    damage = GAME_CONFIG.DAMAGE.CRITICAL;
+                } else {
+                    damage = attackRoll;
+                }
+
                 // Wood Dummy cannot defend or dodge (it's a dummy!)
                 if (this.monster.id === 'wood-dummy') {
-                    const damage = isCrit ? GAME_CONFIG.DAMAGE.CRITICAL : attackRoll;
-                    this.handleMonsterHit(damage, isCrit);
+                    this.handleMonsterHit(damage, isCrit, isDraconicCrit);
                 } else {
                     // Attack lands - check if monster defends or dodges
                     const monsterDefenseRoll = this.rollDie(6);
 
                     if (monsterDefenseRoll === 3) {
                         // Monster defends - blocks damage
-                        this.handleMonsterDefend(attackRoll, isCrit);
+                        this.handleMonsterDefend(damage, isCrit, isDraconicCrit);
                     } else if (monsterDefenseRoll === 6) {
                         // Monster dodges - avoids damage completely
                         this.handleMonsterDodge();
                     } else {
                         // Normal hit - monster takes damage
-                        const damage = isCrit ? GAME_CONFIG.DAMAGE.CRITICAL : attackRoll;
-                        this.handleMonsterHit(damage, isCrit);
+                        this.handleMonsterHit(damage, isCrit, isDraconicCrit);
                     }
                 }
             }
@@ -1351,8 +1371,8 @@ export class PVECombatSystem {
      * Handle monster defending against an attack
      * Blocks all normal damage, half damage from crits (rounded down)
      */
-    handleMonsterDefend(incomingDamage = 0, isCrit = false) {
-        console.log('🛡️ Monster DEFEND!');
+    handleMonsterDefend(incomingDamage = 0, isCrit = false, isDraconicCrit = false) {
+        console.log(`🛡️ Monster DEFEND!${isDraconicCrit ? ' (vs DRACONIC CRIT!)' : ''}`);
 
         // Show defend sprite if available
         if (this.monsterSprite && this.monster.defenseSprite) {
@@ -1406,8 +1426,8 @@ export class PVECombatSystem {
     /**
      * Handle monster taking damage
      */
-    handleMonsterHit(damage, isCrit) {
-        console.log(`💥 Monster hit for ${damage} damage!`);
+    handleMonsterHit(damage, isCrit, isDraconicCrit = false) {
+        console.log(`💥 Monster hit for ${damage} damage!${isDraconicCrit ? ' (DRACONIC CRIT!)' : ''}`);
 
         if (isCrit) {
             this.playCriticalSound();
@@ -1420,7 +1440,7 @@ export class PVECombatSystem {
             this.flashMonsterHit();
 
             // Show damage number and slash effect
-            this.showDamageNumber(this.monsterFighter, damage, isCrit);
+            this.showDamageNumber(this.monsterFighter, damage, isCrit, false, isDraconicCrit);
             this.showSlashEffect(this.monsterFighter);
 
             // Play hit sounds synchronized with slash (like Raccoon reference)
@@ -1667,17 +1687,17 @@ export class PVECombatSystem {
         const timestamp = Date.now();
         console.log(`🎤 [Instance #${this.instanceId}] Playing voice: ${filename} at ${timestamp} (${this.activeAudio.length} audio elements currently active)`);
 
-        // Play the voice sound (cut to 1 second)
+        // Play the voice sound (cut to 2 seconds)
         const sound = new Audio(soundPath);
         sound.volume = 0.5;
         this.trackAudio(sound); // Track for cleanup
         sound.play().catch(err => console.log('Attack voice play failed:', err));
 
-        // Stop after 1 second
+        // Stop after 2 seconds
         this.setTrackedTimeout(() => {
             sound.pause();
             sound.currentTime = 0;
-        }, 1000);
+        }, 2000);
     }
 
     /**
@@ -2131,8 +2151,9 @@ export class PVECombatSystem {
     /**
      * Show damage number (matches PVP style)
      * @param {boolean} isPoison - If true, shows green poison damage
+     * @param {boolean} isDraconicCrit - If true, shows DRACONIC CRIT!
      */
-    showDamageNumber(fighter, damage, isCrit, isPoison = false) {
+    showDamageNumber(fighter, damage, isCrit, isPoison = false, isDraconicCrit = false) {
         if (!fighter) return;
 
         const damageEl = document.createElement('div');
@@ -2141,7 +2162,11 @@ export class PVECombatSystem {
             damageEl.textContent = `-${damage}`;
         } else {
             damageEl.className = isCrit ? 'crit-number' : 'damage-number';
-            damageEl.textContent = isCrit ? 'CRITICAL' : `-${damage}`;
+            if (isDraconicCrit) {
+                damageEl.textContent = 'DRACONIC CRIT!';
+            } else {
+                damageEl.textContent = isCrit ? 'CRITICAL' : `-${damage}`;
+            }
         }
         fighter.appendChild(damageEl);
 

@@ -242,6 +242,40 @@ export class AwardsTitlesSystem {
             item.addEventListener('click', (e) => this.handleItemClick(e));
             item.style.cursor = 'pointer';
         });
+
+        // Update equipped status visuals
+        this.updateEquippedItemsVisuals();
+    }
+
+    /**
+     * Update visual state of all items based on equipped status
+     */
+    updateEquippedItemsVisuals() {
+        // Update title items
+        const titleItems = document.querySelectorAll('.title-item[data-title]');
+        titleItems.forEach(item => {
+            const titleName = item.dataset.title;
+            const isEquipped = this.isItemAlreadyEquipped(titleName, 'title');
+
+            if (isEquipped) {
+                item.classList.add('equipped');
+            } else {
+                item.classList.remove('equipped');
+            }
+        });
+
+        // Update award items
+        const awardItems = document.querySelectorAll('.award-item[data-award]');
+        awardItems.forEach(item => {
+            const awardName = item.dataset.award;
+            const isEquipped = this.isItemAlreadyEquipped(awardName, 'award');
+
+            if (isEquipped) {
+                item.classList.add('equipped');
+            } else {
+                item.classList.remove('equipped');
+            }
+        });
     }
 
     /**
@@ -385,6 +419,9 @@ export class AwardsTitlesSystem {
         // Make slot clickable to unequip
         slot.addEventListener('click', () => this.unequipItem(slotNumber, slotType));
 
+        // Update visual state of all items
+        this.updateEquippedItemsVisuals();
+
         console.log(`✅ Equipped ${item.type} to slot ${slotNumber}`);
     }
 
@@ -409,6 +446,9 @@ export class AwardsTitlesSystem {
 
         slot.classList.remove('filled');
         slot.innerHTML = '<div class="slot-placeholder">Empty Slot</div>';
+
+        // Update visual state of all items
+        this.updateEquippedItemsVisuals();
 
         console.log(`🗑️ Unequipped from ${slotType} slot ${slotNumber}`);
     }
